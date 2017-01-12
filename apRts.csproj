@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
     <Compile Include="Assets\Scripts\World\RTSCamera.cs" />
+    <Compile Include="Assets\Scripts\World\ResourceDeposit.cs" />
     <Compile Include="Assets\Scripts\World\TerrainManager.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -20,8 +20,13 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         public TerrainTextureBlueprint riverbankTexture;
         public TerrainTextureBlueprint snowTexture;
     }
+
+
     public float waterThreshold = 30;
     public float snowThreshold = 125;
+    // This isnt implemented yet. 
+    // If the terrain goes above this we will not be able to select any units there
+    public const float maxTerrainHeight = 600;
 
     [System.Serializable]
     public struct TerrainTextureBlueprint
@@ -31,16 +36,18 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         public int metallic;
         public Vector2 size, offset;
     }
-    Transform projector;
+    [HideInInspector]
+    public Transform projector;
     
-    Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
-    Dictionary<Vector2, List<ResourceDeposit>> terrainResources;
+    //Terrains are never deleted
+    public Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
+    Dictionary<Vector2, List<ResourceDeposit>> terrainResources = new Dictionary<Vector2, List<ResourceDeposit>>();
     
     //We need to maintain the ability to scale this value
-    const int chunkSizeX = 512, chunkSizeZ = 512;
+    public const int chunkSizeX = 512, chunkSizeZ = 512;
+    public const int Resolution = chunkSizeX / 2;
+    public const float resolutionRatio = chunkSizeX / Resolution;
     const int chunkGraphics1dArrayLength = 3; // THIS MUST ALWAYS BE ODD BECAUSE IM LAZY
-    //Vector2[] visibleChunks = new Vector2[chunkGraphics1dArrayLength * chunkGraphics1dArrayLength];
-    //Terrain[] chunkGraphics = new Terrain[chunkGraphics1dArrayLength * chunkGraphics1dArrayLength];
     
     Vector2 oldCenterChunkGlobalIndex;
 
@@ -50,8 +57,6 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     public TreeBlueprint[] trees;
     public TreePrototype[] terrainTrees;
     public Transform waterPlanePrefab;
-
-    public int Resolution { get { return chunkSizeX / 2; } }
 
     // Use this for initialization
     void Start () {
@@ -82,39 +87,25 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         Vector2 cameraChunkMoveVector = GetCameraChunkMoveVector(newCameraPosition);
         Vector2 newCenterChunkGlobalIndex = GetNewCenterChunkGlobalIndex(cameraChunkMoveVector);
         GenerateNewTerrain(oldCenterChunkGlobalIndex, newCenterChunkGlobalIndex);
-        SetVisibleTerrain(cameraChunkMoveVector, newCenterChunkGlobalIndex);
     }
 
-    // Update is called once per frame
-    void Update () {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            if (Input.GetMouseButton(0))
-            {
-                //ModifyTerrain(hit.point, .001f, 20);
-            }
-
-            projector.position = new Vector3(hit.point.x, projector.position.y, hit.point.z);
-        }
-	}
-
     #region ModifyTerrain
-    /*
-    //fix me (low prio)
-    //Only works if you modify the terrain you are over top of(center terrain)
-    void ModifyTerrain(Vector3 position, float amount, int diameter)
+
+
+    // meh buggy/fails around chunk edges.. whatever its not needed right now
+    public void ModifyTerrain(Vector3 position, float amount, int diameter)
     {
-        int terrainIndex = GetTerrainFromPos(position);
-        Terrain mainTerrain = chunkGraphics[terrainIndex];
+        Vector2 terrainIndex = GetGlobalChunkCoordinates(position.x, position.z);
+        if (!terrainChunks.ContainsKey(terrainIndex))
+        {
+            return;
+        }
+        Terrain mainTerrain = terrainChunks[terrainIndex].GetComponent<Terrain>();
+        Vector2 relativePosition = GetTerrainRelativePosition(position.x, position.z);
 
-        position = GetRelativePosition(position);
-
-        float[,] heights = mainTerrain.terrainData.GetHeights(0,0,Resolution,Resolution);
-        int terrainPosX = (int)((position.x / mainTerrain.terrainData.size.x) * Resolution);
-        int terrainPosY = (int)((position.z / mainTerrain.terrainData.size.z) * Resolution);
+        float[,] heights = mainTerrain.terrainData.GetHeights(0, 0, Resolution, Resolution);
+        int terrainPosX = (int)((relativePosition.x / mainTerrain.terrainData.size.x) * Resolution);
+        int terrainPosY = (int)((relativePosition.y / mainTerrain.terrainData.size.z) * Resolution);
         int radius = diameter / 2;
         float[,] heightChange = new float[diameter, diameter];
         for (int x = 0; x < diameter; x++)
@@ -124,11 +115,15 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                 int x2 = x - radius;
                 int y2 = y - radius;
 
-                if (terrainPosY + y2 < 0 || terrainPosY + y2 >= Resolution)
+                if (terrainPosY + y2 < 0 || terrainPosY + y2 >= heights.GetLength(0))
                 {
                     continue;
                 }
-                else if (terrainPosX + x2 < 0 || terrainPosX + x2 >= Resolution)
+                else if (terrainPosX + x2 < 0 || terrainPosX + x2 >= heights.GetLength(1))
+                {
+                    continue;
+                }
+                else if (y > heights.GetLength(0) || x > heights.GetLength(1))
                 {
                     continue;
                 }
@@ -145,48 +140,19 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     heightChange[y, x] = heights[terrainPosY + y2, terrainPosX + x2];
                 }
             }
-        } 
+        }
 
         //Fixme fails when array larger than current terrain
         mainTerrain.terrainData.SetHeights(terrainPosX - radius, terrainPosY - radius, heightChange);
     }
 
-    int GetTerrainFromPos(Vector3 position)
-    {
-        int xVal = (int)position.x / chunkSizeX, yVal = (int)position.y/chunkSizeZ;
-
-        for (int i = 0; i < visibleChunks.Length; i++)
-        {
-            if (visibleChunks[i].x == xVal && visibleChunks[i].y == yVal)
-            {
-                return i;
-            }
-        }
-        //Shouldn't happen
-        throw new System.Exception("Couldn't find terrain at x,y,z: " + position.x + ", " + position.y + ", " + position.z);
-    }
-
-    Vector3 GetRelativePosition(Vector3 position)
-    {
-        return new Vector3(Mod(position.x, chunkSizeX), position.y, Mod(position.z, chunkSizeZ));
-    }
-    
-    //This is needed because of mod behaviour for negative numbers
-    float Mod(float f1, float f2)
+    //This is needed? because of mod behaviour for negative numbers
+    public static float Mod(float f1, float f2)
     {
         return f1 - f2 * (int)(f1 / f2);
     }
-    */
+    
     #endregion
-
-    public Vector2 GetChunkIndexFromCameraPos(Vector3 cameraPosition)
-    {
-        Vector2 chunkIndex = new Vector2();
-        // Need to account for negative zero, so we offset the negative by 1 chunk
-        chunkIndex.x = (int)((cameraPosition.x < 0 ? cameraPosition.x - chunkSizeX : cameraPosition.x) / chunkSizeX);
-        chunkIndex.y = (int)((cameraPosition.z < 0 ? cameraPosition.z - chunkSizeZ : cameraPosition.z) / chunkSizeZ);
-        return chunkIndex;
-    }
 
     public Vector2 GetCameraChunkMoveVector(Vector3 newCameraPosition)
     {
@@ -221,10 +187,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                 }
             }
         }
-        else
-        { // We check every tile in the new ChunkGraphics area
-            Debug.Log("yep " + -chunkGraphics1dArrayLength / 2 + ", " + chunkGraphics1dArrayLength / 2 + " ..." + newCenterChunkGlobalIndex);
-            Debug.Log("newCenterChunkGlobalIndex " + newCenterChunkGlobalIndex + ", cameraChunkMoveVector " + cameraChunkMoveVector);
+        else // We check every tile in the new ChunkGraphics area
+        { 
             for (int y = -chunkGraphics1dArrayLength/2; y <= chunkGraphics1dArrayLength/2; y++)
             {
                 for (int x = -chunkGraphics1dArrayLength/2; x <= chunkGraphics1dArrayLength/2; x++)
@@ -239,33 +203,19 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         }
     }
 
-    public void SetVisibleTerrain(Vector2 cameraChunkMoveVector, Vector2 newCenterChunkGlobalIndex)
-    {
-        for (int y = 0; y < chunkGraphics1dArrayLength; y++)
-        {
-            for (int x = 0; x < chunkGraphics1dArrayLength; x++)
-            {
-       //         visibleChunks[x + chunkGraphics1dArrayLength * y] = cameraChunkMoveVector + newCenterChunkGlobalIndex;
-      //          chunkGraphics[x + chunkGraphics1dArrayLength * y] = terrainChunks[cameraChunkMoveVector + newCenterChunkGlobalIndex].GetComponent<Terrain>();
-            }
-        }
-    }
-
     public void OnCameraMove(Vector3 newCameraPosition)
     {
-
         Vector2 cameraChunkMoveVector = GetCameraChunkMoveVector(newCameraPosition);
 
         if (cameraChunkMoveVector.x != 0 || cameraChunkMoveVector.y != 0)
         {
-            Debug.Log("yep");
             Vector2 newCenterChunkGlobalIndex = GetNewCenterChunkGlobalIndex(cameraChunkMoveVector);
 
             GenerateNewTerrain(cameraChunkMoveVector, newCenterChunkGlobalIndex);
 
             //We have generated any missing terrain so now we just have to populate the visible chunks 
-            //and set the graphics objects
-            SetVisibleTerrain(cameraChunkMoveVector, newCenterChunkGlobalIndex);
+            //and set the graphics objects/fade out the leaving chunks
+            //SetVisibleTerrain(cameraChunkMoveVector, newCenterChunkGlobalIndex);
         }
         oldCenterChunkGlobalIndex += cameraChunkMoveVector;
     }
@@ -288,11 +238,11 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         waterPlane.transform.position = new Vector3(waterPlane.position.x + chunkSizeX / 2, waterThreshold, waterPlane.position.z + chunkSizeZ / 2);
         waterPlane.localScale = new Vector3(5.1f, 1, 5.1f); // Yay magic
         waterPlane.SetParent(terrainGO.transform);
-
+        
         SetTerrainHeightMap(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTextures(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTrees(terrainGO.GetComponent<Terrain>());
-        SetTerrainResources(terrainGO.GetComponent<Terrain>());
+        SetTerrainResources(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         
         return terrainGO;
     }
@@ -382,9 +332,9 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     void SetTerrainTrees(Terrain terrain)
     {
         terrain.terrainData.treeInstances = new TreeInstance[0];
-        for (int x = 0; x < Resolution; x+= Random.Range(0, 30))
+        for (int x = 0; x < Resolution; x+= Random.Range(5, 30))
         {
-            for (int y = 0; y < Resolution; y+= Random.Range(0,30))
+            for (int y = 0; y < Resolution; y+= Random.Range(5,30))
             {
                 float height = terrain.terrainData.GetHeight(x,y);
                 float steepness = terrain.terrainData.GetSteepness(x/(float)Resolution, y/(float)Resolution);
@@ -404,13 +354,15 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         }
     }
 
-    void SetTerrainResources(Terrain terrain)
+    void SetTerrainResources(Terrain terrain, Vector2 terrainGlobalCoords)
     {
         //Use terrain to check criteria for generation
         //consider biomes in the future
         //consider merging tree generation, as trees should be a resource
         //consider a less naive approach for which resource we want to generate (do we already have a million of these?)
         //consider using fewer magic numbers
+
+        terrainResources.Add(terrainGlobalCoords, new List<ResourceDeposit>());
 
         for (int x = 0; x < Resolution; x += Random.Range(0, 60))
         {
@@ -422,10 +374,43 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                 //Generate a resource?
                 if (Random.value > 0.6)
                 {
+                    GameObject go;
+                    //+res.graphicObject.transform.lossyScale.y
+                    //Pick a resource
                     resourceRandom = Random.value;
-                    if (Random.value > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
+                    Dictionary<RTSGameObjectType, int> items = new Dictionary<RTSGameObjectType, int>();
+                    if (resourceRandom > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
                     {
+                        items.Add(RTSGameObjectType.Wood, 2000);
+                        go = ResourceDeposit.NewDeposit("Forest",
+                                                        Color.green,
+                                                        ResourceDeposit.DepositType.Forest, 
+                                                        items, 
+                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
+                                                                    height, 
+                                                                    terrain.transform.position.z + y * (chunkSizeZ / Resolution))
+                                                       );
 
+                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<ResourceDeposit>());
+                    }
+                    else if(resourceRandom > 0.3)
+                    {
+                        items.Add(RTSGameObjectType.Iron, 800);
+                        items.Add(RTSGameObjectType.Coal, 400);
+                        go = ResourceDeposit.NewDeposit("Mineral Deposit", 
+                                                        Color.red, 
+                                                        ResourceDeposit.DepositType.MineralVein, 
+                                                        items,
+                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
+                                                                    height, 
+                                                                    terrain.transform.position.z + y * (chunkSizeZ / Resolution))
+                                                        );
+
+                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<ResourceDeposit>());
+                    }
+                    else
+                    {
+                        //meh no resource
                     }
                 }
             }
@@ -562,29 +547,75 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         return heights;
     }
 
-    float AveragePoints(float p1, float p2, float p3, float p4)
+    public static Vector2 GetGlobalChunkCoordinates(float x, float z)
+    {
+        Vector2 chunkIndex = new Vector2();
+        // Need to account for negative zero, so we offset the negative by 1 chunk
+        chunkIndex.x = (int)((x < 0 ? x - chunkSizeX : x) / chunkSizeX);
+        chunkIndex.y = (int)((z < 0 ? z - chunkSizeZ : z) / chunkSizeZ);
+        return chunkIndex;
+    }
+
+    public static Vector2 GetChunkFromGlobalCoords(float x, float z)
+    {
+        return new Vector2(x / chunkSizeX, z / chunkSizeZ);
+    }
+
+    public float GetHeightFromGlobalCoords(float xPos, float zPos)
+    {
+        Vector2 chunkCoords = GetGlobalChunkCoordinates(xPos, zPos);
+        Terrain terrain = terrainChunks[chunkCoords].GetComponent<Terrain>();
+        Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);
+        return terrain.terrainData.GetHeight((int)(terrainRelativePosition.x / resolutionRatio), (int)(terrainRelativePosition.y / resolutionRatio));
+    }
+
+    public static Vector2 GetTerrainRelativePosition(float xPos, float zPos)
+    {
+        xPos = Mod(xPos, chunkSizeX);
+        zPos = Mod(zPos, chunkSizeZ);
+        // When we are positive, each terrain origin is 512 from the previous
+        // When we are negative, each terrain origin is -512 from the previous
+        // So in order to get the height at local x,z 
+        // when we are negative we need to subtract the modded position from chunkSize
+        if (xPos < 0)
+        {
+            xPos = chunkSizeX + xPos;
+        }
+        if (zPos < 0)
+        {
+            zPos = chunkSizeZ + zPos;
+        }
+        return new Vector2(xPos, zPos);
+    }
+    
+    public static Vector2 GetChunkIndexFromCameraPos(Vector3 cameraPosition)
+    {
+        return GetGlobalChunkCoordinates(cameraPosition.x, cameraPosition.z);
+    }
+
+    static float AveragePoints(float p1, float p2, float p3, float p4)
     {
         return (p1 + p2 + p3 + p4) * 0.25f;
     }
 
-    float AveragePoints(float p1, float p2, float p3)
+    static float AveragePoints(float p1, float p2, float p3)
     {
         return (p1 + p2 + p3) * 0.33f;
     }
 
-    float GetRandHeight(int depth)
+    static float GetRandHeight(int depth)
     {
         return Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
     }
 
-    float[,] LoadHeightmapFromMemory(Vector2 worldSpaceChunkIndex)
+    /*float[,] LoadHeightmapFromMemory(Vector2 worldSpaceChunkIndex)
     {
         return null;
-    }
+    }*/
 
-    void SaveChunkToMemory(Terrain chunk, Vector2 index) {
+   /* void SaveChunkToMemory(Terrain chunk, Vector2 index) {
 
-    }
+    }*/
 
     SplatPrototype BlueprintToSplatPrototype(TerrainTextureBlueprint blueprint)
     {

@@ -4,8 +4,8 @@ using System.Collections;
 [System.Serializable]
 public struct ProductionData
 {
-    public Item targetItem;
-    public Item[] requiredItems;
+    public RTSGameObjectType targetItem;
+    public RTSGameObjectType[] requiredItems;
     //time to produce items
     public float requiredTime;
     [HideInInspector]

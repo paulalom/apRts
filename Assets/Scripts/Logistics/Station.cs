@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 public struct ItemRequests
 {
-    Item item;
+    RTSGameObjectType item;
     Storage storage;
 }
 
 [RequireComponent(typeof(Storage))]
 public class Station : MonoBehaviour {
-
+    /*
     private Storage storage;
     private List<Storage> watchList;
 
@@ -50,7 +50,7 @@ public class Station : MonoBehaviour {
     {
         for (int i = 0; i < watchList.Count; i++)
         {
-            List<Item> items = watchList[i].GetItems();
+            List<RTSGameObjectType> items = watchList[i].GetItems();
 
             for (int k = 0; k < items.Count; k++)
             {

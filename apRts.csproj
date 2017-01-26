@@ -72,12 +72,24 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Ability.cs" />
+    <Compile Include="Assets\Scripts\AbilityManager.cs" />
+    <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Factory.cs" />
     <Compile Include="Assets\Scripts\Logistics\FactoryData.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Producer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Route.cs" />
     <Compile Include="Assets\Scripts\Logistics\RouteManager.cs" />
     <Compile Include="Assets\Scripts\Logistics\Station.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
+    <Compile Include="Assets\Scripts\Order.cs" />
+    <Compile Include="Assets\Scripts\OrderManager.cs" />
+    <Compile Include="Assets\Scripts\RTSGameObject.cs" />
+    <Compile Include="Assets\Scripts\RTSGameObjectManager.cs" />
+    <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
+    <Compile Include="Assets\Scripts\UI\Selectable.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
     <Compile Include="Assets\Scripts\World\RTSCamera.cs" />

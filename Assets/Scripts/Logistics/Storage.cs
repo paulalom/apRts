@@ -3,113 +3,153 @@ using System.Collections;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
-public enum ItemType
-{
-    None,
-    Stone,
-    Wood,
-    Iron,
-    Coal,
-
-    Paper,
-    Cars
-}
-
-[System.Serializable]
-public class Item
-{
-    public ItemType type;
-    public int count;
-}
-
 public class Storage : MonoBehaviour {
-    //max number of items
-    public int maxStorageSize;
-    //raw item data
-    private List<Item> items; 
+
+    public int size = 5000;
+    public int freeSpace = 5000; //todo
+    //public int maxItemQtyPerSlot; todo
+    Dictionary<RTSGameObjectType, int> items = new Dictionary<RTSGameObjectType, int>();
     public UnityEvent onStorageChangedEvent;
+
 	// Use this for initialization
 	void Start ()
     {
-        items = new List<Item>();
-
-        onStorageChangedEvent.AddListener(DebugStorage);
+        //onStorageChangedEvent.AddListener(DebugStorage);
     }
 
-    public void AddItem(Item item)
+    public bool AddItems(Dictionary<RTSGameObjectType, int> items)
     {
-        Debug.Log("Got Item " + item.type);
-        int curItemIndex = GetItem(item.type);
-
-        if (curItemIndex == -1)
+        Dictionary<RTSGameObjectType, int> itemsAdded = new Dictionary<RTSGameObjectType, int>();
+        foreach (KeyValuePair<RTSGameObjectType, int> kvp in items)
         {
-            items.Add(item);
-        }
-        else
-        {
-            items[curItemIndex].count += item.count;
-        }
-
-        onStorageChangedEvent.Invoke();
-    }
-
-    public int GetItem(ItemType Type)
-    {
-        for (int i = 0; i < items.Count; i++)
-        {
-            if (items[i].type == Type)
+            int qtyAdded = AddItem(kvp.Key, kvp.Value, true);
+            if (qtyAdded == kvp.Value)
             {
-                return i;
+                itemsAdded.Add(kvp.Key, kvp.Value);
+            }
+            else
+            {
+                //Couldn't do it, put everything back
+                //beware concurrency
+                foreach (KeyValuePair<RTSGameObjectType, int> kvp2 in itemsAdded)
+                {
+                    TakeItem(kvp2.Key, kvp2.Value);
+                }
+                return false;
             }
         }
-        return -1;
+        return true;
+    }
+    
+    public bool TakeItems(Dictionary<RTSGameObjectType, int> items)
+    {
+        Dictionary<RTSGameObjectType, int> itemsTaken = new Dictionary<RTSGameObjectType, int>();
+        foreach (KeyValuePair<RTSGameObjectType, int> kvp in items)
+        {
+            int qtyTaken = TakeItem(kvp.Key, kvp.Value, true);
+            if (qtyTaken == kvp.Value)
+            {
+                itemsTaken.Add(kvp.Key, kvp.Value);
+            }
+            else
+            {
+                //Couldn't do it, put everything back
+                foreach (KeyValuePair<RTSGameObjectType, int> kvp2 in itemsTaken)
+                {
+                    AddItem(kvp2.Key, kvp2.Value);
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
-    public void RemoveItem(Item item)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="count"></param>
+    /// <param name="allOrNone"> TODO </param>
+    /// <returns>the number of items added</returns>
+    public int AddItem(RTSGameObjectType type, int count, bool allOrNone = true)
     {
-        int index = GetItem(item.type);
-
-        if (index == -1)
+        if (freeSpace < count && allOrNone == true)
         {
-            return;
+            return 0;
         }
-        else if (items[index].count > item.count)
+        else if (allOrNone == false)
         {
-            items[index].count -= item.count;
+            //todo
+            return 0;
         }
         else
         {
-            items.RemoveAt(index);
+            if (!items.ContainsKey(type))
+            {
+                items.Add(type, count);
+            }
+            else
+            {
+                items[type] += count;
+            }
+            return count;
         }
-        onStorageChangedEvent.Invoke();
+
+        //onStorageChangedEvent.Invoke();
+    }
+
+    /// <summary>
+    /// Gets an item from the storage
+    /// </summary>
+    /// <param name="type">Type of item to take</param>
+    /// <param name="count">Number of item to take</param>
+    /// <param name="allOrNone">Whether to return 0 if amount in storage is less than requested</param>
+    /// <returns>number of items taken</returns>
+    public int TakeItem(RTSGameObjectType type, int count, bool allOrNone = true)
+    {
+        if (!items.ContainsKey(type))
+        {
+            return 0;
+        }
+        else if (items[type] > count)
+        {
+            items[type] -= count;
+            return count;
+        }
+        else if (items[type] < count)
+        {
+            if (allOrNone)
+            {
+                return 0;
+            }
+            else
+            {
+                count = items[type];
+                items.Remove(type);
+                return count;
+            }
+        }
+        else // amount in storage = requested amount
+        {
+            items.Remove(type);
+            return count;
+        }
+
+        //onStorageChangedEvent.Invoke();
     }
 
     void DebugStorage()
     {
         string debugMessage = this + "[";
-        for (int i = 0; i < items.Count; i++)
-        {
-            debugMessage += items[i].type + ": " + items[i].count + ", ";
+        foreach (KeyValuePair<RTSGameObjectType, int> item in items) { 
+            debugMessage += item.Key.ToString() + ": " + item.Value + ", ";
         }
         debugMessage += "]";
 
         Debug.Log(debugMessage);
     }
-    
-    public int GetItemCount(ItemType type)
-    {
-        int itemIndex = GetItem(type);
-        if (itemIndex == -1)
-        {
-            return 0;
-        }
-        else
-        {
-            return items[itemIndex].count;
-        }
-    }
 
-    public List<Item> GetItems()
+    public Dictionary<RTSGameObjectType, int> GetItems()
     {
         return items;
     }

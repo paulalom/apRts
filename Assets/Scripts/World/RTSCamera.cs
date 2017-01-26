@@ -18,9 +18,19 @@ public class RTSCamera : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        
+    }
+    
+    public static float InvertMouseY(float mouseY)
+    {
+        return Screen.height - mouseY;
+    }
+
+    public void CheckCameraUpdate()
+    {
         bool hasChanged = false;
 
-        if (Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse2))
         {
             if (!isRotating)
             {
@@ -31,20 +41,33 @@ public class RTSCamera : MonoBehaviour {
             else
             {
                 Vector3 currentMousePosition = Input.mousePosition;
-                transform.rotation = Quaternion.Euler(new Vector3(startRotation.x - (currentMousePosition.y - mouseStartPostion.y) * RotationSensitivity.y, startRotation.y + (currentMousePosition.x - mouseStartPostion.x) * RotationSensitivity.x, 0));
+                transform.rotation = Quaternion.Euler(new Vector3(startRotation.x - (currentMousePosition.y - mouseStartPostion.y) * RotationSensitivity.y, 
+                                                                  startRotation.y + (currentMousePosition.x - mouseStartPostion.x) * RotationSensitivity.x, 
+                                                                  0));
             }
             hasChanged = true;
         }
-        else{
+        else {
             isRotating = false;
         }
-        transform.Translate(new Vector3(Input.GetAxis("Horizontal"), TranslationSensitivity.x * Input.GetAxis("Vertical") * Mathf.Sin(transform.rotation.eulerAngles.x * Mathf.PI/180), TranslationSensitivity.y * Input.GetAxis("Vertical") * Mathf.Cos(transform.rotation.eulerAngles.x * Mathf.PI / 180) + Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity), Space.Self);
+        transform.Translate(new Vector3(
+                                        Input.GetAxis("Horizontal"),
+                                        TranslationSensitivity.x 
+                                            * Input.GetAxis("Vertical") 
+                                            * Mathf.Sin(transform.rotation.eulerAngles.x * Mathf.PI / 180), 
+                                        TranslationSensitivity.y 
+                                            * Input.GetAxis("Vertical") 
+                                            * Mathf.Cos(transform.rotation.eulerAngles.x * Mathf.PI / 180) 
+                                            + Input.GetAxis("Mouse ScrollWheel") 
+                                            * zoomSensitivity), 
+                            Space.Self);
+        //transform.Translate(new Vector3(Input.GetAxis("Horizontal"), TranslationSensitivity.x * Input.GetAxis("Vertical") * Mathf.Sin(transform.rotation.eulerAngles.x * Mathf.PI / 180), TranslationSensitivity.y * Input.GetAxis("Vertical") * Mathf.Cos(transform.rotation.eulerAngles.x * Mathf.PI / 180) + Input.GetAxis("Mouse ScrollWheel") * zoomSensitivity), Space.Self);
 
         if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
         {
             hasChanged = true;
         }
-        /*
+        /* camera bounds
         if (transform.position.x > maxTranslation.x)
         {
             transform.position = new Vector3(maxTranslation.x, transform.position.y, transform.position.z);

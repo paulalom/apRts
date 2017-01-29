@@ -11,6 +11,7 @@ public enum OrderType
     Guard,
     Give,
     Take,
+    Harvest,
     UseAbillity
 }
 

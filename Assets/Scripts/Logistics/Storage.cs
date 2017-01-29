@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
+//[RequireComponent(typeof(RTSGameObject))]
 public class Storage : MonoBehaviour {
 
     public int size = 5000;

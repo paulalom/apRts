@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Storage))]
+//[RequireComponent(typeof(RTSGameObject))]
 public class Producer : MonoBehaviour {
 
     private Storage storage;
@@ -12,6 +13,8 @@ public class Producer : MonoBehaviour {
     // We use KVP so that duplications which are next to eacother can be grouped. 
     // Our production queue can be one item with a thousand units queued.
     public List<KeyValuePair<RTSGameObjectType, int>> productionQueue;
+    GameManager gameManager;
+
     float timeLeftToProduce = 0;
     private bool _isActive = false;
     public bool IsActive {
@@ -27,8 +30,11 @@ public class Producer : MonoBehaviour {
     public UnityEvent onStorageChangedEvent;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         storage = GetComponent<Storage>();
+        productionQueue = new List<KeyValuePair<RTSGameObjectType, int>>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
     // This is called once per frame
@@ -49,30 +55,59 @@ public class Producer : MonoBehaviour {
     
     bool Produce()
     {
-        int qtyToProduce = RTSGameObject.productionQuantity[productionQueue[0].Key];
         if (productionQueue.Count == 0)
         {
             throw new System.Exception("Y'all be crazy... Aint nothin to produce. ");
         }
+        RTSGameObjectType typeToProduce = productionQueue[0].Key;
+        int qtyToProduce = RTSGameObject.productionQuantity[productionQueue[0].Key];
+        if (RTSGameObject.canContain[GetComponent<RTSGameObject>().type].Contains(typeToProduce))
+        {
+            return ProduceToStorage(typeToProduce, qtyToProduce);
+        }
+        else
+        {
+            return ProduceToWorld(typeToProduce, qtyToProduce);
+        }
+    }  
+
+    bool ProduceToStorage(RTSGameObjectType typeToProduce, int qtyToProduce)
+    {
         if (storage.freeSpace < qtyToProduce) //todo: qty * objectSize
         {
             return false;
         }
-        
-        storage.AddItem(productionQueue[0].Key, qtyToProduce);
-        // We done it boys! remove one from the queue
-        if (productionQueue[0].Value > 1)
+
+        if (storage.AddItem(typeToProduce, qtyToProduce) > 0)
         {
-            productionQueue[0] = new KeyValuePair<RTSGameObjectType, int>(productionQueue[0].Key, productionQueue[0].Value);
+            return PopProductionQueue();
         }
         else
         {
-            //God damnit this is O(n)... i dont think the list should be many items long though because of our stacking
+            return false;
+        }
+    }
+
+    bool ProduceToWorld(RTSGameObjectType typeToProduce, int qtyToProduce)
+    {
+        return gameManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject);
+    }
+    
+    bool PopProductionQueue()
+    {
+        // We done it boys! remove one from the queue
+        if (productionQueue[0].Value > 1)
+        {
+            productionQueue[0] = new KeyValuePair<RTSGameObjectType, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
+        }
+        else
+        {
+            //This is O(n)... i dont think the list should be many items long though because of our stacking
             productionQueue.RemoveAt(0);
         }
         return true;
-    }  
-    
+    }
+
     void StartNextProduction()
     {
         if (productionQueue.Count == 0)
@@ -94,6 +129,7 @@ public class Producer : MonoBehaviour {
                                 (type, productionQueue[productionQueue.Count - 1].Value + quantity);
         }
 
+        //Queueing automatically turns producer on
         if (productionQueue.Count == 1)
         {
             StartNextProduction();

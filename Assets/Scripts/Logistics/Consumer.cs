@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Storage))]
+//[RequireComponent(typeof(RTSGameObject))]
 public class Consumer : MonoBehaviour {
 
     private Storage storage;

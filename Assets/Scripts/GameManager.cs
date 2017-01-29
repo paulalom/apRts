@@ -24,7 +24,8 @@ public class GameManager : MonoBehaviour {
     float prevTime;
 
     public UnityEvent onSelectionChange;
-    
+    public RTSGameObject newSelectedUnit = null; // very ugly state hack for selection from menu (this can be fixed once selection box is fixed)
+
     // Use this for initialization
     void Start () {
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
@@ -118,7 +119,10 @@ public class GameManager : MonoBehaviour {
                 }
                 else
                 {
-                    selectedUnits.Clear();
+                    if (newSelectedUnit == null)
+                    {
+                        selectedUnits.Clear();
+                    }
                 }
                 mouseDown = vectorSentinel;
             }
@@ -136,8 +140,29 @@ public class GameManager : MonoBehaviour {
             
             if (Input.GetKeyUp(KeyCode.Q))
             {
-                //if (selectedUnit && selectedUnit.CanProduce(RTSGameObjectType.HarvestingStation))
-                SpawnUnit(hit.point, RTSGameObjectType.HarvestingStation);
+                RTSGameObjectType typeToMake = RTSGameObjectType.HarvestingStation;
+                int quantityToMake = 1;
+                foreach (RTSGameObject unit in selectedUnits)
+                {
+                    Producer producer = unit.GetComponent<Producer>();
+                    if (RTSGameObject.canProduce[unit.type] != null && RTSGameObject.canProduce[unit.type].Contains(typeToMake))
+                    {
+                        producer.QueueItem(typeToMake, quantityToMake);
+                    }
+                }
+            }
+            if (Input.GetKeyUp(KeyCode.C))
+            {
+                RTSGameObjectType typeToMake = RTSGameObjectType.Worker;
+                int quantityToMake = 1;
+                foreach (RTSGameObject unit in selectedUnits)
+                {
+                    Producer producer = unit.GetComponent<Producer>();
+                    if (RTSGameObject.canProduce[unit.type] != null && RTSGameObject.canProduce[unit.type].Contains(typeToMake))
+                    {
+                        producer.QueueItem(typeToMake, quantityToMake);
+                    }
+                }
             }
             if (Input.GetKeyUp(KeyCode.E))
             {
@@ -210,6 +235,19 @@ public class GameManager : MonoBehaviour {
     }
 
     /* selection to be refactored ends here */
+
+    //The "around" bit is todo
+    public bool SpawnUnitsAround(RTSGameObjectType type, int quantity, GameObject producer)
+    {
+        Debug.Log(type.ToString());
+        GameObject go = Instantiate(prefabs[type.ToString()],
+            new Vector3(producer.transform.position.x, producer.transform.position.y, producer.transform.position.z),
+            Quaternion.identity) as GameObject;
+        go.name = type.ToString() + units.Count;
+        units.Add(go.GetComponent<RTSGameObject>());
+
+        return true;
+    }
 
     void SpawnUnit(Vector3 position, RTSGameObjectType type)
     {

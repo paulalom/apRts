@@ -51,7 +51,10 @@ public class MenuManager : MonoBehaviour {
             GUIStyle icon = new GUIStyle();
             icon.normal.background = iconList[x];
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
-            GUI.Button(button, "", icon);
+            if (GUI.Button(button, "", icon))
+            {
+                Debug.Log(icon.name);
+            }
         }
     }
 
@@ -68,6 +71,9 @@ public class MenuManager : MonoBehaviour {
 
         GUIStyle icon;
         Rect button;
+        // very ugly state hack for selection from menu (this can be fixed once selection box is fixed)
+        gameManager.newSelectedUnit = null;
+
         foreach (RTSGameObject unit in gameManager.selectedUnits)
         {
             Rect menu = new Rect(50, 250 + i * 55, 400, 50);
@@ -89,8 +95,26 @@ public class MenuManager : MonoBehaviour {
             icon.normal.background = RTSGameObject.menuIcon[RTSGameObjectType.None];
             icon.normal.textColor = Color.red;
             button = new Rect(menu.x + 10, menu.y + 5, 40, 40);
-            GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon);
+            if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))
+            {
+                gameManager.newSelectedUnit = unit;
+            }
             i++;
+        }
+
+        //Temporary selection code, a unit's inventory summary button was clicked so we select them
+        if (gameManager.newSelectedUnit != null)
+        {
+            foreach (RTSGameObject unit in gameManager.selectedUnits)
+            {
+                if (unit != gameManager.newSelectedUnit)
+                {
+                    unit.selected = false;
+                    unit.flagRenderer.material.color = Color.white;
+                }
+            }
+            gameManager.selectedUnits.Clear();
+            gameManager.selectedUnits.Add(gameManager.newSelectedUnit);
         }
     }
 

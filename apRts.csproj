@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Factory.cs" />
     <Compile Include="Assets\Scripts\Logistics\FactoryData.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
     <Compile Include="Assets\Scripts\Logistics\Producer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Station.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />

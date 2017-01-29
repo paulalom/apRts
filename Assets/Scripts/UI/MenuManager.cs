@@ -51,9 +51,20 @@ public class MenuManager : MonoBehaviour {
             GUIStyle icon = new GUIStyle();
             icon.normal.background = iconList[x];
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
-            if (GUI.Button(button, "", icon))
+            if (GUI.Button(button, x.ToString(), icon))
             {
-                Debug.Log(icon.name);
+                if (x == 0)
+                {
+                    gameManager.QueueUnit(RTSGameObjectType.Worker);
+                }
+                else if (x == 1)
+                {
+                    gameManager.QueueUnit(RTSGameObjectType.HarvestingStation);
+                }
+                else if (x == 2)
+                {
+                    gameManager.QueueUnit(RTSGameObjectType.Factory);
+                }
             }
         }
     }

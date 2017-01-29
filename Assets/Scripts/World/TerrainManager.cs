@@ -384,7 +384,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                         items.Add(RTSGameObjectType.Wood, 2000);
                         go = ResourceDeposit.NewDeposit("Forest",
                                                         Color.green,
-                                                        ResourceDeposit.DepositType.Forest, 
+                                                        DepositType.Forest, 
                                                         items, 
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
                                                                     height, 
@@ -399,7 +399,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                         items.Add(RTSGameObjectType.Coal, 400);
                         go = ResourceDeposit.NewDeposit("Mineral Deposit", 
                                                         Color.red, 
-                                                        ResourceDeposit.DepositType.MineralVein, 
+                                                        DepositType.MineralVein, 
                                                         items,
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
                                                                     height, 

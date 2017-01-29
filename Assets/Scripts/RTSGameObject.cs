@@ -40,6 +40,7 @@ public class RTSGameObject : MonoBehaviour
     public static Dictionary<RTSGameObjectGroup, List<RTSGameObjectType>> objectGroup;
     public static Dictionary<RTSGameObjectType, int> productionTime;
     public static Dictionary<RTSGameObjectType, int> productionQuantity;
+    public static Dictionary<RTSGameObjectType, int> HarvestQuantity;
     public static Dictionary<RTSGameObjectType, Texture2D> menuIcon;
 
     static RTSGameObject()
@@ -50,6 +51,7 @@ public class RTSGameObject : MonoBehaviour
         objectGroup = new Dictionary<RTSGameObjectGroup, List<RTSGameObjectType>>();
         productionTime = new Dictionary<RTSGameObjectType, int>();
         productionQuantity = new Dictionary<RTSGameObjectType, int>();
+        HarvestQuantity = new Dictionary<RTSGameObjectType, int>();
 
         foreach (RTSGameObjectGroup group in Enum.GetValues(typeof(RTSGameObjectGroup)))
         {
@@ -64,6 +66,7 @@ public class RTSGameObject : MonoBehaviour
             //productionTime[type] = 30; //Default time is 30s (minimum, base quantities around production time)
             productionTime[type] = 5; //Testing
             productionQuantity[type] = 1;
+            HarvestQuantity[type] = 10;
         }
 
         objectGroup[RTSGameObjectGroup.Structure].Add(RTSGameObjectType.Factory);

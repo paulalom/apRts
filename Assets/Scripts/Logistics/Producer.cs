@@ -79,8 +79,9 @@ public class Producer : MonoBehaviour {
         }
 
         if (storage.AddItem(typeToProduce, qtyToProduce) > 0)
-        {
-            return PopProductionQueue();
+        { 
+            PopProductionQueue();
+            return true;
         }
         else
         {
@@ -90,10 +91,17 @@ public class Producer : MonoBehaviour {
 
     bool ProduceToWorld(RTSGameObjectType typeToProduce, int qtyToProduce)
     {
-        return gameManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject);
+        if(gameManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject)){
+            PopProductionQueue();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
-    
-    bool PopProductionQueue()
+
+    void PopProductionQueue()
     {
         // We done it boys! remove one from the queue
         if (productionQueue[0].Value > 1)
@@ -105,7 +113,6 @@ public class Producer : MonoBehaviour {
             //This is O(n)... i dont think the list should be many items long though because of our stacking
             productionQueue.RemoveAt(0);
         }
-        return true;
     }
 
     void StartNextProduction()

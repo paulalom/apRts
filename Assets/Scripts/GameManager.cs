@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour {
-    
+
     //Instantiating prefabs with resources.load is slow so here we are
     //Maybe this should be in an assets class or something like that
     //We cant expose a dictionary to the inspector so we expose an array then populate the dictionary
@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour {
     public RTSGameObject newSelectedUnit = null; // very ugly state hack for selection from menu (this can be fixed once selection box is fixed)
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         //static class
@@ -55,11 +55,11 @@ public class GameManager : MonoBehaviour {
             throw new System.Exception("No duplicate prefab names in the game manager");
         }
 
-        //SetUpPlayer();
+        SetUpPlayer();
     }
-    
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update() {
         float now = Time.time;
 
         HandleInput();
@@ -126,30 +126,23 @@ public class GameManager : MonoBehaviour {
                 }
                 mouseDown = vectorSentinel;
             }
-            
+
             // Right click to move
             if (Input.GetKeyUp(KeyCode.Mouse1))
             {
                 orderManager.ClearNextOrderType();
-                foreach(RTSGameObject unit in selectedUnits)
+                foreach (RTSGameObject unit in selectedUnits)
                 {
                     orderManager.QueueOrder(unit, hit.point, null, null);
                 }
                 Debug.Log(orderManager.orders.ToString());
             }
-            
+
             if (Input.GetKeyUp(KeyCode.Q))
             {
                 RTSGameObjectType typeToMake = RTSGameObjectType.HarvestingStation;
                 int quantityToMake = 1;
-                foreach (RTSGameObject unit in selectedUnits)
-                {
-                    Producer producer = unit.GetComponent<Producer>();
-                    if (RTSGameObject.canProduce[unit.type] != null && RTSGameObject.canProduce[unit.type].Contains(typeToMake))
-                    {
-                        producer.QueueItem(typeToMake, quantityToMake);
-                    }
-                }
+                
             }
             if (Input.GetKeyUp(KeyCode.C))
             {
@@ -166,9 +159,9 @@ public class GameManager : MonoBehaviour {
             }
             if (Input.GetKeyUp(KeyCode.E))
             {
-                SpawnUnit(hit.point, RTSGameObjectType.Factory);
+                SpawnUnit(RTSGameObjectType.Factory, hit.point);
             }
-                
+
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z), hit.point.z);
 
         }
@@ -224,7 +217,7 @@ public class GameManager : MonoBehaviour {
     public void Select(RTSGameObject obj, bool select)
     {
         if (select)
-        { 
+        {
             selectedUnits.Add(obj);
         }
         else
@@ -239,37 +232,40 @@ public class GameManager : MonoBehaviour {
     //The "around" bit is todo
     public bool SpawnUnitsAround(RTSGameObjectType type, int quantity, GameObject producer)
     {
+        for (int i = 0; i < quantity; i++)
+        {
+            SpawnUnit(type, new Vector3(producer.transform.position.x, producer.transform.position.y, producer.transform.position.z));
+        }
+        return true;
+    }
+
+    bool SpawnUnit(RTSGameObjectType type, Vector3 Position)
+    {
         Debug.Log(type.ToString());
         GameObject go = Instantiate(prefabs[type.ToString()],
-            new Vector3(producer.transform.position.x, producer.transform.position.y, producer.transform.position.z),
+            new Vector3(),
             Quaternion.identity) as GameObject;
         go.name = type.ToString() + units.Count;
         units.Add(go.GetComponent<RTSGameObject>());
 
+        if (type == RTSGameObjectType.Factory)
+        {
+            foreach (RTSGameObjectType itemType in Enum.GetValues(typeof(RTSGameObjectType)))
+            {
+                if (itemType != RTSGameObjectType.Worker &&
+                    itemType != RTSGameObjectType.Car &&
+                    itemType != RTSGameObjectType.HarvestingStation &&
+                    itemType != RTSGameObjectType.Factory &&
+                    itemType != RTSGameObjectType.None)
+                {
+                    go.GetComponent<Storage>().AddItem(type, UnityEngine.Random.Range(0, 200));
+                }
+            }
+        }
+
         return true;
     }
 
-    void SpawnUnit(Vector3 position, RTSGameObjectType type)
-    {
-        if (type == RTSGameObjectType.Factory)
-        {
-            SpawnFactory(position);
-        }
-        else if (type == RTSGameObjectType.HarvestingStation)
-        {
-            SpawnHarvestingStation(position.x, position.z);
-        }
-        else if (type == RTSGameObjectType.Worker)
-        {
-            SpawnWorker(position.x, position.z);
-        }
-        else
-        {
-            Debug.Log("Unknown unit type requested at " + position);
-            return;
-        }
-    }
-    
     /*
     void SelectOne(RaycastHit clickLocation)
     {
@@ -285,77 +281,58 @@ public class GameManager : MonoBehaviour {
         //Temporary testing setup
         //This shouldnt be outside of -1,-1 to 1,1 (probably get a null reference)
         Vector2 startTerrainIndex = new Vector2(0, 0);
-        Vector2 startTerrainPositionOffset = new Vector2(0,0); //x,z not larger than chunkSize (probably arrayoutofbounds)
+        Vector2 startTerrainPositionOffset = new Vector2(0, 0); //x,z not larger than chunkSize (probably arrayoutofbounds)
         //Terrain startTerrain = terrainManager.terrainChunks[startTerrainIndex].GetComponent<Terrain>();
         // Height is managed by Awake and Move functions
         // todo multiply by terrain index
-        Vector2 startLocation = new Vector2(startTerrainPositionOffset.x, 
+        Vector2 startLocation = new Vector2(startTerrainPositionOffset.x,
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        SpawnFactory(startLocation);
+        SpawnUnit(RTSGameObjectType.Factory, startLocation);
 
-        //Add default items to factory (3 harvesting stations and enough to build a worker)
         Dictionary<RTSGameObjectType, int> startingItems = new Dictionary<RTSGameObjectType, int>();
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.Worker])
+
+        // 3 harvesting stations and 3 workers worth of resources
+        for (int i = 0; i < 3; i++)
         {
-            startingItems.Add(kvp.Key, kvp.Value);
-        }
-        startingItems.Add(RTSGameObjectType.HarvestingStation, 3);
-
-        units[0].GetComponent<Storage>().AddItems(startingItems);
-    }
-
-    RTSGameObject SpawnHarvestingStation(float posX, float posZ)
-    {
-        return null;
-    }
-    void SpawnFactory(Vector3 position)
-    {
-        //prefabs["Factory"]
-        GameObject go = Instantiate(prefabs["Factory"],
-            new Vector3(position.x, position.y, position.z),
-            Quaternion.identity) as GameObject;
-        go.name = "Factory" + units.Count;
-
-        foreach (RTSGameObjectType type in Enum.GetValues(typeof(RTSGameObjectType)))
-        {
-            if (type != RTSGameObjectType.Worker &&
-                type != RTSGameObjectType.Car &&
-                type != RTSGameObjectType.HarvestingStation &&
-                type != RTSGameObjectType.Factory &&
-                type != RTSGameObjectType.None)
+            foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.Worker])
             {
-                go.GetComponent<Storage>().AddItem(type, UnityEngine.Random.Range(0, 200));
+                startingItems.Add(kvp.Key, kvp.Value);
+            }
+
+            foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.HarvestingStation])
+            {
+                startingItems.Add(kvp.Key, kvp.Value);
             }
         }
-            
-        units.Add(go.GetComponent<RTSGameObject>());
-    }
-    void SpawnPlane(Vector3 position)
-    {
-        Quaternion rot = mainCamera.transform.rotation;
-        //prefabs["Factory"]
-        GameObject go = Instantiate(prefabs["Plane"],
-            new Vector3(position.x, position.y, position.z),
-            rot) as GameObject;
-        //go.transform.forward = -mainCamera.transform.forward;
-        go.name = "Plane" + units.Count;
+
+        units[0].GetComponent<Storage>().AddItems(startingItems);
+
+        mainCamera.transform.position = new Vector3(mainCamera.transform.position.x,
+            terrainManager.GetHeightFromGlobalCoords(mainCamera.transform.position.x, mainCamera.transform.position.z) + 50,
+            mainCamera.transform.position.z);
+        mainCamera.transform.LookAt(units[0].transform);
     }
 
-    void SpawnPlane(Vector3 position, Vector3 halfExtents)
+    public void QueueUnit(RTSGameObjectType type)
     {
-        Quaternion rot = mainCamera.transform.rotation;
-        //prefabs["Factory"]
-        GameObject go = Instantiate(prefabs["Plane"],
-            new Vector3(position.x, position.y, position.z),
-            rot) as GameObject;
-        go.transform.localScale = halfExtents * 2;
-        //go.transform.forward = -mainCamera.transform.forward;
-        go.name = "Plane" + units.Count;
+        QueueUnit(type, 1);
     }
-    RTSGameObject SpawnWorker(float posX, float posZ)
+
+
+    public void QueueUnit(RTSGameObjectType type, int quantity)
     {
-        return null;
+        foreach (RTSGameObject unit in selectedUnits)
+        {
+            Producer producer = unit.GetComponent<Producer>();
+            if (RTSGameObject.canProduce[unit.type] != null
+                && RTSGameObject.canProduce[unit.type].Contains(type)
+                && producer != null)
+            {
+                producer.QueueItem(type, quantity);
+            }
+        }
     }
+
 }

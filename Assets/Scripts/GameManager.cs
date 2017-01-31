@@ -17,14 +17,20 @@ public class GameManager : MonoBehaviour {
     public TerrainManager terrainManager;
     RTSGameObjectManager rtsGameObjectManager;
     AbilityManager abilityManager;
-    OrderManager orderManager;
+    public OrderManager orderManager;
     List<RTSGameObject> units;
     public List<RTSGameObject> selectedUnits;
     static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
 
     public UnityEvent onSelectionChange;
-    public RTSGameObject newSelectedUnit = null; // very ugly state hack for selection from menu (this can be fixed once selection box is fixed)
+
+    // these are hackish and needs to change
+    public MyKVP<RTSGameObject, MyKVP<RTSGameObjectType, int>> itemTransferSource = null;
+    public Texture2D selectionHighlight;
+    public static Rect selectionBox = new Rect(0, 0, 0, 0);
+    public Vector3 mouseDown = vectorSentinel;
+    public bool menuClicked = false;
 
     // Use this for initialization
     void Start() {
@@ -87,7 +93,27 @@ public class GameManager : MonoBehaviour {
     {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit))
+        bool rayCast = Physics.Raycast(ray, out hit);
+
+        //Left click. Assume mouseDown must preceed mouseUp
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            mouseDown = Input.mousePosition;
+        }
+        if (Input.GetKey(KeyCode.G))
+        {
+            orderManager.SetNextOrderType(OrderType.Guard);
+        }
+        if (Input.GetKey(KeyCode.P))
+        {
+            orderManager.SetNextOrderType(OrderType.Patrol);
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            orderManager.SetNextOrderType(OrderType.Stop);
+        }
+
+        if (rayCast)
         {
             if (Input.GetKey(KeyCode.T))
             {
@@ -100,42 +126,68 @@ public class GameManager : MonoBehaviour {
 
                 }
             }
-            //Left click. Assume mouseDown must preceed mouseUp
-            if (Input.GetKeyDown(KeyCode.Mouse0))
-            {
-                mouseDown = Input.mousePosition;
-            }
             if (Input.GetKeyUp(KeyCode.Mouse0))
             {
-                if (mouseDown == hit.point)
+                if (mouseDown == Input.mousePosition)
                 {
-                    if (orderManager.nextOrderType != OrderType.Move)
+                    // objectClicked May be null
+                    RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
+                    if (orderManager.GetNextOrderType() != OrderType.Move)
                     {
-                        foreach (RTSGameObject unit in selectedUnits)
+                        if (Input.GetKey(KeyCode.LeftShift))
                         {
-                            orderManager.QueueOrder(unit, hit.point, hit.collider.GetComponent<RTSGameObject>(), null);
+                            foreach (RTSGameObject unit in selectedUnits)
+                            {
+                                orderManager.QueueOrder(unit, hit.point, objectClicked, null);
+                            }
+                        }
+                        else
+                        {
+                            foreach (RTSGameObject unit in selectedUnits)
+                            {
+                                orderManager.SetOrder(unit, hit.point, objectClicked, null);
+                            }
+                        }
+                        orderManager.ClearNextOrderType();
+                    }
+                    else
+                    {
+                        // Select one
+                        if (objectClicked != null)
+                        {
+                            foreach (RTSGameObject unit in selectedUnits)
+                            {
+                                unit.selected = false;
+                                unit.flagRenderer.material.color = Color.white;
+                            }
+                            selectedUnits.Clear();
+
+                            selectedUnits.Add(objectClicked);
+                            objectClicked.selected = true;
+                            objectClicked.flagRenderer.material.color = Color.red;
                         }
                     }
                 }
-                else
-                {
-                    if (newSelectedUnit == null)
-                    {
-                        selectedUnits.Clear();
-                    }
-                }
-                mouseDown = vectorSentinel;
             }
 
             // Right click to move
             if (Input.GetKeyUp(KeyCode.Mouse1))
             {
                 orderManager.ClearNextOrderType();
-                foreach (RTSGameObject unit in selectedUnits)
+                if (Input.GetKey(KeyCode.LeftShift))
                 {
-                    orderManager.QueueOrder(unit, hit.point, null, null);
+                    foreach (RTSGameObject unit in selectedUnits)
+                    {
+                        orderManager.QueueOrder(unit, hit.point, null, null);
+                    }
                 }
-                Debug.Log(orderManager.orders.ToString());
+                else
+                {
+                    foreach (RTSGameObject unit in selectedUnits)
+                    {
+                        orderManager.SetOrder(unit, hit.point, null, null);
+                    }
+                }
             }
 
             if (Input.GetKeyUp(KeyCode.Q))
@@ -165,21 +217,24 @@ public class GameManager : MonoBehaviour {
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z), hit.point.z);
 
         }
-        doSelection();
+        resizeSelectionBox();
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            // Only do box selection / selection clearing if we drag a box or we click empty space
+            if (!menuClicked && (!rayCast || hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            {
+                CheckSelected(units);
+            }
+            mouseDown = vectorSentinel;
+        }
+        menuClicked = false;
     }
 
-    // Selection needs to be reworked/refactored, i copied a tutorial
-    // It should be moved out of RTSGameObject into RTSGameObjectManager
-    public Texture2D selectionHighlight;
-    public static Rect selectionBox = new Rect(0, 0, 0, 0);
-    Vector3 mouseDown = vectorSentinel;
+    // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
 
-    void doSelection()
+    void resizeSelectionBox()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            mouseDown = Input.mousePosition;
-        }
         if (Input.GetMouseButtonUp(0))
         {
             if (selectionBox.width < 0)
@@ -193,7 +248,6 @@ public class GameManager : MonoBehaviour {
                 selectionBox.height = -selectionBox.height;
             }
 
-            mouseDown = vectorSentinel;
         }
 
         if (Input.GetMouseButton(0))
@@ -211,6 +265,32 @@ public class GameManager : MonoBehaviour {
         {
             GUI.color = new Color(1, 1, 1, 0.5f);
             GUI.DrawTexture(selectionBox, selectionHighlight);
+        }
+    }
+
+    void CheckSelected(List<RTSGameObject> units)
+    {
+        foreach (RTSGameObject unit in units)
+        { 
+            if (unit.flagRenderer.isVisible)
+            {
+                Vector3 camPos = mainCamera.GetComponent<Camera>().WorldToScreenPoint(unit.transform.position);
+                camPos.y = RTSCamera.InvertMouseY(camPos.y);
+                unit.selected = selectionBox.Contains(camPos);
+            }
+            if (unit.selected)
+            {
+                unit.flagRenderer.material.color = Color.red;
+                if (!selectedUnits.Contains(unit))
+                {
+                    Select(unit, true);
+                }
+            }
+            else
+            {
+                unit.flagRenderer.material.color = Color.white;
+                Select(unit, false);
+            }
         }
     }
 
@@ -239,30 +319,15 @@ public class GameManager : MonoBehaviour {
         return true;
     }
 
-    bool SpawnUnit(RTSGameObjectType type, Vector3 Position)
+    bool SpawnUnit(RTSGameObjectType type, Vector3 position)
     {
         Debug.Log(type.ToString());
         GameObject go = Instantiate(prefabs[type.ToString()],
-            new Vector3(),
+            position,
             Quaternion.identity) as GameObject;
         go.name = type.ToString() + units.Count;
         units.Add(go.GetComponent<RTSGameObject>());
-
-        if (type == RTSGameObjectType.Factory)
-        {
-            foreach (RTSGameObjectType itemType in Enum.GetValues(typeof(RTSGameObjectType)))
-            {
-                if (itemType != RTSGameObjectType.Worker &&
-                    itemType != RTSGameObjectType.Car &&
-                    itemType != RTSGameObjectType.HarvestingStation &&
-                    itemType != RTSGameObjectType.Factory &&
-                    itemType != RTSGameObjectType.None)
-                {
-                    go.GetComponent<Storage>().AddItem(type, UnityEngine.Random.Range(0, 200));
-                }
-            }
-        }
-
+        
         return true;
     }
 
@@ -293,17 +358,20 @@ public class GameManager : MonoBehaviour {
 
         Dictionary<RTSGameObjectType, int> startingItems = new Dictionary<RTSGameObjectType, int>();
 
-        // 3 harvesting stations and 3 workers worth of resources
-        for (int i = 0; i < 3; i++)
+       
+        foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.Worker])
         {
-            foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.Worker])
-            {
-                startingItems.Add(kvp.Key, kvp.Value);
-            }
+            startingItems.Add(kvp.Key, 3 * kvp.Value);
+        }
 
-            foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.HarvestingStation])
+        foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.HarvestingStation])
+        {
+            if (startingItems.ContainsKey(kvp.Key))
             {
-                startingItems.Add(kvp.Key, kvp.Value);
+                startingItems[kvp.Key] += 3 * kvp.Value;
+            }
+            else {
+                startingItems.Add(kvp.Key, 3 * kvp.Value);
             }
         }
 

@@ -20,6 +20,7 @@ public class Order {
     public OrderType type;
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
+    public MyKVP<RTSGameObjectType, int> item;
     public RTSGameObject target;
     public Ability ability;
 }

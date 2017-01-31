@@ -83,12 +83,13 @@
     <Compile Include="Assets\Scripts\Logistics\Station.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
+    <Compile Include="Assets\Scripts\MyKVP.cs" />
     <Compile Include="Assets\Scripts\Order.cs" />
     <Compile Include="Assets\Scripts\OrderManager.cs" />
     <Compile Include="Assets\Scripts\RTSGameObject.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjectManager.cs" />
     <Compile Include="Assets\Scripts\UI\Button.cs" />
-    <Compile Include="Assets\Scripts\UI\Menu.cs" />
+    <Compile Include="Assets\Scripts\UI\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\Selectable.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />

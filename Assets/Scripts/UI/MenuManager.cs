@@ -31,6 +31,7 @@ public class MenuManager : MonoBehaviour {
 
     void OnGUI()
     {
+        GUI.depth = 100; // Smaller is closer. Buttons need < menus
         DrawConstructionMenu();
         drawInventoryMenus();
     }
@@ -78,54 +79,47 @@ public class MenuManager : MonoBehaviour {
     {
         int i = 0;
         int j;
-        int itemCount = 0;
-
-        GUIStyle icon;
-        Rect button;
-        // very ugly state hack for selection from menu (this can be fixed once selection box is fixed)
-        gameManager.newSelectedUnit = null;
-
+        
         foreach (RTSGameObject unit in gameManager.selectedUnits)
         {
+            GUIStyle container = new GUIStyle();
+            container.normal.background = menuGraphic;
             Rect menu = new Rect(50, 250 + i * 55, 400, 50);
-            drawMenu(menu);
-            j = 1;
-            itemCount = 0;
-            Storage unitStorage = unit.GetComponent<Storage>();
-            foreach (KeyValuePair<RTSGameObjectType, int> item in unitStorage.GetItems())
+            if (GUI.Button(menu, "", container))
             {
-                icon = new GUIStyle();
-                icon.normal.background = RTSGameObject.menuIcon[item.Key];
-                icon.normal.textColor = Color.red;
-                button = new Rect(menu.x + 10 + 45 * j, menu.y + 5, 40, 40);
-                GUI.Button(button, item.Value.ToString(), icon);
-                j++;
-                itemCount += item.Value;
-            }
-            icon = new GUIStyle();
-            icon.normal.background = RTSGameObject.menuIcon[RTSGameObjectType.None];
-            icon.normal.textColor = Color.red;
-            button = new Rect(menu.x + 10, menu.y + 5, 40, 40);
-            if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))
-            {
-                gameManager.newSelectedUnit = unit;
+                Debug.Log("Menu button!");
+                if (gameManager.itemTransferSource != null)
+                {
+                    RTSGameObject sourceUnit = gameManager.itemTransferSource.Key;
+                    // Transportation orders always go to the transporter
+                    // Source is a transporter
+                    if (sourceUnit.GetComponent<Transporter>() != null)
+                    {
+                        gameManager.orderManager.SetOrder(sourceUnit, new Order()
+                        {
+                            type = OrderType.Give,
+                            target = unit,
+                            item = gameManager.itemTransferSource.Value
+                        });
+                    }
+                    // Destination is a transporter
+                    else if (unit.GetComponent<Transporter>() != null)
+                    {
+                        gameManager.orderManager.SetOrder(unit, new Order()
+                        {
+                            type = OrderType.Take,
+                            target = sourceUnit,
+                            item = gameManager.itemTransferSource.Value
+                        });
+                    }
+                    else
+                    {
+                        // Nothing, we have a source but the destination is not valid, or the source was unintended
+                    }
+                }
+                gameManager.menuClicked = true;
             }
             i++;
-        }
-
-        //Temporary selection code, a unit's inventory summary button was clicked so we select them
-        if (gameManager.newSelectedUnit != null)
-        {
-            foreach (RTSGameObject unit in gameManager.selectedUnits)
-            {
-                if (unit != gameManager.newSelectedUnit)
-                {
-                    unit.selected = false;
-                    unit.flagRenderer.material.color = Color.white;
-                }
-            }
-            gameManager.selectedUnits.Clear();
-            gameManager.selectedUnits.Add(gameManager.newSelectedUnit);
         }
     }
 

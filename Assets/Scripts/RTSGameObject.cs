@@ -136,48 +136,16 @@ public class RTSGameObject : MonoBehaviour
     //Non-static stuff
     public RTSGameObjectType type;
     public bool selected = false;
-    public Camera mainCamera;
     public Renderer flagRenderer; // the part of the object which contains the flag
-    public GameManager gm;
+    public GameManager gameManager;
 
     void Awake()
     {
-        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-        gm = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         flagRenderer = GetComponentInChildren<Renderer>(); // just get any part of the object
     }
 
     void Update()
     {
-        CheckSelected();
-    }
-
-    void CheckSelected()
-    {
-        if (Input.GetMouseButtonUp(0))
-        {
-            if (gm.newSelectedUnit == null)
-            {
-                if (flagRenderer.isVisible)
-                {
-                    Vector3 camPos = mainCamera.WorldToScreenPoint(transform.position);
-                    camPos.y = RTSCamera.InvertMouseY(camPos.y);
-                    selected = GameManager.selectionBox.Contains(camPos);
-                }
-                if (selected)
-                {
-                    flagRenderer.material.color = Color.red;
-                    if (!gm.selectedUnits.Contains(this))
-                    {
-                        gm.Select(this, true);
-                    }
-                }
-                else
-                {
-                    flagRenderer.material.color = Color.white;
-                    gm.Select(this, false);
-                }
-            }
-        }
     }
 }

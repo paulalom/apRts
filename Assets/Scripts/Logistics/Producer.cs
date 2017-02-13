@@ -13,7 +13,7 @@ public class Producer : MonoBehaviour {
     // We use KVP so that duplications which are next to eacother can be grouped. 
     // Our production queue can be one item with a thousand units queued.
     public List<MyKVP<RTSGameObjectType, int>> productionQueue;
-    GameManager gameManager;
+    RTSGameObjectManager rtsGameObjectManager;
 
     float timeLeftToProduce = 0;
     private bool _isActive = false;
@@ -34,7 +34,7 @@ public class Producer : MonoBehaviour {
     {
         storage = GetComponent<Storage>();
         productionQueue = new List<MyKVP<RTSGameObjectType, int>>();
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
     }
 
     // This is called once per frame
@@ -91,7 +91,7 @@ public class Producer : MonoBehaviour {
 
     bool ProduceToWorld(RTSGameObjectType typeToProduce, int qtyToProduce)
     {
-        if(gameManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject)){
+        if(rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject)){
             PopProductionQueue();
             return true;
         }

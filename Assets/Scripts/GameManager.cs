@@ -1,17 +1,11 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour {
 
-    //Instantiating prefabs with resources.load is slow so here we are
-    //Maybe this should be in an assets class or something like that
-    //We cant expose a dictionary to the inspector so we expose an array then populate the dictionary
-    //if we need to do this too often ill just make a component for this
-    public string[] InspectorPrefabNames;
-    public GameObject[] InspectorPrefabTypes;
-    Dictionary<string, GameObject> prefabs;
     RTSCamera mainCamera;
     [HideInInspector]
     public TerrainManager terrainManager;
@@ -22,6 +16,7 @@ public class GameManager : MonoBehaviour {
     public List<RTSGameObject> selectedUnits;
     static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
+    Order nextOrder;
 
     public UnityEvent onSelectionChange;
 
@@ -32,35 +27,20 @@ public class GameManager : MonoBehaviour {
     public Vector3 mouseDown = vectorSentinel;
     public bool menuClicked = false;
 
-    // Use this for initialization
-    void Start() {
+    void Awake()
+    {
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
-        //static class
-        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         abilityManager = GameObject.FindGameObjectWithTag("AbilityManager").GetComponent<AbilityManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         units = new List<RTSGameObject>();
-        prefabs = new Dictionary<string, GameObject>();
         selectedUnits = new List<RTSGameObject>();
-        if (InspectorPrefabNames.Length != InspectorPrefabTypes.Length)
-        {
-            throw new System.Exception("fix the prefabs arrays in the game manager");
-        }
-        if (InspectorPrefabNames.Length <= 0)
-        {
-            throw new System.Exception("Populate the prefabs arrays in the game manager");
-        }
-        for (int i = 0; i < InspectorPrefabTypes.Length; i++)
-        {
-            Debug.Log(InspectorPrefabNames[i] + ", " + InspectorPrefabTypes[i].ToString());
-            prefabs.Add(InspectorPrefabNames[i], InspectorPrefabTypes[i]);
-        }
-        if (InspectorPrefabNames.Length != prefabs.Count)
-        {
-            throw new System.Exception("No duplicate prefab names in the game manager");
-        }
+    }
 
+    // Use this for initialization
+    void Start()
+    {
         SetUpPlayer();
     }
 
@@ -102,15 +82,24 @@ public class GameManager : MonoBehaviour {
         }
         if (Input.GetKey(KeyCode.G))
         {
-            orderManager.SetNextOrderType(OrderType.Guard);
+            nextOrder = new Order() { type = OrderType.Guard, orderRange = 1f };
         }
         if (Input.GetKey(KeyCode.P))
         {
-            orderManager.SetNextOrderType(OrderType.Patrol);
+            nextOrder = new Order() { type = OrderType.Patrol, orderRange = 1f };
         }
         if (Input.GetKey(KeyCode.S))
         {
-            orderManager.SetNextOrderType(OrderType.Stop);
+            nextOrder = new Order() { type = OrderType.Stop, orderRange = 1f };
+        }
+        if (Input.GetKey(KeyCode.H))
+        {
+            nextOrder = new Order() { type = OrderType.Harvest, orderRange = 1f };
+        }
+        if (Input.GetKey(KeyCode.F))
+        {
+            nextOrder = new Order() { type = OrderType.Follow, orderRange = 6f };
+            
         }
 
         if (rayCast)
@@ -132,23 +121,25 @@ public class GameManager : MonoBehaviour {
                 {
                     // objectClicked May be null
                     RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
-                    if (orderManager.GetNextOrderType() != OrderType.Move)
+                    if (nextOrder != null)
                     {
+                        nextOrder.target = objectClicked;
+                        nextOrder.targetPosition = hit.point;
                         if (Input.GetKey(KeyCode.LeftShift))
                         {
                             foreach (RTSGameObject unit in selectedUnits)
                             {
-                                orderManager.QueueOrder(unit, hit.point, objectClicked, null);
+                                orderManager.QueueOrder(unit, nextOrder);
                             }
                         }
                         else
                         {
                             foreach (RTSGameObject unit in selectedUnits)
                             {
-                                orderManager.SetOrder(unit, hit.point, objectClicked, null);
+                                orderManager.SetOrder(unit, nextOrder);
                             }
                         }
-                        orderManager.ClearNextOrderType();
+                        nextOrder = null;
                     }
                     else
                     {
@@ -173,27 +164,26 @@ public class GameManager : MonoBehaviour {
             // Right click to move
             if (Input.GetKeyUp(KeyCode.Mouse1))
             {
-                orderManager.ClearNextOrderType();
+                nextOrder = new Order() { type = OrderType.Move, targetPosition = hit.point };
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
                     foreach (RTSGameObject unit in selectedUnits)
                     {
-                        orderManager.QueueOrder(unit, hit.point, null, null);
+                        orderManager.QueueOrder(unit, nextOrder);
                     }
                 }
                 else
                 {
                     foreach (RTSGameObject unit in selectedUnits)
                     {
-                        orderManager.SetOrder(unit, hit.point, null, null);
+                        orderManager.SetOrder(unit, nextOrder);
                     }
                 }
+                nextOrder = null;
             }
 
             if (Input.GetKeyUp(KeyCode.Q))
             {
-                RTSGameObjectType typeToMake = RTSGameObjectType.HarvestingStation;
-                int quantityToMake = 1;
                 
             }
             if (Input.GetKeyUp(KeyCode.C))
@@ -211,7 +201,7 @@ public class GameManager : MonoBehaviour {
             }
             if (Input.GetKeyUp(KeyCode.E))
             {
-                SpawnUnit(RTSGameObjectType.Factory, hit.point);
+                rtsGameObjectManager.SpawnUnit(RTSGameObjectType.Factory, hit.point);
             }
 
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z), hit.point.z);
@@ -309,28 +299,6 @@ public class GameManager : MonoBehaviour {
 
     /* selection to be refactored ends here */
 
-    //The "around" bit is todo
-    public bool SpawnUnitsAround(RTSGameObjectType type, int quantity, GameObject producer)
-    {
-        for (int i = 0; i < quantity; i++)
-        {
-            SpawnUnit(type, new Vector3(producer.transform.position.x, producer.transform.position.y, producer.transform.position.z));
-        }
-        return true;
-    }
-
-    bool SpawnUnit(RTSGameObjectType type, Vector3 position)
-    {
-        Debug.Log(type.ToString());
-        GameObject go = Instantiate(prefabs[type.ToString()],
-            position,
-            Quaternion.identity) as GameObject;
-        go.name = type.ToString() + units.Count;
-        units.Add(go.GetComponent<RTSGameObject>());
-        
-        return true;
-    }
-
     /*
     void SelectOne(RaycastHit clickLocation)
     {
@@ -354,7 +322,7 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        SpawnUnit(RTSGameObjectType.Factory, startLocation);
+        rtsGameObjectManager.SpawnUnit(RTSGameObjectType.Factory, startLocation);
 
         Dictionary<RTSGameObjectType, int> startingItems = new Dictionary<RTSGameObjectType, int>();
 
@@ -402,5 +370,20 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
+    
+    public int GetNumUnits(RTSGameObjectType type)
+    {
+        return units.Count(i => i.type == type);
+    }
 
+    public int GetNumUnits()
+    {
+        return units.Count;
+    }
+
+
+    public void AddUnit(RTSGameObject unit)
+    {
+        units.Add(unit);
+    }
 }

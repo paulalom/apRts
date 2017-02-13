@@ -5,17 +5,10 @@ using System.Collections.Generic;
 public class Transporter : MonoBehaviour {
 
     private Storage storage;
-
-	// Use this for initialization
-	void Start () {
-        	
+    
+	void Awake () {
+        storage = GetComponent<Storage>();
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
 
     public bool Take(Dictionary<RTSGameObjectType, int> items, Storage target)
     {

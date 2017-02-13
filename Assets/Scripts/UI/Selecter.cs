@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Selectable : MonoBehaviour {
-    
-
+public class Selecter : MonoBehaviour {
 }

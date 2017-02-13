@@ -5,16 +5,15 @@ using UnityEngine;
 public class OrderManager : MonoBehaviour {
 
     public Dictionary<RTSGameObject, List<Order>> orders;
-    public float moveSpeed = 0.3f;
-    OrderType nextOrderType;
+    public float moveSpeed = 0.3f; // this wont be here later
     List<RTSGameObject> completedOrders;
-    float orderCompletionDist = 0.5f;
+    RTSGameObjectManager rtsGameObjectManager;
 
-    void Start()
+    void Awake()
     {
         orders = new Dictionary<RTSGameObject, List<Order>>();
         completedOrders = new List<RTSGameObject>(); //max one order completion per frame
-        nextOrderType = OrderType.Move;
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
     }
 
     public void CarryOutOrders(List<RTSGameObject> units)
@@ -23,21 +22,24 @@ public class OrderManager : MonoBehaviour {
         MoveUnits(units);
         TakeItems(units);
         GiveItems(units);
+        etc..
         */
         foreach (RTSGameObject unit in units)
         {
-
             if (orders.ContainsKey(unit) && orders[unit].Count > 0)
             {
                 Order order = orders[unit][0];
 
                 if (order.type == OrderType.Follow)
                 {
-                    MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                    if (!lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    {
+                        MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                    }
                 }
                 else if (order.type == OrderType.Give)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, 0.3f))
+                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                     {
                         GiveItem(unit, order.target, order.item);
                         completedOrders.Add(unit);
@@ -60,6 +62,14 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Harvest)
                 {
+                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    {
+                        Harvest(unit, order.target);
+                    }
+                    else
+                    {
+                        MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                    }
                 }
                 else if (order.type == OrderType.HoldPosition)
                 {
@@ -67,7 +77,7 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Move)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.targetPosition, 0.3f))
+                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
                         completedOrders.Add(unit);
                     }
@@ -78,7 +88,7 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Patrol)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.targetPosition, 0.3f))
+                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
                         Vector3 tempVariablesMakeThingsEasierToUnderstand = order.targetPosition;
                         order.targetPosition = order.orderIssuedPosition;
@@ -97,7 +107,7 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Take)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, 0.3f))
+                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                     {
                         TakeItem(unit, order.target, order.item);
                         completedOrders.Add(unit);
@@ -125,6 +135,36 @@ public class OrderManager : MonoBehaviour {
             }
         }
         completedOrders.Clear();
+    }
+
+    public bool Harvest(RTSGameObject taker, RTSGameObject target)
+    {
+        Harvester harvester = taker.GetComponent<Harvester>();
+        if (target == null || harvester == null)
+        {
+            return false; // some weird joojoo here
+        }
+
+        int levelQuantityMultiplier = 1; // todo
+        float harvesterLevel = harvester.harvesterLevel;
+        
+        Dictionary<RTSGameObjectType, int> resourcesToCollect = new Dictionary<RTSGameObjectType, int>();
+        if (target.type == RTSGameObjectType.CoalDeposit)
+        {
+            resourcesToCollect.Add(RTSGameObjectType.Coal, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Coal] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(RTSGameObjectType.Stone, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Stone] * harvesterLevel * levelQuantityMultiplier));
+        }
+        else if (target.type == RTSGameObjectType.Forest)
+        {
+            resourcesToCollect.Add(RTSGameObjectType.Wood, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Wood] * harvesterLevel * levelQuantityMultiplier));
+        }
+        else if (target.type == RTSGameObjectType.IronDeposit)
+        {
+            resourcesToCollect.Add(RTSGameObjectType.Iron, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Iron] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(RTSGameObjectType.Stone, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Stone] * harvesterLevel * levelQuantityMultiplier));
+        }
+        return rtsGameObjectManager.TakeFromStorage(taker, target, resourcesToCollect);
+        
     }
 
     void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<RTSGameObjectType, int> item)
@@ -159,44 +199,21 @@ public class OrderManager : MonoBehaviour {
     {
         return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
     }
-
+/*
     bool lazyWithinDist(Vector2 o1, Vector2 o2, float dist)
     {
         return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.y - o2.y) < dist;
-    }
-
-    void MoveUnits(List<RTSGameObject> units)
-    {
-        
-    }
-
-    public void SetNextOrderType(OrderType type)
-    {
-        nextOrderType = type;
-    }
-
-    public OrderType GetNextOrderType()
-    {
-        return nextOrderType;
-    }
-
-    public void ClearNextOrderType()
-    {
-        nextOrderType = OrderType.Move;
-    }
+    }*/
 
     bool ValidateOrder(RTSGameObject unit, Order order)
     {
         return true;
-    }
+        /* PENDING Type Heirarchy rewrite
+        Mover mover =  unit.GetComponent<Mover>();
+        Ability[] abilities = unit.GetComponents<Ability>();
 
-    public bool SetOrder(RTSGameObject unit, Vector3 targetPosition, RTSGameObject target, Ability ability, bool validateOrder = true)
-    {
-        if (orders.ContainsKey(unit))
-        {
-            orders[unit].Clear();
-        }
-        return QueueOrder(unit, targetPosition, target, ability, validateOrder);
+        if (order.type)
+        */
     }
 
     public bool SetOrder(RTSGameObject unit, Order order, bool validateOrder = true)
@@ -205,19 +222,6 @@ public class OrderManager : MonoBehaviour {
         {
             orders[unit].Clear();
         }
-        return QueueOrder(unit, order, validateOrder);
-    }
-
-    // Use it right. Orders which require a targetPosition require a targetPosition.
-    public bool QueueOrder(RTSGameObject unit, Vector3 targetPosition, RTSGameObject target, Ability ability, bool validateOrder = true)
-    {
-        Order order = new Order();
-        order.type = nextOrderType;
-        order.orderIssuedPosition = unit.transform.position;
-        order.ability = ability;
-        order.target = target;
-        order.targetPosition = targetPosition;
-        
         return QueueOrder(unit, order, validateOrder);
     }
 
@@ -231,7 +235,7 @@ public class OrderManager : MonoBehaviour {
         {
             if (ValidateOrder(unit, order))
             {
-                orders[unit].Add(order);
+                orders[unit].Add(new Order(order)); // clone because reference stuff is referential?
                 return true;
             }
             else
@@ -241,7 +245,7 @@ public class OrderManager : MonoBehaviour {
         }
         else
         {
-            orders[unit].Add(order);
+            orders[unit].Add(new Order(order));
             return true;
         }
     }

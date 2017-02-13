@@ -74,11 +74,12 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Ability.cs" />
     <Compile Include="Assets\Scripts\AbilityManager.cs" />
+    <Compile Include="Assets\Scripts\Attack.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Factory.cs" />
-    <Compile Include="Assets\Scripts\Logistics\FactoryData.cs" />
     <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Mover.cs" />
     <Compile Include="Assets\Scripts\Logistics\Producer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Station.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
@@ -91,11 +92,10 @@
     <Compile Include="Assets\Scripts\UI\Button.cs" />
     <Compile Include="Assets\Scripts\UI\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
-    <Compile Include="Assets\Scripts\UI\Selectable.cs" />
+    <Compile Include="Assets\Scripts\UI\Selecter.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
     <Compile Include="Assets\Scripts\World\RTSCamera.cs" />
-    <Compile Include="Assets\Scripts\World\ResourceDeposit.cs" />
     <Compile Include="Assets\Scripts\World\TerrainManager.cs" />
   </ItemGroup>
   <ItemGroup>

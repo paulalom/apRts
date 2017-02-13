@@ -41,7 +41,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     
     //Terrains are never deleted
     public Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
-    Dictionary<Vector2, List<ResourceDeposit>> terrainResources = new Dictionary<Vector2, List<ResourceDeposit>>();
+    Dictionary<Vector2, List<RTSGameObject>> terrainResources = new Dictionary<Vector2, List<RTSGameObject>>();
     
     //We need to maintain the ability to scale this value
     public const int chunkSizeX = 512, chunkSizeZ = 512;
@@ -58,10 +58,17 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     public TreePrototype[] terrainTrees;
     public Transform waterPlanePrefab;
 
-    // Use this for initialization
-    void Start () {
+    GameManager gameManager;
+    RTSGameObjectManager rtsGameObjectManager;
+
+    // This is called before any other script's "Start" function
+    // Do local inits here
+    void Awake()
+    {
         projector = GameObject.Find("BrushSizeProjector").transform;
         Camera.main.GetComponent<RTSCamera>().Subscribe(this);
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
 
         terrainTextures = new SplatPrototype[biomeTextures.Length * 5];
         terrainTrees = new TreePrototype[trees.Length];
@@ -80,6 +87,10 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         {
             terrainTrees[i] = BlueprintToTreePrototype(trees[i]);
         }
+    }
+    
+    // Functionality which may be dependant on other scripts should be in Start
+    void Start () {
 
         //This is a little bit of duplicated code from OnCameraMove for setup (which we dont run if we haven't moved).
         Vector2 newCameraPosition = Camera.main.transform.position;
@@ -362,11 +373,12 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         //consider a less naive approach for which resource we want to generate (do we already have a million of these?)
         //consider using fewer magic numbers
 
-        terrainResources.Add(terrainGlobalCoords, new List<ResourceDeposit>());
-
-        for (int x = 0; x < Resolution; x += Random.Range(0, 60))
+        terrainResources.Add(terrainGlobalCoords, new List<RTSGameObject>());
+        
+        // if x or y is 0 we may be placing objects at the very edge of a terrain, which can cause out of bounds exceptions
+        for (int x = Random.Range(1, 60); x < Resolution; x += Random.Range(0, 60))
         {
-            for (int y = 0; y < Resolution; y += Random.Range(0, 60))
+            for (int y = Random.Range(1, 60); y < Resolution; y += Random.Range(0, 60))
             {
                 float height = terrain.terrainData.GetHeight(x, y);
                 float steepness = terrain.terrainData.GetSteepness(x / (float)Resolution, y / (float)Resolution);
@@ -382,31 +394,27 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     if (resourceRandom > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
                     {
                         items.Add(RTSGameObjectType.Wood, 2000);
-                        go = ResourceDeposit.NewDeposit("Forest",
-                                                        Color.green,
-                                                        DepositType.Forest, 
+                        go = rtsGameObjectManager.NewDeposit(RTSGameObjectType.Forest,
                                                         items, 
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
                                                                     height, 
                                                                     terrain.transform.position.z + y * (chunkSizeZ / Resolution))
                                                        );
 
-                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<ResourceDeposit>());
+                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<RTSGameObject>());
                     }
                     else if(resourceRandom > 0.3)
                     {
                         items.Add(RTSGameObjectType.Iron, 800);
                         items.Add(RTSGameObjectType.Coal, 400);
-                        go = ResourceDeposit.NewDeposit("Mineral Deposit", 
-                                                        Color.red, 
-                                                        DepositType.MineralVein, 
+                        go = rtsGameObjectManager.NewDeposit(RTSGameObjectType.IronDeposit,
                                                         items,
-                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
-                                                                    height, 
+                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
+                                                                    height,
                                                                     terrain.transform.position.z + y * (chunkSizeZ / Resolution))
                                                         );
 
-                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<ResourceDeposit>());
+                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<RTSGameObject>());
                     }
                     else
                     {

@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using System;
 
+// Maybe this should be a set of classes like 
+// RTSObjectUnitType : RTSObjectType 
+// and RTSObjectResourceType : RTSObjectType?
+// enums are already annoying
 public enum RTSGameObjectType
 {
-    //Materials
     None,
+
+    //Materials
     Stone,
     Wood,
     Iron,
@@ -21,11 +26,18 @@ public enum RTSGameObjectType
     Factory,
     HarvestingStation,
     Worker,
-    PowerPlant
+    PowerPlant,
+
+    Forest,
+    IronDeposit,
+    CoalDeposit,
+
+    Resource // Temporary needed for resource prefab, RTSGameObjectTypes are moving to classes
 }
 
 public enum RTSGameObjectGroup
 {
+    Deposit,
     Resource,
     Unit,
     Structure
@@ -37,6 +49,7 @@ public class RTSGameObject : MonoBehaviour
     public static Dictionary<RTSGameObjectType, Dictionary<RTSGameObjectType, int>> productionCosts;
     public static Dictionary<RTSGameObjectType, List<RTSGameObjectType>> canProduce; // this should probably be dictionary<type, HashSet<Type>>
     public static Dictionary<RTSGameObjectType, List<RTSGameObjectType>> canContain; // this should probably be dictionary<type, HashSet<Type>>
+    public static Dictionary<RTSGameObjectType, List<RTSGameObjectType>> canTake; // this should probably be dictionary<type, HashSet<Type>>
     public static Dictionary<RTSGameObjectGroup, List<RTSGameObjectType>> objectGroup;
     public static Dictionary<RTSGameObjectType, int> productionTime;
     public static Dictionary<RTSGameObjectType, int> productionQuantity;
@@ -72,6 +85,10 @@ public class RTSGameObject : MonoBehaviour
         objectGroup[RTSGameObjectGroup.Structure].Add(RTSGameObjectType.Factory);
         objectGroup[RTSGameObjectGroup.Structure].Add(RTSGameObjectType.HarvestingStation);
         objectGroup[RTSGameObjectGroup.Structure].Add(RTSGameObjectType.PowerPlant);
+
+        objectGroup[RTSGameObjectGroup.Deposit].Add(RTSGameObjectType.IronDeposit);
+        objectGroup[RTSGameObjectGroup.Deposit].Add(RTSGameObjectType.Forest);
+        objectGroup[RTSGameObjectGroup.Deposit].Add(RTSGameObjectType.CoalDeposit);
 
         objectGroup[RTSGameObjectGroup.Resource].Add(RTSGameObjectType.Iron);
         objectGroup[RTSGameObjectGroup.Resource].Add(RTSGameObjectType.Wood);
@@ -138,10 +155,13 @@ public class RTSGameObject : MonoBehaviour
     public bool selected = false;
     public Renderer flagRenderer; // the part of the object which contains the flag
     public GameManager gameManager;
+    public GameObject graphicObject; // should this be a thing?
+    public Storage storage; // SHOULD ONLY BE ACCESSED THROUGH OBJECTMANAGER.GetStorage?
 
     void Awake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        storage = GetComponent<Storage>();
         flagRenderer = GetComponentInChildren<Renderer>(); // just get any part of the object
     }
 

@@ -146,12 +146,15 @@ public class GameManager : MonoBehaviour {
                         // Select one
                         if (objectClicked != null)
                         {
-                            foreach (RTSGameObject unit in selectedUnits)
+                            if (!Input.GetKey(KeyCode.LeftShift))
                             {
-                                unit.selected = false;
-                                unit.flagRenderer.material.color = Color.white;
+                                foreach (RTSGameObject unit in selectedUnits)
+                                {
+                                    unit.selected = false;
+                                    unit.flagRenderer.material.color = Color.white;
+                                }
+                                selectedUnits.Clear();
                             }
-                            selectedUnits.Clear();
 
                             selectedUnits.Add(objectClicked);
                             objectClicked.selected = true;
@@ -329,9 +332,9 @@ public class GameManager : MonoBehaviour {
         startingItems.Add(typeof(Tool), 20);
         startingItems.Add(typeof(Iron), 200);
         startingItems.Add(typeof(Wood), 500);
-        startingItems.Add(typeof(Coal), 100);
+        startingItems.Add(typeof(Coal), 2000);
 
-        units[0].GetComponent<Storage>().AddItems(startingItems);
+        units[units.Count - 1].GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(mainCamera.transform.position.x,
             terrainManager.GetHeightFromGlobalCoords(mainCamera.transform.position.x, mainCamera.transform.position.z) + 50,
@@ -357,6 +360,50 @@ public class GameManager : MonoBehaviour {
         }
     }
     
+    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming as with octTree implementation it should be O(log(n))
+    public RTSGameObject GetNearestUnitInRangeOfType(RTSGameObject source, float range, Type type)
+    {
+        int layerMask;
+        float closestDistanceSqr = Mathf.Infinity;
+        Vector3 currentPosition = source.transform.position;
+        Collider closest = null, sourceCollider = source.GetComponent<Collider>();
+        if (type == typeof(ResourceDeposit))
+        {
+            layerMask = LayerMask.NameToLayer("Resource");
+        }
+        else
+        {
+            layerMask = LayerMask.NameToLayer("RTSGameObject");
+        }
+        Collider[] objectsInRange = Physics.OverlapSphere(currentPosition, range, 1 << layerMask);
+        foreach (Collider c in objectsInRange)
+        {
+            if (c == sourceCollider)
+            {
+                continue;
+            }
+            Vector3 directionToTarget = c.transform.position - currentPosition;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                closest = c;
+            }
+        }
+        if (closest != null) {
+            return closest.GetComponent<RTSGameObject>();
+        }
+        else
+        {
+            return null;
+        }
+    }
+/*
+    public RTSGameObject GetNearestUnitInRange(RTSGameObject source, float range)
+    {
+
+    }
+    */
     public int GetNumUnits(Type type)
     {
         return units.Count(i => i.GetType() == type);

@@ -9,10 +9,13 @@ public class Factory : RTSGameObject
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
     static Type[] defaultCanProduce = new Type[] { typeof(Worker), typeof(Paper), typeof(Tool), typeof(Car) };
     Producer producer;
+    Consumer consumer;
     void Awake()
     {
         storage = GetComponent<Storage>();
         producer = GetComponent<Producer>();
+        consumer = GetComponent<Consumer>();
+
         foreach (Type t in defaultCanContain)
         {
             storage.canContain.Add(t);
@@ -51,6 +54,14 @@ public class Factory : RTSGameObject
             if (!producer.productionQuantity.ContainsKey(type)){
                 producer.productionQuantity.Add(type, 1); // default
             }
+        }
+    }
+
+    void Update()
+    {
+        if (producer.IsActive)
+        {
+            producer.IsActive = consumer.Operate();
         }
     }
 }

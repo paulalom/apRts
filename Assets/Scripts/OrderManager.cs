@@ -213,30 +213,38 @@ public class OrderManager : MonoBehaviour {
         {
             return false;
         }
+        if (order.type == OrderType.Move)
+        {
+            if (!CheckCanMove(unit))
+            {
+                return false;
+            }
+        }
         if (order.type == OrderType.Follow)
         {
-            if (order.target == null)
+            if (!CheckTargetExists(order.target) || !CheckCanMove(unit))
             {
                 return false;
             }
         }
         if (order.type == OrderType.Harvest)
         {
-            if (order.target == null)
+            if (!CheckTargetExists(order.target))
             {
                 return false;
             }
         }
+        // For give and take, there must be a target, and either it or the unit must be able to move.
         if (order.type == OrderType.Give)
         {
-            if (order.target == null)
+            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)))
             {
                 return false;
             }
         }
         if (order.type == OrderType.Take)
         {
-            if (order.target == null)
+            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)))
             {
                 return false;
             }
@@ -249,6 +257,16 @@ public class OrderManager : MonoBehaviour {
 
         if (order.type)
         */
+    }
+
+    private bool CheckTargetExists(RTSGameObject target)
+    {
+            return target != null;
+    }
+
+    private bool CheckCanMove(RTSGameObject unit)
+    {
+        return (unit.GetComponent<Mover>() != null);
     }
 
     public bool SetOrder(RTSGameObject unit, Order order, bool validateOrder = true)

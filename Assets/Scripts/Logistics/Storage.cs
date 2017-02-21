@@ -49,7 +49,7 @@ public class Storage : MonoBehaviour {
         Dictionary<Type, int> itemsTaken = new Dictionary<Type, int>();
         foreach (KeyValuePair<Type, int> kvp in items)
         {
-            int qtyTaken = TakeItem(kvp.Key, kvp.Value, true);
+            int qtyTaken = TakeItem(kvp.Key, kvp.Value);
             if (qtyTaken == kvp.Value)
             {
                 itemsTaken.Add(kvp.Key, kvp.Value);

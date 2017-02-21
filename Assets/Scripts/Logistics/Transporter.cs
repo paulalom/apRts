@@ -5,13 +5,13 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Storage))]
 public class Transporter : MonoBehaviour {
 
-    private Storage storage;
+    protected Storage storage;
     
 	void Awake () {
         storage = GetComponent<Storage>();
 	}
 
-    public bool Take(Dictionary<Type, int> items, Storage target)
+    public bool Take(Dictionary<Type, int> items, Storage target, bool allOrNone = true)
     {
         if (target.TakeItems(items)) //Do they have the items?
         {
@@ -24,7 +24,7 @@ public class Transporter : MonoBehaviour {
         return true;
     }
 
-    public bool Give(Dictionary<Type, int> items, Storage target)
+    public bool Give(Dictionary<Type, int> items, Storage target, bool allOrNone = true)
     {
         if (storage.TakeItems(items)) // Do we have the items?
         {

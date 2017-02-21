@@ -22,12 +22,16 @@ public class Producer : MonoBehaviour {
 
     float timeLeftToProduce = 0;
     private bool _isActive = false;
+    // If we turn on, start counting production duration from the correct time
     public bool IsActive {
         get { return _isActive; }
         set
         {
-            previousTime = Time.time;
-            _isActive = value;
+            if (_isActive != value)
+            {
+                previousTime = Time.time;
+                _isActive = value;
+            }
         }
     }
     bool producing = false;

@@ -103,16 +103,32 @@ public class RTSGameObjectManager : MonoBehaviour {
     public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position)
     {
         GameObject go = SpawnUnit(typeof(ResourceDeposit), position);
-        go.GetComponent<ResourceDeposit>().type = type;
+        ResourceDeposit deposit = go.GetComponent<ResourceDeposit>();
+        deposit.type = type;
         go.name = name;
         try {
-            go.GetComponent<Renderer>().material.color = color;
+            go.GetComponentInChildren<Renderer>().material.color = color;
         }
         catch (Exception e)
         {
             throw new Exception("Dont be lazy next time");
         }
         go.GetComponent<Storage>().AddItems(items);
+
+        if (type == DepositType.Coal)
+        {
+            deposit.harvestItems.Add(typeof(Coal), 50);
+            deposit.harvestItems.Add(typeof(Stone), 50);
+        }
+        else if (type == DepositType.Forest)
+        {
+            deposit.harvestItems.Add(typeof(Wood), 50);
+        }
+        else if (type == DepositType.Iron)
+        {
+            deposit.harvestItems.Add(typeof(Iron), 25);
+            deposit.harvestItems.Add(typeof(Stone), 50);
+        }
 
         return go;
     }

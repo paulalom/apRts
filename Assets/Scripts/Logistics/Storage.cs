@@ -1,15 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
-using UnityEngine.Events;
 using System.Collections.Generic;
 
-//[RequireComponent(typeof(RTSGameObject))]
+using UnityEngine;
+using UnityEngine.Events;
+
 public class Storage : MonoBehaviour {
 
     public int size = 5000;
     public int freeSpace = 5000; //todo
     //public int maxItemQtyPerSlot; todo
-    Dictionary<RTSGameObjectType, int> items = new Dictionary<RTSGameObjectType, int>();
+    Dictionary<Type, int> items = new Dictionary<Type, int>();
+    public HashSet<Type> canContain = new HashSet<Type>();
     public UnityEvent onStorageChangedEvent;
 
 	// Use this for initialization
@@ -18,10 +20,10 @@ public class Storage : MonoBehaviour {
         //onStorageChangedEvent.AddListener(DebugStorage);
     }
 
-    public bool AddItems(Dictionary<RTSGameObjectType, int> items)
+    public bool AddItems(Dictionary<Type, int> items)
     {
-        Dictionary<RTSGameObjectType, int> itemsAdded = new Dictionary<RTSGameObjectType, int>();
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in items)
+        Dictionary<Type, int> itemsAdded = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> kvp in items)
         {
             int qtyAdded = AddItem(kvp.Key, kvp.Value, true);
             if (qtyAdded == kvp.Value)
@@ -32,7 +34,7 @@ public class Storage : MonoBehaviour {
             {
                 //Couldn't do it, put everything back
                 //beware concurrency
-                foreach (KeyValuePair<RTSGameObjectType, int> kvp2 in itemsAdded)
+                foreach (KeyValuePair<Type, int> kvp2 in itemsAdded)
                 {
                     TakeItem(kvp2.Key, kvp2.Value);
                 }
@@ -42,10 +44,10 @@ public class Storage : MonoBehaviour {
         return true;
     }
     
-    public bool TakeItems(Dictionary<RTSGameObjectType, int> items)
+    public bool TakeItems(Dictionary<Type, int> items)
     {
-        Dictionary<RTSGameObjectType, int> itemsTaken = new Dictionary<RTSGameObjectType, int>();
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in items)
+        Dictionary<Type, int> itemsTaken = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> kvp in items)
         {
             int qtyTaken = TakeItem(kvp.Key, kvp.Value, true);
             if (qtyTaken == kvp.Value)
@@ -55,7 +57,7 @@ public class Storage : MonoBehaviour {
             else
             {
                 //Couldn't do it, put everything back
-                foreach (KeyValuePair<RTSGameObjectType, int> kvp2 in itemsTaken)
+                foreach (KeyValuePair<Type, int> kvp2 in itemsTaken)
                 {
                     AddItem(kvp2.Key, kvp2.Value);
                 }
@@ -72,7 +74,7 @@ public class Storage : MonoBehaviour {
     /// <param name="count"></param>
     /// <param name="allOrNone"> TODO </param>
     /// <returns>the number of items added</returns>
-    public int AddItem(RTSGameObjectType type, int count, bool allOrNone = true)
+    public int AddItem(Type type, int count, bool allOrNone = true)
     {
         if (freeSpace < count && allOrNone == true)
         {
@@ -106,7 +108,7 @@ public class Storage : MonoBehaviour {
     /// <param name="count">Number of item to take</param>
     /// <param name="allOrNone">Whether to return 0 if amount in storage is less than requested</param>
     /// <returns>number of items taken</returns>
-    public int TakeItem(RTSGameObjectType type, int count, bool allOrNone = true)
+    public int TakeItem(Type type, int count, bool allOrNone = true)
     {
         if (!items.ContainsKey(type))
         {
@@ -142,7 +144,7 @@ public class Storage : MonoBehaviour {
     void DebugStorage()
     {
         string debugMessage = this + "[";
-        foreach (KeyValuePair<RTSGameObjectType, int> item in items) { 
+        foreach (KeyValuePair<Type, int> item in items) { 
             debugMessage += item.Key.ToString() + ": " + item.Value + ", ";
         }
         debugMessage += "]";
@@ -150,7 +152,7 @@ public class Storage : MonoBehaviour {
         Debug.Log(debugMessage);
     }
 
-    public Dictionary<RTSGameObjectType, int> GetItems()
+    public Dictionary<Type, int> GetItems()
     {
         return items;
     }

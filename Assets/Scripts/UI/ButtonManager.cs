@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 
 
@@ -30,7 +31,7 @@ public class ButtonManager : MonoBehaviour {
             Rect menu = new Rect(50, 250 + i * 55, 400, 50);
             itemCount = 0;
             Storage unitStorage = unit.GetComponent<Storage>();
-            foreach (KeyValuePair<RTSGameObjectType, int> item in unitStorage.GetItems())
+            foreach (KeyValuePair<Type, int> item in unitStorage.GetItems())
             {
                 icon = new GUIStyle();
                 icon.normal.background = RTSGameObject.menuIcon[item.Key];
@@ -39,14 +40,14 @@ public class ButtonManager : MonoBehaviour {
                 if (GUI.Button(button, item.Value.ToString(), icon))
                 {
                     Debug.Log("Item button!");
-                    gameManager.itemTransferSource = new MyKVP<RTSGameObject, MyKVP<RTSGameObjectType, int>>(unit, new MyKVP<RTSGameObjectType, int>(item));
+                    gameManager.itemTransferSource = new MyKVP<RTSGameObject, MyKVP<Type, int>>(unit, new MyKVP<Type, int>(item));
                     gameManager.menuClicked = true;
                 }
                 j++;
                 itemCount += item.Value;
             }
             icon = new GUIStyle();
-            icon.normal.background = RTSGameObject.menuIcon[unit.type];
+            icon.normal.background = RTSGameObject.menuIcon[unit.GetType()];
             icon.normal.textColor = Color.red;
             button = new Rect(menu.x + 10, menu.y + 5, 40, 40);
             if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))

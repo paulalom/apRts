@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Storage))]
@@ -7,7 +8,7 @@ public class Consumer : MonoBehaviour {
 
     private Storage storage;
 
-    public Dictionary<RTSGameObjectType, int> operationCosts;
+    public Dictionary<Type, int> operationCosts;
     public int operationInterval;
 
     // Use this for initialization
@@ -31,10 +32,10 @@ public class Consumer : MonoBehaviour {
     /// <returns>The percentage efficiency at which the consumer is operating</returns>
     int Operate(bool allOrNone)
     {
-        Dictionary<RTSGameObjectType, int> itemsTaken = new Dictionary<RTSGameObjectType, int>();
+        Dictionary<Type, int> itemsTaken = new Dictionary<Type, int>();
         bool success = true;
         float efficiency = 1; //100%
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in operationCosts)
+        foreach (KeyValuePair<Type, int> kvp in operationCosts)
         {
             int effectiveCost = (int)(kvp.Value * efficiency);
             int qtyTaken = storage.TakeItem(kvp.Key, effectiveCost, allOrNone);

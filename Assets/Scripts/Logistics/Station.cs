@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public struct ItemRequests
 {
-    RTSGameObjectType item;
+    Type item;
     Storage storage;
 }
 
@@ -50,7 +51,7 @@ public class Station : MonoBehaviour {
     {
         for (int i = 0; i < watchList.Count; i++)
         {
-            List<RTSGameObjectType> items = watchList[i].GetItems();
+            List<Type> items = watchList[i].GetItems();
 
             for (int k = 0; k < items.Count; k++)
             {

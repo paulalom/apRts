@@ -2,9 +2,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 //All of the manager classes could probaby be static
 public class RTSGameObjectManager : MonoBehaviour {
-
+    public Type[] typesWithMenuIcons = new Type[]{ typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Worker), typeof(Factory), typeof(HarvestingStation), typeof(ResourceDeposit)};
     //Instantiating prefabs with resources.load is slow so here we are
     //Maybe this should be in an assets class or something like that
     //We cant expose a dictionary to the inspector so we expose an array then populate the dictionary
@@ -13,15 +14,15 @@ public class RTSGameObjectManager : MonoBehaviour {
     public GameObject[] InspectorPrefabTypes;
     Dictionary<string, GameObject> prefabs;
     GameManager gameManager;
-    
+
     void Awake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        RTSGameObject.menuIcon = new Dictionary<RTSGameObjectType, Texture2D>();
+        RTSGameObject.menuIcon = new Dictionary<Type, Texture2D>();
         prefabs = new Dictionary<string, GameObject>();
 
-        //This part cant be done in a (the) RTSGameObject static constructor because unity
-        foreach (RTSGameObjectType type in Enum.GetValues(typeof(RTSGameObjectType)))
+        // Get menu icons
+        foreach (Type type in typesWithMenuIcons)
         {
             Debug.Log(type.ToString());
             RTSGameObject.menuIcon[type] = Resources.Load<Texture2D>("MyAssets/Icons/" + type.ToString() + "Icon");
@@ -75,21 +76,21 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     }
 
-    public GameObject NewDeposit(RTSGameObjectType type, Dictionary<RTSGameObjectType, int> items, Vector3 position)
+    public GameObject NewDeposit(DepositType type, Dictionary<Type, int> items, Vector3 position)
     {
         Color color = Color.gray;
         string name = "Deposit";
-        if (type == RTSGameObjectType.IronDeposit)
+        if (type == DepositType.Iron)
         {
             color = Color.red;
             name = "IronDeposit";
         }
-        else if (type == RTSGameObjectType.CoalDeposit)
+        else if (type == DepositType.Coal)
         {
             color = Color.black;
             name = "CoalDeposit";
         }
-        else if (type == RTSGameObjectType.Forest)
+        else if (type == DepositType.Forest)
         {
             color = Color.green;
             name = "ForstDeposit";
@@ -99,10 +100,10 @@ public class RTSGameObjectManager : MonoBehaviour {
     }
 
 
-    public GameObject NewDeposit(string name, Color color, RTSGameObjectType type, Dictionary<RTSGameObjectType, int> items, Vector3 position)
+    public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position)
     {
-        GameObject go = SpawnUnit(RTSGameObjectType.Resource, position);
-        go.GetComponent<RTSGameObject>().type = type;
+        GameObject go = SpawnUnit(typeof(ResourceDeposit), position);
+        go.GetComponent<ResourceDeposit>().type = type;
         go.name = name;
         try {
             go.GetComponent<Renderer>().material.color = color;
@@ -118,7 +119,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     public Storage GetStorage(RTSGameObject accessor, RTSGameObject obj)
     {
-        if (RTSGameObject.objectGroup[RTSGameObjectGroup.Deposit].Contains(obj.type))
+        if (accessor is ResourceDeposit)
         {
             if (accessor.GetComponent<Harvester>() != null)
             {
@@ -135,7 +136,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
     }
 
-    public bool TakeFromStorage(RTSGameObject taker, RTSGameObject target, Dictionary<RTSGameObjectType, int> items)
+    public bool TakeFromStorage(RTSGameObject taker, RTSGameObject target, Dictionary<Type, int> items)
     {
         if (target.storage.TakeItems(items)) // Do they have the items?
         {
@@ -150,7 +151,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
 
     //The "around" bit is todo
-    public bool SpawnUnitsAround(RTSGameObjectType type, int quantity, GameObject producer)
+    public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
     {
         for (int i = 0; i < quantity; i++)
         {
@@ -159,7 +160,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         return true;
     }
 
-    public GameObject SpawnUnit(RTSGameObjectType type, Vector3 position)
+    public GameObject SpawnUnit(Type type, Vector3 position)
     {
         Debug.Log(type.ToString());
         GameObject go = Instantiate(prefabs[type.ToString()],
@@ -167,7 +168,11 @@ public class RTSGameObjectManager : MonoBehaviour {
             Quaternion.identity) as GameObject;
         go.name = type.ToString() + gameManager.GetNumUnits(type);
         RTSGameObject rtsGo = go.GetComponent<RTSGameObject>();
-        rtsGo.type = type;
+        rtsGo.flagRenderer = go.GetComponent<Renderer>();
+        if (rtsGo.flagRenderer == null)
+        {
+            rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
+        }
         gameManager.AddUnit(rtsGo);
 
         return go;

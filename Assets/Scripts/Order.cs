@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 
 public enum OrderType
@@ -21,7 +22,7 @@ public class Order {
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
     public float orderRange;
-    public MyKVP<RTSGameObjectType, int> item;
+    public MyKVP<Type, int> item;
     public RTSGameObject target;
     public Ability ability;
 

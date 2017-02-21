@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Storage))]
@@ -12,7 +13,11 @@ public class Producer : MonoBehaviour {
     // eg. build unit T1, unit T2, unit T1, unit t3, unit T1
     // We use KVP so that duplications which are next to eacother can be grouped. 
     // Our production queue can be one item with a thousand units queued.
-    public List<MyKVP<RTSGameObjectType, int>> productionQueue;
+    public List<MyKVP<Type, int>> productionQueue;
+    public HashSet<Type> canProduce = new HashSet<Type>();
+    public Dictionary<Type, float> productionTime = new Dictionary<Type, float>();
+    public Dictionary<Type, int> productionQuantity = new Dictionary<Type, int>();
+    public Dictionary<Type, Dictionary<Type, int>> productionCost = new Dictionary<Type, Dictionary<Type, int>>();
     RTSGameObjectManager rtsGameObjectManager;
 
     float timeLeftToProduce = 0;
@@ -33,7 +38,7 @@ public class Producer : MonoBehaviour {
     void Start()
     {
         storage = GetComponent<Storage>();
-        productionQueue = new List<MyKVP<RTSGameObjectType, int>>();
+        productionQueue = new List<MyKVP<Type, int>>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
     }
 
@@ -59,9 +64,9 @@ public class Producer : MonoBehaviour {
         {
             throw new System.Exception("Y'all be crazy... Aint nothin to produce. ");
         }
-        RTSGameObjectType typeToProduce = productionQueue[0].Key;
-        int qtyToProduce = RTSGameObject.productionQuantity[productionQueue[0].Key];
-        if (RTSGameObject.canContain[GetComponent<RTSGameObject>().type].Contains(typeToProduce))
+        Type typeToProduce = productionQueue[0].Key;
+        int qtyToProduce = productionQuantity[productionQueue[0].Key];
+        if (storage.canContain.Contains(typeToProduce))
         {
             return ProduceToStorage(typeToProduce, qtyToProduce);
         }
@@ -71,7 +76,7 @@ public class Producer : MonoBehaviour {
         }
     }  
 
-    bool ProduceToStorage(RTSGameObjectType typeToProduce, int qtyToProduce)
+    bool ProduceToStorage(Type typeToProduce, int qtyToProduce)
     {
         if (storage.freeSpace < qtyToProduce) //todo: qty * objectSize
         {
@@ -89,7 +94,7 @@ public class Producer : MonoBehaviour {
         }
     }
 
-    bool ProduceToWorld(RTSGameObjectType typeToProduce, int qtyToProduce)
+    bool ProduceToWorld(Type typeToProduce, int qtyToProduce)
     {
         if(rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject)){
             PopProductionQueue();
@@ -106,7 +111,7 @@ public class Producer : MonoBehaviour {
         // We done it boys! remove one from the queue
         if (productionQueue[0].Value > 1)
         {
-            productionQueue[0] = new MyKVP<RTSGameObjectType, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
+            productionQueue[0] = new MyKVP<Type, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
         }
         else
         {
@@ -122,14 +127,31 @@ public class Producer : MonoBehaviour {
             IsActive = false;
             return;
         }
-        timeLeftToProduce = RTSGameObject.productionTime[productionQueue[0].Key];
+        timeLeftToProduce = productionTime[productionQueue[0].Key];
     }
 
-    public void QueueItem(RTSGameObjectType type, int quantity)
+    public bool TryQueueItem(Type type, int quantity)
+    {
+        try
+        {
+            if (ValidateNewProductionRequest(type, quantity))
+            {
+                QueueItem(type, quantity);
+                return true;
+            }
+        }
+        catch(Exception e)
+        {
+            Debug.Log("Exception when queueing item of type: " + type + " to unit: " + gameObject.name);
+        }
+        return false;
+    }
+
+    private void QueueItem(Type type, int quantity)
     {
         if (productionQueue.Count == 0 || productionQueue[productionQueue.Count - 1].Key != type)
         {
-            productionQueue.Add(new MyKVP<RTSGameObjectType, int>(type, quantity));
+            productionQueue.Add(new MyKVP<Type, int>(type, quantity));
         }
         else {
             productionQueue[productionQueue.Count - 1].Value += quantity;
@@ -140,6 +162,16 @@ public class Producer : MonoBehaviour {
         {
             StartNextProduction();
             IsActive = true;
+        }
+    }
+
+    private bool ValidateNewProductionRequest(Type type, int quantity) {
+        if (canProduce.Contains(type))
+        {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 }

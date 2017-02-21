@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using UnityEngine;
 
 public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
@@ -343,14 +345,14 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     void SetTerrainTrees(Terrain terrain)
     {
         terrain.terrainData.treeInstances = new TreeInstance[0];
-        for (int x = 0; x < Resolution; x+= Random.Range(5, 30))
+        for (int x = 0; x < Resolution; x+= UnityEngine.Random.Range(5, 30))
         {
-            for (int y = 0; y < Resolution; y+= Random.Range(5,30))
+            for (int y = 0; y < Resolution; y+= UnityEngine.Random.Range(5,30))
             {
                 float height = terrain.terrainData.GetHeight(x,y);
                 float steepness = terrain.terrainData.GetSteepness(x/(float)Resolution, y/(float)Resolution);
 
-                if (Random.value > 0.3 + (steepness/30) && height >= waterThreshold - 10)
+                if (UnityEngine.Random.value > 0.3 + (steepness/30) && height >= waterThreshold - 10)
                 {
                     TreeInstance instance = new TreeInstance();
                     instance.prototypeIndex = 0;
@@ -376,25 +378,25 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         terrainResources.Add(terrainGlobalCoords, new List<RTSGameObject>());
         
         // if x or y is 0 we may be placing objects at the very edge of a terrain, which can cause out of bounds exceptions
-        for (int x = Random.Range(1, 60); x < Resolution; x += Random.Range(0, 60))
+        for (int x = UnityEngine.Random.Range(1, 60); x < Resolution; x += UnityEngine.Random.Range(0, 60))
         {
-            for (int y = Random.Range(1, 60); y < Resolution; y += Random.Range(0, 60))
+            for (int y = UnityEngine.Random.Range(1, 60); y < Resolution; y += UnityEngine.Random.Range(0, 60))
             {
                 float height = terrain.terrainData.GetHeight(x, y);
                 float steepness = terrain.terrainData.GetSteepness(x / (float)Resolution, y / (float)Resolution);
                 float resourceRandom;
                 //Generate a resource?
-                if (Random.value > 0.6)
+                if (UnityEngine.Random.value > 0.6)
                 {
                     GameObject go;
                     //+res.graphicObject.transform.lossyScale.y
                     //Pick a resource
-                    resourceRandom = Random.value;
-                    Dictionary<RTSGameObjectType, int> items = new Dictionary<RTSGameObjectType, int>();
+                    resourceRandom = UnityEngine.Random.value;
+                    Dictionary<Type, int> items = new Dictionary<Type, int>();
                     if (resourceRandom > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
                     {
-                        items.Add(RTSGameObjectType.Wood, 2000);
-                        go = rtsGameObjectManager.NewDeposit(RTSGameObjectType.Forest,
+                        items.Add(typeof(Wood), 2000);
+                        go = rtsGameObjectManager.NewDeposit(DepositType.Forest,
                                                         items, 
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
                                                                     height, 
@@ -405,9 +407,9 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     }
                     else if(resourceRandom > 0.3)
                     {
-                        items.Add(RTSGameObjectType.Iron, 800);
-                        items.Add(RTSGameObjectType.Coal, 400);
-                        go = rtsGameObjectManager.NewDeposit(RTSGameObjectType.IronDeposit,
+                        items.Add(typeof(Iron), 800);
+                        items.Add(typeof(Coal), 400);
+                        go = rtsGameObjectManager.NewDeposit(DepositType.Iron,
                                                         items,
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
                                                                     height,
@@ -613,7 +615,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float GetRandHeight(int depth)
     {
-        return Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
+        return UnityEngine.Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
     }
 
     /*float[,] LoadHeightmapFromMemory(Vector2 worldSpaceChunkIndex)

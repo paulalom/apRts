@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour {
     public UnityEvent onSelectionChange;
 
     // these are hackish and needs to change
-    public MyKVP<RTSGameObject, MyKVP<RTSGameObjectType, int>> itemTransferSource = null;
+    public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
     public Texture2D selectionHighlight;
     public static Rect selectionBox = new Rect(0, 0, 0, 0);
     public Vector3 mouseDown = vectorSentinel;
@@ -188,20 +188,20 @@ public class GameManager : MonoBehaviour {
             }
             if (Input.GetKeyUp(KeyCode.C))
             {
-                RTSGameObjectType typeToMake = RTSGameObjectType.Worker;
+                Type typeToMake = typeof(Worker);
                 int quantityToMake = 1;
                 foreach (RTSGameObject unit in selectedUnits)
                 {
                     Producer producer = unit.GetComponent<Producer>();
-                    if (RTSGameObject.canProduce[unit.type] != null && RTSGameObject.canProduce[unit.type].Contains(typeToMake))
+                    if (producer != null && producer.canProduce.Contains(typeToMake))
                     {
-                        producer.QueueItem(typeToMake, quantityToMake);
+                        producer.TryQueueItem(typeToMake, quantityToMake);
                     }
                 }
             }
             if (Input.GetKeyUp(KeyCode.E))
             {
-                rtsGameObjectManager.SpawnUnit(RTSGameObjectType.Factory, hit.point);
+                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
             }
 
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z), hit.point.z);
@@ -322,26 +322,14 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        rtsGameObjectManager.SpawnUnit(RTSGameObjectType.Factory, startLocation);
+        rtsGameObjectManager.SpawnUnit(typeof(Factory), startLocation);
 
-        Dictionary<RTSGameObjectType, int> startingItems = new Dictionary<RTSGameObjectType, int>();
+        Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
-       
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.Worker])
-        {
-            startingItems.Add(kvp.Key, 3 * kvp.Value);
-        }
-
-        foreach (KeyValuePair<RTSGameObjectType, int> kvp in RTSGameObject.productionCosts[RTSGameObjectType.HarvestingStation])
-        {
-            if (startingItems.ContainsKey(kvp.Key))
-            {
-                startingItems[kvp.Key] += 3 * kvp.Value;
-            }
-            else {
-                startingItems.Add(kvp.Key, 3 * kvp.Value);
-            }
-        }
+        startingItems.Add(typeof(Tool), 20);
+        startingItems.Add(typeof(Iron), 200);
+        startingItems.Add(typeof(Wood), 500);
+        startingItems.Add(typeof(Coal), 100);
 
         units[0].GetComponent<Storage>().AddItems(startingItems);
 
@@ -351,29 +339,27 @@ public class GameManager : MonoBehaviour {
         mainCamera.transform.LookAt(units[0].transform);
     }
 
-    public void QueueUnit(RTSGameObjectType type)
+    public void QueueUnit(Type type)
     {
         QueueUnit(type, 1);
     }
 
 
-    public void QueueUnit(RTSGameObjectType type, int quantity)
+    public void QueueUnit(Type type, int quantity)
     {
         foreach (RTSGameObject unit in selectedUnits)
         {
             Producer producer = unit.GetComponent<Producer>();
-            if (RTSGameObject.canProduce[unit.type] != null
-                && RTSGameObject.canProduce[unit.type].Contains(type)
-                && producer != null)
+            if (producer != null)
             {
-                producer.QueueItem(type, quantity);
+                producer.TryQueueItem(type, quantity);
             }
         }
     }
     
-    public int GetNumUnits(RTSGameObjectType type)
+    public int GetNumUnits(Type type)
     {
-        return units.Count(i => i.type == type);
+        return units.Count(i => i.GetType() == type);
     }
 
     public int GetNumUnits()

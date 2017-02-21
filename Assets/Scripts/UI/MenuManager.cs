@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
@@ -56,15 +57,15 @@ public class MenuManager : MonoBehaviour {
             {
                 if (x == 0)
                 {
-                    gameManager.QueueUnit(RTSGameObjectType.Worker);
+                    gameManager.QueueUnit(typeof(Worker));
                 }
                 else if (x == 1)
                 {
-                    gameManager.QueueUnit(RTSGameObjectType.HarvestingStation);
+                    gameManager.QueueUnit(typeof(HarvestingStation));
                 }
                 else if (x == 2)
                 {
-                    gameManager.QueueUnit(RTSGameObjectType.Factory);
+                    gameManager.QueueUnit(typeof(Factory));
                 }
             }
         }

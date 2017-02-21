@@ -64,7 +64,7 @@ public class OrderManager : MonoBehaviour {
                 {
                     if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
-                        Harvest(unit, order.target);
+                        Harvest(unit, (ResourceDeposit)order.target);
                     }
                     else
                     {
@@ -137,9 +137,10 @@ public class OrderManager : MonoBehaviour {
         completedOrders.Clear();
     }
 
-    public bool Harvest(RTSGameObject taker, RTSGameObject target)
+    public bool Harvest(RTSGameObject taker, ResourceDeposit target)
     {
         Harvester harvester = taker.GetComponent<Harvester>();
+        Producer producer = taker.GetComponent<Producer>();
         if (target == null || harvester == null)
         {
             return false; // some weird joojoo here
@@ -148,26 +149,26 @@ public class OrderManager : MonoBehaviour {
         int levelQuantityMultiplier = 1; // todo
         float harvesterLevel = harvester.harvesterLevel;
         
-        Dictionary<RTSGameObjectType, int> resourcesToCollect = new Dictionary<RTSGameObjectType, int>();
-        if (target.type == RTSGameObjectType.CoalDeposit)
+        Dictionary<Type, int> resourcesToCollect = new Dictionary<Type, int>();
+        if (target.type == DepositType.Coal)
         {
-            resourcesToCollect.Add(RTSGameObjectType.Coal, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Coal] * harvesterLevel * levelQuantityMultiplier));
-            resourcesToCollect.Add(RTSGameObjectType.Stone, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Stone] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(typeof(Coal), (int)(producer.productionQuantity[typeof(Coal)] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(typeof(Stone), (int)(producer.productionQuantity[typeof(Stone)] * harvesterLevel * levelQuantityMultiplier));
         }
-        else if (target.type == RTSGameObjectType.Forest)
+        else if (target.type == DepositType.Forest)
         {
-            resourcesToCollect.Add(RTSGameObjectType.Wood, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Wood] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(typeof(Wood), (int)(producer.productionQuantity[typeof(Wood)] * harvesterLevel * levelQuantityMultiplier));
         }
-        else if (target.type == RTSGameObjectType.IronDeposit)
+        else if (target.type == DepositType.Iron)
         {
-            resourcesToCollect.Add(RTSGameObjectType.Iron, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Iron] * harvesterLevel * levelQuantityMultiplier));
-            resourcesToCollect.Add(RTSGameObjectType.Stone, (int)(RTSGameObject.productionQuantity[RTSGameObjectType.Stone] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(typeof(Iron), (int)(producer.productionQuantity[typeof(Iron)] * harvesterLevel * levelQuantityMultiplier));
+            resourcesToCollect.Add(typeof(Stone), (int)(producer.productionQuantity[typeof(Stone)] * harvesterLevel * levelQuantityMultiplier));
         }
         return rtsGameObjectManager.TakeFromStorage(taker, target, resourcesToCollect);
         
     }
 
-    void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<RTSGameObjectType, int> item)
+    void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage takerStorage = taker.GetComponent<Storage>();
@@ -178,7 +179,7 @@ public class OrderManager : MonoBehaviour {
         }
     }
 
-    void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<RTSGameObjectType, int> item)
+    void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage giverStorage = giver.GetComponent<Storage>();
@@ -199,14 +200,48 @@ public class OrderManager : MonoBehaviour {
     {
         return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
     }
-/*
-    bool lazyWithinDist(Vector2 o1, Vector2 o2, float dist)
-    {
-        return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.y - o2.y) < dist;
-    }*/
+    /*
+        bool lazyWithinDist(Vector2 o1, Vector2 o2, float dist)
+        {
+            return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.y - o2.y) < dist;
+        }*/
 
     bool ValidateOrder(RTSGameObject unit, Order order)
     {
+        // there is no order or recipient for the order
+        if (order == null || unit == null)
+        {
+            return false;
+        }
+        if (order.type == OrderType.Follow)
+        {
+            if (order.target == null)
+            {
+                return false;
+            }
+        }
+        if (order.type == OrderType.Harvest)
+        {
+            if (order.target == null)
+            {
+                return false;
+            }
+        }
+        if (order.type == OrderType.Give)
+        {
+            if (order.target == null)
+            {
+                return false;
+            }
+        }
+        if (order.type == OrderType.Take)
+        {
+            if (order.target == null)
+            {
+                return false;
+            }
+        }
+
         return true;
         /* PENDING Type Heirarchy rewrite
         Mover mover =  unit.GetComponent<Mover>();

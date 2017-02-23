@@ -12,7 +12,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     //if we need to do this too often ill just make a component for this
     public string[] InspectorPrefabNames;
     public GameObject[] InspectorPrefabTypes;
-    Dictionary<string, GameObject> prefabs;
+    public Dictionary<string, GameObject> prefabs;
     GameManager gameManager;
 
     void Awake()
@@ -190,6 +190,16 @@ public class RTSGameObjectManager : MonoBehaviour {
             rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
         }
         gameManager.AddUnit(rtsGo);
+
+        if (type == typeof(Factory))
+        {
+            Dictionary<Type, int> items = new Dictionary<Type, int>();
+            items.Add(typeof(Coal), 2000);
+            items.Add(typeof(Iron), 2000);
+            items.Add(typeof(Wood), 2000);
+            items.Add(typeof(Stone), 2000);
+            rtsGo.storage.AddItems(items);
+        }
 
         return go;
     }

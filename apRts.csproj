@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\RTSGameObjects\Unit\Worker.cs" />
     <Compile Include="Assets\Scripts\UI\Button.cs" />
     <Compile Include="Assets\Scripts\UI\ButtonManager.cs" />
+    <Compile Include="Assets\Scripts\UI\FloatingText.cs" />
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\Selecter.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />

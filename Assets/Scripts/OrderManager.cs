@@ -8,12 +8,14 @@ public class OrderManager : MonoBehaviour {
     public float moveSpeed = 0.3f; // this wont be here later
     List<RTSGameObject> completedOrders;
     RTSGameObjectManager rtsGameObjectManager;
+    GameManager gameManager;
 
     void Awake()
     {
         orders = new Dictionary<RTSGameObject, List<Order>>();
         completedOrders = new List<RTSGameObject>(); //max one order completion per frame
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
     public void CarryOutOrders(List<RTSGameObject> units)
@@ -57,7 +59,15 @@ public class OrderManager : MonoBehaviour {
                     }
                     else // Follow
                     {
-                        MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
+                        if (unit.GetComponent<Mover>() != null)
+                        {
+                            MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        }
+                        else
+                        {
+                            // If the unit moves out of range, remove the guard order
+                        }
                     }
                 }
                 else if (order.type == OrderType.Harvest)
@@ -68,7 +78,11 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
+                        if (unit.GetComponent<Mover>() != null)
+                        {
+                            MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        }
                     }
                 }
                 else if (order.type == OrderType.HoldPosition)
@@ -145,49 +159,25 @@ public class OrderManager : MonoBehaviour {
         {
             return false; // some weird joojoo here
         }
-
-        int levelQuantityMultiplier = 1; // todo
-        float harvesterLevel = harvester.harvesterLevel;
-        
-        Dictionary<Type, int> resourcesToCollect = new Dictionary<Type, int>();
-        if (target.type == DepositType.Coal)
-        {
-            resourcesToCollect.Add(typeof(Coal), (int)(producer.productionQuantity[typeof(Coal)] * harvesterLevel * levelQuantityMultiplier));
-            resourcesToCollect.Add(typeof(Stone), (int)(producer.productionQuantity[typeof(Stone)] * harvesterLevel * levelQuantityMultiplier));
-        }
-        else if (target.type == DepositType.Forest)
-        {
-            resourcesToCollect.Add(typeof(Wood), (int)(producer.productionQuantity[typeof(Wood)] * harvesterLevel * levelQuantityMultiplier));
-        }
-        else if (target.type == DepositType.Iron)
-        {
-            resourcesToCollect.Add(typeof(Iron), (int)(producer.productionQuantity[typeof(Iron)] * harvesterLevel * levelQuantityMultiplier));
-            resourcesToCollect.Add(typeof(Stone), (int)(producer.productionQuantity[typeof(Stone)] * harvesterLevel * levelQuantityMultiplier));
-        }
-        return rtsGameObjectManager.TakeFromStorage(taker, target, resourcesToCollect);
-        
+        harvester.harvestTarget = target;
+        harvester.IsActive = true;
+        return true;
     }
 
     void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage takerStorage = taker.GetComponent<Storage>();
-        if (targetStorage != null && takerStorage != null && taker.GetComponent<Transporter>() != null)
-        {
-            int taken = targetStorage.TakeItem(item.Key, item.Value, false);
-            takerStorage.AddItem(item.Key, taken);
-        }
+        int taken = targetStorage.TakeItem(item.Key, item.Value, false);
+        takerStorage.AddItem(item.Key, taken);
     }
 
     void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage giverStorage = giver.GetComponent<Storage>();
-        if (targetStorage != null && giverStorage != null && giver.GetComponent<Transporter>() != null)
-        {
-            int given = giverStorage.TakeItem(item.Key, item.Value, false);
-            targetStorage.AddItem(item.Key, given);
-        }
+        int given = giverStorage.TakeItem(item.Key, item.Value, false);
+        targetStorage.AddItem(item.Key, given);
     }
 
     void MoveUnit(RTSGameObject unit, Vector2 targetPos)
@@ -208,15 +198,20 @@ public class OrderManager : MonoBehaviour {
 
     bool ValidateOrder(RTSGameObject unit, Order order)
     {
+        string errorMessage = "";
         // there is no order or recipient for the order
         if (order == null || unit == null)
         {
+            errorMessage = "No order or Unit";
+            gameManager.CreateText(errorMessage, unit.transform.position);
             return false;
         }
         if (order.type == OrderType.Move)
         {
             if (!CheckCanMove(unit))
             {
+                errorMessage = "Can't Move!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -224,39 +219,56 @@ public class OrderManager : MonoBehaviour {
         {
             if (!CheckTargetExists(order.target) || !CheckCanMove(unit))
             {
+                errorMessage = "Can't follow!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
         if (order.type == OrderType.Harvest)
         {
-            if (!CheckTargetExists(order.target))
+            if (!CheckTargetExists(order.target) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Harvester>(unit))
             {
+                errorMessage = "Can't Harvest!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
         // For give and take, there must be a target, and either it or the unit must be able to move.
         if (order.type == OrderType.Give)
         {
-            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)))
+            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Transporter>(unit))
             {
+                errorMessage = "Cant Give!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
         if (order.type == OrderType.Take)
         {
-            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)))
+            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Transporter>(unit))
             {
+                errorMessage = "Can't Take!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
+                return false;
+            }
+        }
+
+        if (order.type == OrderType.Take || order.type == OrderType.Give || order.type == OrderType.Harvest || order.type == OrderType.Follow)
+        {
+            if (unit == order.target)
+            {
+                errorMessage = "Can't " + order.type.ToString() + " self!";
+                gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
 
         return true;
-        /* PENDING Type Heirarchy rewrite
-        Mover mover =  unit.GetComponent<Mover>();
-        Ability[] abilities = unit.GetComponents<Ability>();
+    }
 
-        if (order.type)
-        */
+    private bool CheckHasComponent<T>(RTSGameObject unit)
+    {
+        return unit.GetComponent<T>() != null;
     }
 
     private bool CheckTargetExists(RTSGameObject target)

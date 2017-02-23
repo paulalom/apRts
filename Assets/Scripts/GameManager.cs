@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
     static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
+    public List<FloatingText> floatingText;
 
     public UnityEvent onSelectionChange;
 
@@ -36,6 +37,7 @@ public class GameManager : MonoBehaviour {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         units = new List<RTSGameObject>();
         selectedUnits = new List<RTSGameObject>();
+        floatingText = new List<FloatingText>();
     }
 
     // Use this for initialization
@@ -189,17 +191,15 @@ public class GameManager : MonoBehaviour {
             {
                 
             }
-            if (Input.GetKeyUp(KeyCode.C))
+            if (Input.GetKey(KeyCode.C))
             {
-                Type typeToMake = typeof(Worker);
-                int quantityToMake = 1;
-                foreach (RTSGameObject unit in selectedUnits)
+                float cameraElevationRate = 1f;
+                if (Input.GetKey(KeyCode.LeftShift))
                 {
-                    Producer producer = unit.GetComponent<Producer>();
-                    if (producer != null && producer.canProduce.Contains(typeToMake))
-                    {
-                        producer.TryQueueItem(typeToMake, quantityToMake);
-                    }
+                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
+                }
+                else {
+                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
                 }
             }
             if (Input.GetKeyUp(KeyCode.E))
@@ -360,7 +360,7 @@ public class GameManager : MonoBehaviour {
         }
     }
     
-    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming as with octTree implementation it should be O(log(n))
+    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming with octTree implementation it should be O(log(n))
     public RTSGameObject GetNearestUnitInRangeOfType(RTSGameObject source, float range, Type type)
     {
         int layerMask;
@@ -404,6 +404,20 @@ public class GameManager : MonoBehaviour {
 
     }
     */
+    public void CreateText(string text, Vector3 position)
+    {
+        Debug.Log("New floatingText: " + text);
+        position.y += 5; // floating text starts above the object
+        GameObject go = Instantiate(rtsGameObjectManager.prefabs["FloatingText"],
+            position,
+            Quaternion.identity) as GameObject;
+        go.name = "FloatingText" + floatingText.Count();
+
+        FloatingText ft = go.GetComponent<FloatingText>();
+        ft.textMesh.text = text;
+        ft.transform.position = position;
+        floatingText.Add(ft);
+    }
     public int GetNumUnits(Type type)
     {
         return units.Count(i => i.GetType() == type);
@@ -413,8 +427,7 @@ public class GameManager : MonoBehaviour {
     {
         return units.Count;
     }
-
-
+    
     public void AddUnit(RTSGameObject unit)
     {
         units.Add(unit);

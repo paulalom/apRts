@@ -67,6 +67,7 @@ public class MenuManager : MonoBehaviour {
                 {
                     gameManager.QueueUnit(typeof(Factory));
                 }
+                gameManager.menuClicked = true;
             }
         }
     }
@@ -92,24 +93,27 @@ public class MenuManager : MonoBehaviour {
                 if (gameManager.itemTransferSource != null)
                 {
                     RTSGameObject sourceUnit = gameManager.itemTransferSource.Key;
+                    // May need to rework the transporter/harvester relationship
                     // Transportation orders always go to the transporter
                     // Source is a transporter
-                    if (sourceUnit.GetComponent<Transporter>() != null)
+                    if (sourceUnit.GetComponent<Transporter>() != null && sourceUnit.GetComponent<Mover>() != null)
                     {
                         gameManager.orderManager.SetOrder(sourceUnit, new Order()
                         {
                             type = OrderType.Give,
                             target = unit,
+                            orderRange = 3f,
                             item = gameManager.itemTransferSource.Value
                         });
                     }
                     // Destination is a transporter
-                    else if (unit.GetComponent<Transporter>() != null)
+                    else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
                     {
                         gameManager.orderManager.SetOrder(unit, new Order()
                         {
                             type = OrderType.Take,
                             target = sourceUnit,
+                            orderRange = 3f,
                             item = gameManager.itemTransferSource.Value
                         });
                     }

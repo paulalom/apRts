@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+// A large portion of this class was adapted from Nick Pearson's Transport Game In Unity series.
+// In the future, I will likely rewrite all of this code, but as this is my first Unity project,
+// his series has been helpful in overcoming the barrier to entry. Thanks Nick!
+// https://www.youtube.com/channel/UC9UZBI9EuXu9o4xMM3CAg2w
 public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     [System.Serializable]
@@ -393,7 +397,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     //Pick a resource
                     resourceRandom = UnityEngine.Random.value;
                     Dictionary<Type, int> items = new Dictionary<Type, int>();
-                    if (resourceRandom > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
+                    if (resourceRandom > 0.4 + (steepness / 30) && height >= waterThreshold - 10)
                     {
                         items.Add(typeof(Wood), 2000);
                         go = rtsGameObjectManager.NewDeposit(DepositType.Forest,
@@ -405,11 +409,24 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
                         terrainResources[terrainGlobalCoords].Add(go.GetComponent<RTSGameObject>());
                     }
-                    else if(resourceRandom > 0.3)
+                    else if(resourceRandom > 0.4)
                     {
                         items.Add(typeof(Iron), 800);
-                        items.Add(typeof(Coal), 400);
+                        items.Add(typeof(Stone), 1600);
                         go = rtsGameObjectManager.NewDeposit(DepositType.Iron,
+                                                        items,
+                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
+                                                                    height,
+                                                                    terrain.transform.position.z + y * (chunkSizeZ / Resolution))
+                                                        );
+
+                        terrainResources[terrainGlobalCoords].Add(go.GetComponent<RTSGameObject>());
+                    }
+                    else if (resourceRandom > 0.3)
+                    {
+                        items.Add(typeof(Coal), 800);
+                        items.Add(typeof(Stone), 1600);
+                        go = rtsGameObjectManager.NewDeposit(DepositType.Coal,
                                                         items,
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
                                                                     height,

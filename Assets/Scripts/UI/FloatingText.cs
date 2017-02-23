@@ -8,10 +8,9 @@ public class FloatingText : MonoBehaviour {
     private float leftRightinterval = 0.75f; // text moves left to right in this number of seconds
     private float leftRightDisplacement = 0.1f; // Distance text moves left/right
     private float distToTop = 10; // distance the text travels in the y direction
-    private float lastTime = Time.time;
     private float startTime;
     private float lastDirectionChange;
-    private float prevTime = Time.time;
+    private float prevTime;
     private bool directionLeft = true;
     public TextMesh textMesh;
     GameManager gameManager;
@@ -25,6 +24,7 @@ public class FloatingText : MonoBehaviour {
         textMesh = GetComponent<TextMesh>();
         startTime = Time.time; // this will need more logic if we implement pause
         lastDirectionChange = Time.time; // this too, and more!
+        prevTime = Time.time;
     }
 
 	// Update is called once per frame

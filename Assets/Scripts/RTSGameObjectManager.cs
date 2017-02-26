@@ -171,7 +171,8 @@ public class RTSGameObjectManager : MonoBehaviour {
     {
         for (int i = 0; i < quantity; i++)
         {
-            SpawnUnit(type, new Vector3(producer.transform.position.x, producer.transform.position.y, producer.transform.position.z));
+            SpawnUnit(type, new Vector3(producer.transform.position.x + producer.transform.localScale.x/2 + prefabs[type.ToString()].transform.localScale.x/2 + 1, 
+                producer.transform.position.y, producer.transform.position.z));
         }
         return true;
     }

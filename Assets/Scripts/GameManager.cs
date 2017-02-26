@@ -96,7 +96,7 @@ public class GameManager : MonoBehaviour {
         }
         if (Input.GetKey(KeyCode.H))
         {
-            nextOrder = new Order() { type = OrderType.Harvest, orderRange = 1f };
+            nextOrder = new Order() { type = OrderType.Harvest, orderRange = 15f };
         }
         if (Input.GetKey(KeyCode.F))
         {
@@ -207,7 +207,7 @@ public class GameManager : MonoBehaviour {
                 rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
             }
 
-            terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z), hit.point.z);
+            terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z) + 5, hit.point.z);
 
         }
         resizeSelectionBox();
@@ -215,7 +215,7 @@ public class GameManager : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!menuClicked && (!rayCast || hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            if (!menuClicked && (Input.mousePosition != mouseDown || !rayCast || hit.collider.GetComponentInParent<RTSGameObject>() == null))
             {
                 CheckSelected(units);
             }
@@ -325,7 +325,7 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        rtsGameObjectManager.SpawnUnit(typeof(Factory), startLocation);
+        GameObject startingFactory = rtsGameObjectManager.SpawnUnit(typeof(Factory), startLocation);
 
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
@@ -336,10 +336,11 @@ public class GameManager : MonoBehaviour {
 
         units[units.Count - 1].GetComponent<Storage>().AddItems(startingItems);
 
-        mainCamera.transform.position = new Vector3(mainCamera.transform.position.x,
-            terrainManager.GetHeightFromGlobalCoords(mainCamera.transform.position.x, mainCamera.transform.position.z) + 50,
-            mainCamera.transform.position.z);
-        mainCamera.transform.LookAt(units[0].transform);
+        mainCamera.transform.position = new Vector3(startLocation.x + 50,
+            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 150,
+            startLocation.y - 50);
+        mainCamera.transform.LookAt(startingFactory.transform);
+        
     }
 
     public void QueueUnit(Type type)

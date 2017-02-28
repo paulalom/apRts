@@ -20,6 +20,7 @@ public class HarvestingStation : RTSGameObject {
         consumer = GetComponent<Consumer>();
         harvester = GetComponent<Harvester>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        unitType = UnitType.Structure;
 
         foreach (Type t in defaultCanContain)
         {

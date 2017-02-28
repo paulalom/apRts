@@ -112,7 +112,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     // meh buggy/fails around chunk edges.. whatever its not needed right now
     public void ModifyTerrain(Vector3 position, float amount, int diameter)
     {
-        Vector2 terrainIndex = GetGlobalChunkCoordinates(position.x, position.z);
+        Vector2 terrainIndex = GetChunkIndexFromGlobalCoords(position.x, position.z);
         if (!terrainChunks.ContainsKey(terrainIndex))
         {
             return;
@@ -574,7 +574,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         return heights;
     }
 
-    public static Vector2 GetGlobalChunkCoordinates(float x, float z)
+    public static Vector2 GetChunkIndexFromGlobalCoords(float x, float z)
     {
         Vector2 chunkIndex = new Vector2();
         // Need to account for negative zero, so we offset the negative by 1 chunk
@@ -583,14 +583,9 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         return chunkIndex;
     }
 
-    public static Vector2 GetChunkFromGlobalCoords(float x, float z)
-    {
-        return new Vector2(x / chunkSizeX, z / chunkSizeZ);
-    }
-
     public float GetHeightFromGlobalCoords(float xPos, float zPos)
     {
-        Vector2 chunkCoords = GetGlobalChunkCoordinates(xPos, zPos);
+        Vector2 chunkCoords = GetChunkIndexFromGlobalCoords(xPos, zPos);
         Terrain terrain = terrainChunks[chunkCoords].GetComponent<Terrain>();
         Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);
         return terrain.terrainData.GetHeight((int)(terrainRelativePosition.x / resolutionRatio), (int)(terrainRelativePosition.y / resolutionRatio));
@@ -617,7 +612,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     
     public static Vector2 GetChunkIndexFromCameraPos(Vector3 cameraPosition)
     {
-        return GetGlobalChunkCoordinates(cameraPosition.x, cameraPosition.z);
+        return GetChunkIndexFromGlobalCoords(cameraPosition.x, cameraPosition.z);
     }
 
     static float AveragePoints(float p1, float p2, float p3, float p4)
@@ -632,18 +627,131 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float GetRandHeight(int depth)
     {
-        return UnityEngine.Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
+        return 0; // UnityEngine.Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
     }
 
-    /*float[,] LoadHeightmapFromMemory(Vector2 worldSpaceChunkIndex)
+    // Only x,z coords are used. This way we can pass in 3d objects without converting
+    // Assumes rectangular selection of terrains
+    // position is center
+    public MultiTerrain GetTerrainsInArea(Vector3 position, Vector3 area)
     {
-        return null;
-    }*/
+        MultiTerrain mt = new MultiTerrain();
+        float minX = position.x - area.x / 2,
+            minY = position.z - area.z / 2,
+            maxX = position.x + area.x / 2,
+            maxY = position.z + area.z / 2;
 
-   /* void SaveChunkToMemory(Terrain chunk, Vector2 index) {
+        Vector2 minTerrainIndex = GetChunkIndexFromGlobalCoords(minX, minY);
+        Vector2 maxTerrainIndex = GetChunkIndexFromGlobalCoords(maxX, maxY);
+        Vector2 minTerrainCoords = GetTerrainRelativePosition(minX, minY);
+        Vector2 maxTerrainCoords = GetTerrainRelativePosition(maxX, maxY);
+        Vector2 minLocalTerrainStartPos = GetTerrainRelativePosition(minX, minY);
+        Vector2 maxLocalTerrainEndPos = GetTerrainRelativePosition(maxX, maxY);
 
-    }*/
+        // Terrain resolution, not actual coordinates
+        minTerrainCoords.x = (int)minTerrainCoords.x/2;
+        minTerrainCoords.y = (int)minTerrainCoords.y/2;
+        maxTerrainCoords.x = (int)maxTerrainCoords.x/2;
+        maxTerrainCoords.y = (int)maxTerrainCoords.y/2;
+        minLocalTerrainStartPos.x = (int)(minLocalTerrainStartPos.x/2);
+        minLocalTerrainStartPos.y = (int)(minLocalTerrainStartPos.y / 2);
+        maxLocalTerrainEndPos.x = (int)(maxLocalTerrainEndPos.x / 2) + 2; // fix me: magic 2 (too much truncation? will this break for other objects?)
+        maxLocalTerrainEndPos.y = (int)(maxLocalTerrainEndPos.y / 2) + 2;
 
+        // +1 because numTerrains is one more than the difference in indecies
+        int numTerrainsX = (int)(maxTerrainIndex.x - minTerrainIndex.x) + 1;
+        int numTerrainsY = (int)(maxTerrainIndex.y - minTerrainIndex.y) + 1;
+        Vector2[,] terrainCoords = new Vector2[numTerrainsX, numTerrainsY];
+        Vector2[,] localTerrainStartPos = new Vector2[numTerrainsX, numTerrainsY];
+        Vector2[,] localTerrainEndPos = new Vector2[numTerrainsX, numTerrainsY];
+
+        // foreach terrain in the affected area
+        for (int y = 0; y < numTerrainsY; y++)
+        {
+            for (int x = 0; x < numTerrainsX; x++)
+            {
+                terrainCoords[x, y] = new Vector2(minTerrainIndex.x + x, minTerrainIndex.y + y);
+
+                if (x == 0 && y == 0)
+                {
+                    localTerrainStartPos[x,y] = minLocalTerrainStartPos;
+                }
+                else if (x == 0)
+                {
+                    localTerrainStartPos[x, y] = new Vector2(minLocalTerrainStartPos.x, 0);
+                }
+                else if (y == 0)
+                {
+                    localTerrainStartPos[x, y] = new Vector2(0, minLocalTerrainStartPos.y);
+                }
+                else
+                {
+                    localTerrainStartPos[x,y] = new Vector2(0, 0);
+                }
+
+                if (x == numTerrainsX - 1 && y == numTerrainsY - 1)
+                {
+                    localTerrainEndPos[x, y] = maxLocalTerrainEndPos;
+                }
+                else if (x == numTerrainsX - 1)
+                {
+                    localTerrainEndPos[x, y] = new Vector2(maxLocalTerrainEndPos.x, Resolution + 1);
+                }
+                else if (y == numTerrainsY - 1)
+                {
+                    localTerrainEndPos[x, y] = new Vector2(Resolution + 1, maxLocalTerrainEndPos.y);
+                }
+                else
+                {
+                    localTerrainEndPos[x, y] = new Vector2(Resolution + 1, Resolution + 1);
+                }
+            }
+        }
+
+        mt.terrainCoords = terrainCoords;
+        mt.localTerrainStartPos = localTerrainStartPos;
+        mt.localTerrainEndPos = localTerrainEndPos;
+        return mt;
+    }
+
+    public void FlattenTerrainUnderObject(RTSGameObject obj)
+    {
+        float newHeight = GetHeightFromGlobalCoords(obj.transform.position.x, obj.transform.position.z) / maxTerrainHeight;
+        MultiTerrain objectArea = GetTerrainsInArea(obj.transform.position, obj.transform.localScale);
+        for (int j = 0; j < objectArea.terrainCoords.GetLength(1); j++)
+        {
+            for (int i = 0; i < objectArea.terrainCoords.GetLength(0); i++)
+            {
+                TerrainData data;
+                try
+                {
+                    data = terrainChunks[objectArea.terrainCoords[i, j]].GetComponent<Terrain>().terrainData;
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("ERROR GETTING TERRAIN at coords: " + objectArea.terrainCoords[i, j]);
+                    continue;
+                }
+
+                int dx = (int)(objectArea.localTerrainEndPos[i, j].x - objectArea.localTerrainStartPos[i, j].x);
+                int dy = (int)(objectArea.localTerrainEndPos[i, j].y - objectArea.localTerrainStartPos[i, j].y);
+                float[,] heights = data.GetHeights(0, 0, Resolution, Resolution);
+                float[,] newHeights = new float[dy, dx];
+                
+                for (int y = 0; y < dy; y++)
+                {
+                    for (int x = 0; x < dx; x++)
+                    {
+                        newHeights[y, x] = newHeight;
+                    }
+                }
+
+                data.SetHeights((int)objectArea.localTerrainStartPos[i, j].x, (int)objectArea.localTerrainStartPos[i, j].y, newHeights);
+            }
+        }
+    }
+
+    
     SplatPrototype BlueprintToSplatPrototype(TerrainTextureBlueprint blueprint)
     {
         SplatPrototype prototype = new SplatPrototype();

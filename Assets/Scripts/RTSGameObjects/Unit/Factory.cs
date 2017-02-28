@@ -10,11 +10,14 @@ public class Factory : RTSGameObject
     static Type[] defaultCanProduce = new Type[] { typeof(Worker), typeof(Paper), typeof(Tool), typeof(Car) };
     Producer producer;
     Consumer consumer;
+
     void Awake()
     {
         storage = GetComponent<Storage>();
         producer = GetComponent<Producer>();
         consumer = GetComponent<Consumer>();
+
+        unitType = UnitType.Structure;
 
         foreach (Type t in defaultCanContain)
         {
@@ -48,13 +51,23 @@ public class Factory : RTSGameObject
             {
                 //producer.productionCost.Add(type, new Dictionary<Type, int>()); // This wont fix it, but it will fail quietly
             }
-            if (!producer.productionTime.ContainsKey(type)){
+            if (!producer.productionTime.ContainsKey(type))
+            {
                 producer.productionTime.Add(type, 30); // default
             }
-            if (!producer.productionQuantity.ContainsKey(type)){
+            if (!producer.productionQuantity.ContainsKey(type))
+            {
                 producer.productionQuantity.Add(type, 1); // default
             }
         }
+
+        consumer.operationCosts[typeof(Coal)] = 3;
+        consumer.operationInterval = .3f;
+    }
+
+    void Start()
+    {
+        storage.onStorageAddEvent.AddListener(CheckActivate);
     }
 
     void Update()
@@ -62,6 +75,17 @@ public class Factory : RTSGameObject
         if (producer.IsActive)
         {
             producer.IsActive = consumer.Operate();
+        }
+    }
+    
+    void CheckActivate()
+    {
+        if (producer.IsActive == false && producer.productionQueue.Count > 0)
+        {
+            if (storage.HasItems(consumer.operationCosts))
+            {
+                producer.IsActive = true;
+            }
         }
     }
 }

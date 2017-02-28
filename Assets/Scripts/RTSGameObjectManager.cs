@@ -14,10 +14,12 @@ public class RTSGameObjectManager : MonoBehaviour {
     public GameObject[] InspectorPrefabTypes;
     public Dictionary<string, GameObject> prefabs;
     GameManager gameManager;
+    TerrainManager terrainManager;
 
     void Awake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         RTSGameObject.menuIcon = new Dictionary<Type, Texture2D>();
         prefabs = new Dictionary<string, GameObject>();
 
@@ -51,7 +53,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
     }
 
-    void Start()
+    void Update()
     {
         
     }
@@ -60,7 +62,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     {
         TerrainManager tMan = gameManager.terrainManager;
         Vector3 position = obj.transform.position;
-        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z);
+        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z) + obj.transform.localScale.y/2;
         obj.transform.position = position;
     }
     public void SnapToTerrainHeight(List<RTSGameObject> objs)
@@ -169,6 +171,10 @@ public class RTSGameObjectManager : MonoBehaviour {
     //The "around" bit is todo
     public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
     {
+        if (!prefabs.ContainsKey(type.ToString()))
+        {
+            throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
+        }
         for (int i = 0; i < quantity; i++)
         {
             SpawnUnit(type, new Vector3(producer.transform.position.x + producer.transform.localScale.x/2 + prefabs[type.ToString()].transform.localScale.x/2 + 1, 
@@ -199,9 +205,60 @@ public class RTSGameObjectManager : MonoBehaviour {
             items.Add(typeof(Iron), 2000);
             items.Add(typeof(Wood), 2000);
             items.Add(typeof(Stone), 2000);
+            items.Add(typeof(Paper), 200);
+            items.Add(typeof(Tool), 100);
             rtsGo.storage.AddItems(items);
+        }
+        if (rtsGo.unitType == UnitType.Structure)
+        {
+            terrainManager.FlattenTerrainUnderObject(rtsGo);
         }
 
         return go;
+    }
+
+    public bool Harvest(RTSGameObject taker, ResourceDeposit target)
+    {
+        Harvester harvester = taker.GetComponent<Harvester>();
+        Producer producer = taker.GetComponent<Producer>();
+        if (target == null || harvester == null)
+        {
+            return false; // some weird joojoo here
+        }
+        harvester.harvestTarget = target;
+        harvester.IsActive = true;
+        return true;
+    }
+
+    public void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
+    {
+        Storage targetStorage = target.GetComponent<Storage>();
+        Storage takerStorage = taker.GetComponent<Storage>();
+        int taken = targetStorage.TakeItem(item.Key, item.Value, false);
+        takerStorage.AddItem(item.Key, taken);
+    }
+
+    public void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
+    {
+        Storage targetStorage = target.GetComponent<Storage>();
+        Storage giverStorage = giver.GetComponent<Storage>();
+        int given = giverStorage.TakeItem(item.Key, item.Value, false);
+        targetStorage.AddItem(item.Key, given);
+    }
+
+    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed)
+    {
+        Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed);
+        unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
+    }
+
+    public void MoveUnit(RTSGameObject unit, Vector2 targetPos)
+    {
+        MoveUnit(unit, targetPos, unit.GetComponent<Mover>().moveSpeed);
+    }
+
+    public bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)
+    {
+        return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
     }
 }

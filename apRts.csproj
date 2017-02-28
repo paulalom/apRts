@@ -106,8 +106,10 @@
     <Compile Include="Assets\Scripts\UI\FloatingText.cs" />
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\Selecter.cs" />
+    <Compile Include="Assets\Scripts\UI\TestEvent.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
+    <Compile Include="Assets\Scripts\World\MultiTerrain.cs" />
     <Compile Include="Assets\Scripts\World\RTSCamera.cs" />
     <Compile Include="Assets\Scripts\World\TerrainManager.cs" />
   </ItemGroup>

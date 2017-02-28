@@ -9,6 +9,7 @@ public class PowerPlant : RTSGameObject
         storage = GetComponent<Storage>();
         storage.canContain.Add(typeof(Coal));
         storage.canContain.Add(typeof(Power));
+        unitType = UnitType.Structure;
     }
 
 }

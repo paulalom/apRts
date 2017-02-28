@@ -34,21 +34,21 @@ public class OrderManager : MonoBehaviour {
 
                 if (order.type == OrderType.Follow)
                 {
-                    if (!lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
-                        MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
                     }
                 }
                 else if (order.type == OrderType.Give)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                     {
-                        GiveItem(unit, order.target, order.item);
+                        rtsGameObjectManager.GiveItem(unit, order.target, order.item);
                         completedOrders.Add(unit);
                     }
                     else
                     {
-                        MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
                     }
                 }
                 else if (order.type == OrderType.Guard)
@@ -62,7 +62,7 @@ public class OrderManager : MonoBehaviour {
                         // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
                         if (unit.GetComponent<Mover>() != null)
                         {
-                            MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
                         }
                         else
                         {
@@ -72,16 +72,16 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Harvest)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
-                        Harvest(unit, (ResourceDeposit)order.target);
+                        rtsGameObjectManager.Harvest(unit, (ResourceDeposit)order.target);
                     }
                     else
                     {
                         // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
                         if (unit.GetComponent<Mover>() != null)
                         {
-                            MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
                         }
                     }
                 }
@@ -91,18 +91,18 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Move)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
                         completedOrders.Add(unit);
                     }
                     else
                     {
-                        MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
                     }
                 }
                 else if (order.type == OrderType.Patrol)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
                         Vector3 tempVariablesMakeThingsEasierToUnderstand = order.targetPosition;
                         order.targetPosition = order.orderIssuedPosition;
@@ -111,7 +111,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
                     }
                 }
                 else if (order.type == OrderType.Stop)
@@ -121,14 +121,14 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.Take)
                 {
-                    if (lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                     {
-                        TakeItem(unit, order.target, order.item);
+                        rtsGameObjectManager.TakeItem(unit, order.target, order.item);
                         completedOrders.Add(unit);
                     }
                     else
                     {
-                        MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
                     }
                 }
                 else if (order.type == OrderType.UseAbillity)
@@ -151,45 +151,7 @@ public class OrderManager : MonoBehaviour {
         completedOrders.Clear();
     }
 
-    public bool Harvest(RTSGameObject taker, ResourceDeposit target)
-    {
-        Harvester harvester = taker.GetComponent<Harvester>();
-        Producer producer = taker.GetComponent<Producer>();
-        if (target == null || harvester == null)
-        {
-            return false; // some weird joojoo here
-        }
-        harvester.harvestTarget = target;
-        harvester.IsActive = true;
-        return true;
-    }
-
-    void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
-    {
-        Storage targetStorage = target.GetComponent<Storage>();
-        Storage takerStorage = taker.GetComponent<Storage>();
-        int taken = targetStorage.TakeItem(item.Key, item.Value, false);
-        takerStorage.AddItem(item.Key, taken);
-    }
-
-    void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
-    {
-        Storage targetStorage = target.GetComponent<Storage>();
-        Storage giverStorage = giver.GetComponent<Storage>();
-        int given = giverStorage.TakeItem(item.Key, item.Value, false);
-        targetStorage.AddItem(item.Key, given);
-    }
-
-    void MoveUnit(RTSGameObject unit, Vector2 targetPos)
-    {
-        Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed);
-        unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
-    }
-
-    bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)
-    {
-        return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
-    }
+    
     /*
         bool lazyWithinDist(Vector2 o1, Vector2 o2, float dist)
         {

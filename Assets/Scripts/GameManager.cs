@@ -321,7 +321,8 @@ public class GameManager : MonoBehaviour {
         //Terrain startTerrain = terrainManager.terrainChunks[startTerrainIndex].GetComponent<Terrain>();
         // Height is managed by Awake and Move functions
         // todo multiply by terrain index
-        Vector2 startLocation = new Vector2(startTerrainPositionOffset.x,
+        Vector3 startLocation = new Vector3(startTerrainPositionOffset.x,
+                                            0,
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray

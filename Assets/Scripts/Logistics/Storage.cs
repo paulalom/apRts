@@ -13,9 +13,10 @@ public class Storage : MonoBehaviour {
     Dictionary<Type, int> items = new Dictionary<Type, int>();
     public HashSet<Type> canContain = new HashSet<Type>();
     public UnityEvent onStorageChangedEvent;
+    public UnityEvent onStorageAddEvent;
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start ()
     {
         //onStorageChangedEvent.AddListener(DebugStorage);
     }
@@ -41,6 +42,7 @@ public class Storage : MonoBehaviour {
                 return false;
             }
         }
+        onStorageAddEvent.Invoke();
         return true;
     }
     
@@ -95,6 +97,7 @@ public class Storage : MonoBehaviour {
             {
                 items[type] += count;
             }
+            onStorageAddEvent.Invoke();
             return count;
         }
 
@@ -139,6 +142,18 @@ public class Storage : MonoBehaviour {
         }
 
         //onStorageChangedEvent.Invoke();
+    }
+
+    public bool HasItems(Dictionary<Type, int> hasItems) 
+    {
+        foreach(KeyValuePair<Type, int> item in hasItems)
+        {
+            if (!items.ContainsKey(item.Key) || items[item.Key] < item.Value)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void DebugStorage()

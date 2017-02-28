@@ -18,5 +18,6 @@ public class ResourceDeposit : RTSGameObject
     {
         storage = GetComponent<Storage>();
         harvestItems = new Dictionary<Type, int>();
+        unitType = UnitType.Resource;
     }
 }

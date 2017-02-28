@@ -36,7 +36,6 @@ public class Producer : MonoBehaviour {
     }
     bool producing = false;
     float previousTime;
-    public UnityEvent onStorageChangedEvent;
 
     // Use this for initialization
     void Start()
@@ -140,8 +139,16 @@ public class Producer : MonoBehaviour {
         {
             if (ValidateNewProductionRequest(type, quantity))
             {
-                QueueItem(type, quantity);
-                return true;
+                Dictionary<Type, int> costs = new Dictionary<Type, int>();
+                foreach (KeyValuePair<Type, int> item in productionCost[type])
+                {
+                    costs.Add(item.Key, item.Value * quantity);
+                }
+                if (storage.TakeItems(costs))
+                {
+                    QueueItem(type, quantity);
+                    return true;
+                }
             }
         }
         catch(Exception e)

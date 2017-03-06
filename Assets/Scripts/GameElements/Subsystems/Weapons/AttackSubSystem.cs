@@ -16,4 +16,5 @@ public class AttackSubSystem : AbilitySubsystem {
     public Ability attack;
     public AttackType attackType;
     public DamageType damageType;
+    public float basedamage;
 }

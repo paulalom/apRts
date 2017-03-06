@@ -8,7 +8,9 @@ public class MenuManager : MonoBehaviour {
     public List<Texture2D> constructionIcons;
     [HideInInspector]
     public List<Texture2D> inventoryIcons;
-    public GameManager gameManager;
+    GameManager gameManager;
+    PlayerManager playerManager;
+    UIManager uiManager;
     public Texture2D menuGraphic;
     float menuWidth = 400, menuHeight = 50;
     Rect constructionMenuRect;
@@ -18,10 +20,12 @@ public class MenuManager : MonoBehaviour {
     // Use this for initialization
     void Start () {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         //something is wonky with the height, magic *3 ftw
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
-        gameManager.onSelectionChange.AddListener(UpdateInventoryMenuDisplay);
+        playerManager.OnSelectionChange.AddListener(UpdateInventoryMenuDisplay);
     }
 	
 	// Update is called once per frame
@@ -67,7 +71,11 @@ public class MenuManager : MonoBehaviour {
                 {
                     gameManager.QueueUnit(typeof(Factory));
                 }
-                gameManager.menuClicked = true;
+                else if (x == 3)
+                {
+                    gameManager.QueueUnit(typeof(Tank));
+                }
+                uiManager.menuClicked = true;
             }
         }
     }
@@ -82,8 +90,13 @@ public class MenuManager : MonoBehaviour {
         int i = 0;
         int j;
         
-        foreach (RTSGameObject unit in gameManager.selectedUnits)
+        foreach (RTSGameObject unit in playerManager.SelectedUnits)
         {
+            // todo fix me bad bad bad bad
+            if (unit.GetType() == typeof(BasicCannonProjectile))
+            {
+                continue;
+            }
             GUIStyle container = new GUIStyle();
             container.normal.background = menuGraphic;
             Rect menu = new Rect(50, 250 + i * 55, 400, 50);
@@ -122,7 +135,7 @@ public class MenuManager : MonoBehaviour {
                         // Nothing, we have a source but the destination is not valid, or the source was unintended
                     }
                 }
-                gameManager.menuClicked = true;
+                uiManager.menuClicked = true;
             }
             i++;
         }

@@ -1,15 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(Explode))]
 public class BasicCannonProjectile : Projectile {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public float baseDamage;
+    public DamageType damageType;
 }

@@ -15,11 +15,19 @@ public class RTSGameObjectManager : MonoBehaviour {
     public Dictionary<string, GameObject> prefabs;
     GameManager gameManager;
     TerrainManager terrainManager;
+    PlayerManager playerManager;
+    OrderManager orderManager;
+
+    // lazy method to prevent spawning from breaking foreach loops
+    private List<RTSGameObject> unitCreationQueue = new List<RTSGameObject>();
+    private List<RTSGameObject> unitDestructionQueue = new List<RTSGameObject>();
 
     void Awake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         prefabs = new Dictionary<string, GameObject>();
         
         if (InspectorPrefabNames.Length != InspectorPrefabTypes.Length)
@@ -43,7 +51,24 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     void Update()
     {
-        
+        if (unitCreationQueue.Count > 0)
+        {
+            foreach (RTSGameObject unit in unitCreationQueue)
+            {
+                playerManager.AddUnit(unit);
+            }
+            unitCreationQueue.Clear();
+        }
+        if (unitDestructionQueue.Count > 0)
+        {
+            foreach (RTSGameObject unit in unitDestructionQueue)
+            {
+                playerManager.Units.Remove(unit);
+                playerManager.SelectedUnits.Remove(unit);
+                Destroy(unit.gameObject);
+            }
+            unitDestructionQueue.Clear();
+        }
     }
 
     public void SnapToTerrainHeight(RTSGameObject obj)
@@ -85,7 +110,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             color = Color.green;
             name = "ForstDeposit";
         }
-        name += gameManager.GetNumUnits();
+        name += playerManager.GetNumUnits();
         return NewDeposit(name, color, type, items, position);
     }
 
@@ -177,14 +202,14 @@ public class RTSGameObjectManager : MonoBehaviour {
         GameObject go = Instantiate(prefabs[type.ToString()],
             position,
             Quaternion.identity) as GameObject;
-        go.name = type.ToString() + gameManager.GetNumUnits(type);
+        go.name = type.ToString() + playerManager.GetNumUnits(type);
         RTSGameObject rtsGo = go.GetComponent<RTSGameObject>();
         rtsGo.flagRenderer = go.GetComponent<Renderer>();
         if (rtsGo.flagRenderer == null)
         {
             rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
         }
-        gameManager.AddUnit(rtsGo);
+        unitCreationQueue.Add(rtsGo);
 
         if (type == typeof(Factory))
         {
@@ -236,13 +261,54 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed)
     {
-        Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed);
-        unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
+        Mover mover = unit.GetComponent<Mover>();
+        if (mover.isActive)
+        {
+            Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed);
+            unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
+        }
     }
 
     public void MoveUnit(RTSGameObject unit, Vector2 targetPos)
     {
         MoveUnit(unit, targetPos, unit.GetComponent<Mover>().moveSpeed);
+    }
+
+    public void UseAbility(RTSGameObject unit, RTSGameObject target, Vector3 targetPosition, Ability ability)
+    {
+        if (ability.GetType() == typeof(Shoot))
+        {
+            // still need to refine the damage system of course
+            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position).GetComponent<BasicCannonProjectile>();
+            projectile.parent = unit;
+            projectile.GetComponent<Explode>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
+            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explode>()});
+        }
+        else if (ability.GetType() == typeof(Explode))
+        {
+            Explode explosion = ((Explode)(ability));
+            DamageAllInRadius(unit, explosion.radius, explosion.damage);
+            DestroyUnit(unit);
+        }
+    }
+
+    public void DamageAllInRadius(RTSGameObject source, float range, float damage)
+    {
+        LayerMask layerMask = LayerMask.NameToLayer("RTSGameObject");
+        List<Component> defenses = gameManager.GetAllComponentsInRangeOfType(source, range, 1 << layerMask, typeof(Defense));
+        foreach(Defense defense in defenses)
+        {
+            defense.hull.hullPoints -= damage; // simplistic for now
+            if (defense.hull.hullPoints <= 0)
+            {
+                DestroyUnit(defense.GetComponent<RTSGameObject>());
+            }
+        }
+    }
+
+    public void DestroyUnit(RTSGameObject unit)
+    {
+        unitDestructionQueue.Add(unit);
     }
 
     public bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)

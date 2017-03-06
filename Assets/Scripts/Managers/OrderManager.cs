@@ -133,7 +133,16 @@ public class OrderManager : MonoBehaviour {
                 }
                 else if (order.type == OrderType.UseAbillity)
                 {
-
+                    Vector3 targetPos = order.target == null ? order.targetPosition : order.target.transform.position;
+                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, targetPos, order.orderRange))
+                    {
+                        rtsGameObjectManager.UseAbility(unit, order.target, order.targetPosition, order.ability);
+                        completedOrders.Add(unit);
+                    }
+                    else
+                    {
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z));
+                    }
                 }
             }
         }
@@ -188,7 +197,7 @@ public class OrderManager : MonoBehaviour {
         }
         if (order.type == OrderType.Harvest)
         {
-            if (!CheckTargetExists(order.target) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Harvester>(unit))
+            if (!ValidateStorageAccess(unit, order.target))
             {
                 errorMessage = "Can't Harvest!";
                 gameManager.CreateText(errorMessage, unit.transform.position);
@@ -198,16 +207,16 @@ public class OrderManager : MonoBehaviour {
         // For give and take, there must be a target, and either it or the unit must be able to move.
         if (order.type == OrderType.Give)
         {
-            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Transporter>(unit))
+            if (!ValidateStorageAccess(unit, order.target))
             {
-                errorMessage = "Cant Give!";
+                errorMessage = "Can't Give!";
                 gameManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
         if (order.type == OrderType.Take)
         {
-            if (!CheckTargetExists(order.target) || (!CheckCanMove(unit) && !CheckCanMove(order.target)) || !CheckHasComponent<Storage>(order.target) || !CheckHasComponent<Storage>(unit) || !CheckHasComponent<Transporter>(unit))
+            if (!ValidateStorageAccess(unit, order.target))
             {
                 errorMessage = "Can't Take!";
                 gameManager.CreateText(errorMessage, unit.transform.position);
@@ -225,12 +234,62 @@ public class OrderManager : MonoBehaviour {
             }
         }
 
+        if (order.type == OrderType.UseAbillity)
+        {
+            if (!ValidateAbilities(unit, order))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool ValidateAbilities(RTSGameObject unit, Order order)
+    {
+        bool hasAbility = false;
+        foreach (Ability ability in unit.GetComponents<Ability>())
+        {
+            if (order.ability.GetType() == ability.GetType())
+            {
+                hasAbility = true;
+                break;
+            }
+        }
+        if (!hasAbility)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+
+    private bool ValidateStorageAccess(RTSGameObject accessor, RTSGameObject target)
+    {
+        if (!CheckTargetExists(target) || !CheckCanMove(accessor) || !CheckHasComponent<Storage>(target) || !CheckHasComponent<Storage>(accessor))
+        {
+            return false;
+        }
+        else {
+            foreach (Type type in target.storage.requiredAccessComponents)
+            {
+                if (!CheckHasComponent(accessor, type))
+                {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
     private bool CheckHasComponent<T>(RTSGameObject unit)
     {
         return unit.GetComponent<T>() != null;
+    }
+
+    private bool CheckHasComponent(RTSGameObject unit, Type type)
+    {
+        return unit.GetComponent(type) != null;
     }
 
     private bool CheckTargetExists(RTSGameObject target)

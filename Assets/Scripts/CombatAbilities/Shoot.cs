@@ -1,13 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(Projectile))]
 public class Shoot : Ability {
 
-    public Projectile projectile;
+    public Type projectileType;
     
     void Start()
     {
-        projectile = GetComponent<Projectile>();
     }
 }

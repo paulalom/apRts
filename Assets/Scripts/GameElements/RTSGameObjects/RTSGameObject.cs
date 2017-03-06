@@ -15,12 +15,15 @@ public class RTSGameObject : MonoBehaviour
 {
     public bool selected = false;
     public Renderer flagRenderer; // the part of the object which contains the flag
-    public GameManager gameManager;
-    public OrderManager orderManager;
-    public RTSGameObjectManager rtsGameObjectManager;
+    protected GameManager gameManager;
+    protected OrderManager orderManager;
+    protected RTSGameObjectManager rtsGameObjectManager;
     public GameObject graphicObject; // should this be a thing?
     public Storage storage; // SHOULD ONLY BE ACCESSED THROUGH rtsGameObjectManager.GetStorage?
     public UnitType unitType;
+    public Ability defaultAbility;
+    public int ownerId;
+    public int kills = 0;
 
     void Awake()
     {

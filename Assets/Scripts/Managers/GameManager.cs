@@ -9,24 +9,20 @@ public class GameManager : MonoBehaviour {
     RTSCamera mainCamera;
     [HideInInspector]
     public TerrainManager terrainManager;
+    [HideInInspector]
+    public OrderManager orderManager;
     RTSGameObjectManager rtsGameObjectManager;
     AbilityManager abilityManager;
-    public OrderManager orderManager;
-    List<RTSGameObject> units;
-    public List<RTSGameObject> selectedUnits;
-    static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
+    UIManager uiManager;
+    PlayerManager playerManager;
+    public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
-    public List<FloatingText> floatingText;
-
-    public UnityEvent onSelectionChange;
-
+    
     // these are hackish and needs to change
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
     public Texture2D selectionHighlight;
     public static Rect selectionBox = new Rect(0, 0, 0, 0);
-    public Vector3 mouseDown = vectorSentinel;
-    public bool menuClicked = false;
 
     void Awake()
     {
@@ -35,9 +31,8 @@ public class GameManager : MonoBehaviour {
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         abilityManager = GameObject.FindGameObjectWithTag("AbilityManager").GetComponent<AbilityManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
-        units = new List<RTSGameObject>();
-        selectedUnits = new List<RTSGameObject>();
-        floatingText = new List<FloatingText>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
     }
 
     // Use this for initialization
@@ -51,10 +46,10 @@ public class GameManager : MonoBehaviour {
         float now = Time.time;
 
         HandleInput();
-        orderManager.CarryOutOrders(units);
+        orderManager.CarryOutOrders(playerManager.Units);
         // Ideally this would only happen for units that have moved
         // maybe orderManager returns list of affected units and passes to rtsGameObjectManager
-        rtsGameObjectManager.SnapToTerrainHeight(units);
+        rtsGameObjectManager.SnapToTerrainHeight(playerManager.Units);
         /*
         
         if (now - prevTime > 0.05)
@@ -80,7 +75,7 @@ public class GameManager : MonoBehaviour {
         //Left click. Assume mouseDown must preceed mouseUp
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            mouseDown = Input.mousePosition;
+            uiManager.mouseDown = Input.mousePosition;
         }
         if (Input.GetKey(KeyCode.G))
         {
@@ -101,7 +96,10 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKey(KeyCode.F))
         {
             nextOrder = new Order() { type = OrderType.Follow, orderRange = 6f };
-            
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            nextOrder = new Order() { type = OrderType.UseAbillity };
         }
 
         if (rayCast)
@@ -119,7 +117,7 @@ public class GameManager : MonoBehaviour {
             }
             if (Input.GetKeyUp(KeyCode.Mouse0))
             {
-                if (mouseDown == Input.mousePosition)
+                if (uiManager.mouseDown == Input.mousePosition)
                 {
                     // objectClicked May be null
                     RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
@@ -129,15 +127,29 @@ public class GameManager : MonoBehaviour {
                         nextOrder.targetPosition = hit.point;
                         if (Input.GetKey(KeyCode.LeftShift))
                         {
-                            foreach (RTSGameObject unit in selectedUnits)
+                            foreach (RTSGameObject unit in playerManager.SelectedUnits)
                             {
+                                if (nextOrder.type == OrderType.UseAbillity)
+                                {
+                                    nextOrder.ability = unit.defaultAbility;
+                                    nextOrder.ability.target = objectClicked;
+                                    nextOrder.ability.targetPosition = hit.point;
+                                    nextOrder.orderRange = unit.defaultAbility.range;
+                                }
                                 orderManager.QueueOrder(unit, nextOrder);
                             }
                         }
                         else
                         {
-                            foreach (RTSGameObject unit in selectedUnits)
+                            foreach (RTSGameObject unit in playerManager.SelectedUnits)
                             {
+                                if (nextOrder.type == OrderType.UseAbillity)
+                                {
+                                    nextOrder.ability = unit.defaultAbility;
+                                    nextOrder.ability.target = objectClicked;
+                                    nextOrder.ability.targetPosition = hit.point;
+                                    nextOrder.orderRange = unit.defaultAbility.range;
+                                }
                                 orderManager.SetOrder(unit, nextOrder);
                             }
                         }
@@ -150,15 +162,15 @@ public class GameManager : MonoBehaviour {
                         {
                             if (!Input.GetKey(KeyCode.LeftShift))
                             {
-                                foreach (RTSGameObject unit in selectedUnits)
+                                foreach (RTSGameObject unit in playerManager.SelectedUnits)
                                 {
                                     unit.selected = false;
                                     unit.flagRenderer.material.color = Color.white;
                                 }
-                                selectedUnits.Clear();
+                                playerManager.SelectedUnits.Clear();
                             }
 
-                            selectedUnits.Add(objectClicked);
+                            playerManager.SelectedUnits.Add(objectClicked);
                             objectClicked.selected = true;
                             objectClicked.flagRenderer.material.color = Color.red;
                         }
@@ -166,20 +178,20 @@ public class GameManager : MonoBehaviour {
                 }
             }
 
-            // Right click to move
+            // Right click to move/attack
             if (Input.GetKeyUp(KeyCode.Mouse1))
             {
-                nextOrder = new Order() { type = OrderType.Move, targetPosition = hit.point };
+                nextOrder = new Order() { type = OrderType.Move, targetPosition = hit.point, orderRange = .3f };
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
-                    foreach (RTSGameObject unit in selectedUnits)
+                    foreach (RTSGameObject unit in playerManager.SelectedUnits)
                     {
                         orderManager.QueueOrder(unit, nextOrder);
                     }
                 }
                 else
                 {
-                    foreach (RTSGameObject unit in selectedUnits)
+                    foreach (RTSGameObject unit in playerManager.SelectedUnits)
                     {
                         orderManager.SetOrder(unit, nextOrder);
                     }
@@ -215,13 +227,13 @@ public class GameManager : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!menuClicked && (Input.mousePosition != mouseDown || !rayCast || hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            if (!uiManager.menuClicked && (Input.mousePosition != uiManager.mouseDown || !rayCast || hit.collider.GetComponentInParent<RTSGameObject>() == null))
             {
-                CheckSelected(units);
+                CheckSelected(playerManager.Units);
             }
-            mouseDown = vectorSentinel;
+            uiManager.mouseDown = vectorSentinel;
         }
-        menuClicked = false;
+        uiManager.menuClicked = false;
     }
 
     // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
@@ -245,16 +257,16 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetMouseButton(0))
         {
-            selectionBox = new Rect(mouseDown.x,
-                                    RTSCamera.InvertMouseY(mouseDown.y),
-                                    Input.mousePosition.x - mouseDown.x,
-                                    RTSCamera.InvertMouseY(Input.mousePosition.y) - RTSCamera.InvertMouseY(mouseDown.y));
+            selectionBox = new Rect(uiManager.mouseDown.x,
+                                    RTSCamera.InvertMouseY(uiManager.mouseDown.y),
+                                    Input.mousePosition.x - uiManager.mouseDown.x,
+                                    RTSCamera.InvertMouseY(Input.mousePosition.y) - RTSCamera.InvertMouseY(uiManager.mouseDown.y));
         }
     }
 
     void OnGUI()
     {
-        if (mouseDown != vectorSentinel)
+        if (uiManager.mouseDown != vectorSentinel)
         {
             GUI.color = new Color(1, 1, 1, 0.5f);
             GUI.DrawTexture(selectionBox, selectionHighlight);
@@ -274,7 +286,7 @@ public class GameManager : MonoBehaviour {
             if (unit.selected)
             {
                 unit.flagRenderer.material.color = Color.red;
-                if (!selectedUnits.Contains(unit))
+                if (!playerManager.SelectedUnits.Contains(unit))
                 {
                     Select(unit, true);
                 }
@@ -291,13 +303,13 @@ public class GameManager : MonoBehaviour {
     {
         if (select)
         {
-            selectedUnits.Add(obj);
+            playerManager.SelectedUnits.Add(obj);
         }
         else
         {
-            selectedUnits.Remove(obj);
+            playerManager.SelectedUnits.Remove(obj);
         }
-        onSelectionChange.Invoke();
+        playerManager.OnSelectionChange.Invoke();
     }
 
     /* selection to be refactored ends here */
@@ -335,7 +347,7 @@ public class GameManager : MonoBehaviour {
         startingItems.Add(typeof(Wood), 500);
         startingItems.Add(typeof(Coal), 2000);
 
-        units[units.Count - 1].GetComponent<Storage>().AddItems(startingItems);
+        startingFactory.GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(startLocation.x + 50,
             terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 150,
@@ -352,7 +364,7 @@ public class GameManager : MonoBehaviour {
 
     public void QueueUnit(Type type, int quantity)
     {
-        foreach (RTSGameObject unit in selectedUnits)
+        foreach (RTSGameObject unit in playerManager.SelectedUnits)
         {
             Producer producer = unit.GetComponent<Producer>();
             if (producer != null)
@@ -362,22 +374,42 @@ public class GameManager : MonoBehaviour {
         }
     }
     
-    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming with octTree implementation it should be O(log(n))
-    public RTSGameObject GetNearestUnitInRangeOfType(RTSGameObject source, float range, Type type)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="range"></param>
+    /// <param name="unitType"></param>
+    /// <param name="componentType"></param>
+    /// <returns></returns>
+    public List<Component> GetAllComponentsInRangeOfType(RTSGameObject source, float range, LayerMask mask, Type componentType)
     {
-        int layerMask;
+        Collider[] objectsInRange = GetAllCollidersInRangeOfType(source, range, mask);
+        List<Component> componentsInRange = new List<Component>();
+        foreach(Collider collider in objectsInRange)
+        {
+            Component component = collider.GetComponent(componentType);
+            if (component != null)
+            {
+                componentsInRange.Add(component);
+            }
+        }
+        return componentsInRange;
+    }
+    
+    private Collider[] GetAllCollidersInRangeOfType(RTSGameObject source, float range, LayerMask mask)
+    {
+        return Physics.OverlapSphere(source.transform.position, range, mask);
+    }
+
+    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming with octTree implementation it should be O(log(n))
+    public RTSGameObject GetNearestUnitInRangeOfType(RTSGameObject source, float range, LayerMask mask)
+    {
         float closestDistanceSqr = Mathf.Infinity;
         Vector3 currentPosition = source.transform.position;
         Collider closest = null, sourceCollider = source.GetComponent<Collider>();
-        if (type == typeof(ResourceDeposit))
-        {
-            layerMask = LayerMask.NameToLayer("Resource");
-        }
-        else
-        {
-            layerMask = LayerMask.NameToLayer("RTSGameObject");
-        }
-        Collider[] objectsInRange = Physics.OverlapSphere(currentPosition, range, 1 << layerMask);
+        Collider[] objectsInRange = GetAllCollidersInRangeOfType(source, range, mask);
+
         foreach (Collider c in objectsInRange)
         {
             if (c == sourceCollider)
@@ -413,25 +445,11 @@ public class GameManager : MonoBehaviour {
         GameObject go = Instantiate(rtsGameObjectManager.prefabs["FloatingText"],
             position,
             Quaternion.identity) as GameObject;
-        go.name = "FloatingText" + floatingText.Count();
+        go.name = "FloatingText" + uiManager.floatingText.Count();
 
         FloatingText ft = go.GetComponent<FloatingText>();
         ft.textMesh.text = text;
         ft.transform.position = position;
-        floatingText.Add(ft);
-    }
-    public int GetNumUnits(Type type)
-    {
-        return units.Count(i => i.GetType() == type);
-    }
-
-    public int GetNumUnits()
-    {
-        return units.Count;
-    }
-    
-    public void AddUnit(RTSGameObject unit)
-    {
-        units.Add(unit);
+        uiManager.floatingText.Add(ft);
     }
 }

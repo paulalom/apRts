@@ -14,6 +14,12 @@ public class Storage : MonoBehaviour {
     public HashSet<Type> canContain = new HashSet<Type>();
     public UnityEvent onStorageChangedEvent;
     public UnityEvent onStorageAddEvent;
+    public List<Type> requiredAccessComponents = new List<Type>();
+
+    void Awake()
+    {
+        requiredAccessComponents.Add(typeof(Transporter));
+    }
 
     // Use this for initialization
     void Start ()

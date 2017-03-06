@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\CombatAbilities\Ability.cs" />
+    <Compile Include="Assets\Scripts\CombatAbilities\Explode.cs" />
     <Compile Include="Assets\Scripts\CombatAbilities\Shoot.cs" />
     <Compile Include="Assets\Scripts\CombatStats\Armor.cs" />
     <Compile Include="Assets\Scripts\CombatStats\Defense.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="Assets\Scripts\GameElements\Items\CompositeResource\Car.cs" />
     <Compile Include="Assets\Scripts\GameElements\Items\CompositeResource\Paper.cs" />
     <Compile Include="Assets\Scripts\GameElements\Items\CompositeResource\Tool.cs" />
+    <Compile Include="Assets\Scripts\GameElements\Meta\Player.cs" />
     <Compile Include="Assets\Scripts\GameElements\NonPersistentResources\Energy.cs" />
     <Compile Include="Assets\Scripts\GameElements\NonPersistentResources\Magic.cs" />
     <Compile Include="Assets\Scripts\GameElements\NonPersistentResources\Power.cs" />
@@ -115,9 +117,11 @@
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
     <Compile Include="Assets\Scripts\Managers\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Managers\ButtonManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\CombatManager.cs" />
     <Compile Include="Assets\Scripts\Managers\GameManager.cs" />
     <Compile Include="Assets\Scripts\Managers\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Managers\OrderManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\PlayerManager.cs" />
     <Compile Include="Assets\Scripts\Managers\RTSGameObjectManager.cs" />
     <Compile Include="Assets\Scripts\Managers\TerrainManager.cs" />
     <Compile Include="Assets\Scripts\Managers\UIManager.cs" />

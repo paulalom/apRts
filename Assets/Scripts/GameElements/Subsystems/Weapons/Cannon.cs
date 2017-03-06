@@ -9,5 +9,6 @@ public class Cannon : AttackSubSystem {
         damageType = DamageType.explosive;
         attackType = AttackType.projectile;
         powerDraw = 100;
+        basedamage = 15;
 	}
 }

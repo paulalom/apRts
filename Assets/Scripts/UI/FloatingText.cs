@@ -13,13 +13,13 @@ public class FloatingText : MonoBehaviour {
     private float prevTime;
     private bool directionLeft = true;
     public TextMesh textMesh;
-    GameManager gameManager;
+    UIManager uiManager;
     RTSCamera mainCamera;
     
     
     void Awake()
     {
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         textMesh = GetComponent<TextMesh>();
         startTime = Time.time; // this will need more logic if we implement pause
@@ -31,7 +31,7 @@ public class FloatingText : MonoBehaviour {
 	void Update () {
         if (Time.time - startTime > duration)
         {
-            gameManager.floatingText.Remove(this);
+            uiManager.floatingText.Remove(this);
             Destroy(gameObject);
         }
         else if (Time.time - lastDirectionChange > leftRightinterval)

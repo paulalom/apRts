@@ -7,7 +7,7 @@ using UnityEngine;
 public class Factory : RTSGameObject
 {
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
-    static Type[] defaultCanProduce = new Type[] { typeof(Worker), typeof(Paper), typeof(Tool), typeof(Car) };
+    static Type[] defaultCanProduce = new Type[] { typeof(Worker), typeof(Tank), typeof(Paper), typeof(Tool), typeof(Car) };
     Producer producer;
     Consumer consumer;
 
@@ -31,9 +31,13 @@ public class Factory : RTSGameObject
         producer.productionCost.Add(typeof(Paper), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Tool), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Car), new Dictionary<Type, int>());
+        producer.productionCost.Add(typeof(Tank), new Dictionary<Type, int>());
 
         producer.productionCost[typeof(Worker)].Add(typeof(Tool), 5);
         producer.productionCost[typeof(Worker)].Add(typeof(Paper), 5);
+        producer.productionCost[typeof(Tank)].Add(typeof(Iron), 50);
+        producer.productionCost[typeof(Tank)].Add(typeof(Tool), 50);
+        producer.productionCost[typeof(Tank)].Add(typeof(Coal), 50);
         producer.productionCost[typeof(Paper)].Add(typeof(Wood), 5);
         producer.productionCost[typeof(Tool)].Add(typeof(Wood), 5);
         producer.productionCost[typeof(Tool)].Add(typeof(Iron), 5);
@@ -41,7 +45,8 @@ public class Factory : RTSGameObject
         producer.productionCost[typeof(Car)].Add(typeof(Iron), 5);
         producer.productionCost[typeof(Car)].Add(typeof(Coal), 5);
 
-        producer.productionTime[typeof(Worker)] = 3;
+        producer.productionTime[typeof(Worker)] = 2;
+        producer.productionTime[typeof(Tank)] = 2;
 
         producer.productionQuantity[typeof(Paper)] = 10;
         producer.productionQuantity[typeof(Tool)] = 10;

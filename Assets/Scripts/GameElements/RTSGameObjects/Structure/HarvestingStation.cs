@@ -30,7 +30,8 @@ public class HarvestingStation : RTSGameObject {
 
     void Start()
     {
-        harvester.harvestTarget = (ResourceDeposit)(gameManager.GetNearestUnitInRangeOfType(this, harvester.harvestingRange, typeof(ResourceDeposit)));
+        int layerMask = LayerMask.NameToLayer("Resource");
+        harvester.harvestTarget = (ResourceDeposit)(gameManager.GetNearestUnitInRangeOfType(this, harvester.harvestingRange, 1 << layerMask));
         if (harvester.harvestTarget != null)
         {
             harvester.IsActive = true;

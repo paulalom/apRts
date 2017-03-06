@@ -7,10 +7,14 @@ using System.Collections.Generic;
 public class ButtonManager : MonoBehaviour {
 
     GameManager gameManager;
-    
-	void Start ()
+    PlayerManager playerManager;
+    UIManager uiManager;
+
+    void Start ()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
     }
 	
     void OnGUI()
@@ -25,12 +29,16 @@ public class ButtonManager : MonoBehaviour {
         Rect button;
         RTSGameObject newSelectedUnit = null;
 
-        foreach (RTSGameObject unit in gameManager.selectedUnits)
+        foreach (RTSGameObject unit in playerManager.SelectedUnits)
         {
             j = 1;
             Rect menu = new Rect(50, 250 + i * 55, 400, 50);
             itemCount = 0;
             Storage unitStorage = unit.GetComponent<Storage>();
+            if (unitStorage == null)
+            {
+                continue;
+            }
             foreach (KeyValuePair<Type, int> item in unitStorage.GetItems())
             {
                 icon = new GUIStyle();
@@ -41,7 +49,7 @@ public class ButtonManager : MonoBehaviour {
                 {
                     Debug.Log("Item button!");
                     gameManager.itemTransferSource = new MyKVP<RTSGameObject, MyKVP<Type, int>>(unit, new MyKVP<Type, int>(item));
-                    gameManager.menuClicked = true;
+                    uiManager.menuClicked = true;
                 }
                 j++;
                 itemCount += item.Value;
@@ -53,7 +61,7 @@ public class ButtonManager : MonoBehaviour {
             if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))
             {
                 newSelectedUnit = unit;
-                gameManager.menuClicked = true;
+                uiManager.menuClicked = true;
             }
             i++;
         }
@@ -61,7 +69,7 @@ public class ButtonManager : MonoBehaviour {
         //Temporary selection code, a unit's inventory summary button was clicked so we select them
         if (newSelectedUnit != null)
         {
-            foreach (RTSGameObject unit in gameManager.selectedUnits)
+            foreach (RTSGameObject unit in playerManager.SelectedUnits)
             {
                 if (unit != newSelectedUnit)
                 {
@@ -69,8 +77,8 @@ public class ButtonManager : MonoBehaviour {
                     unit.flagRenderer.material.color = Color.white;
                 }
             }
-            gameManager.selectedUnits.Clear();
-            gameManager.selectedUnits.Add(newSelectedUnit);
+            playerManager.SelectedUnits.Clear();
+            playerManager.SelectedUnits.Add(newSelectedUnit);
         }
     }
 }

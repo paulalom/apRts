@@ -65,6 +65,18 @@ public class RTSGameObjectManager : MonoBehaviour {
             {
                 playerManager.Units.Remove(unit);
                 playerManager.SelectedUnits.Remove(unit);
+                
+                // I don't think this is the right way to handle death animations, but it should be good enough for now.
+                Explosion explosion = unit.GetComponent<Explosion>();
+                if (explosion != null)
+                {
+                    GameObject go = Instantiate(prefabs["Explosion"],
+                                                        unit.transform.position,
+                                                        Quaternion.identity) as GameObject;
+                    go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
+                    Destroy(go, go.GetComponent<ParticleSystem>().duration);
+                }
+
                 Destroy(unit.gameObject);
             }
             unitDestructionQueue.Clear();
@@ -75,7 +87,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     {
         TerrainManager tMan = gameManager.terrainManager;
         Vector3 position = obj.transform.position;
-        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z) + obj.transform.localScale.y/2;
+        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z) + obj.transform.localScale.y/2 + obj.flyHeight;
         obj.transform.position = position;
     }
     public void SnapToTerrainHeight(List<RTSGameObject> objs)
@@ -281,12 +293,12 @@ public class RTSGameObjectManager : MonoBehaviour {
             // still need to refine the damage system of course
             BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
-            projectile.GetComponent<Explode>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
-            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explode>()});
+            projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
+            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explosion>()});
         }
-        else if (ability.GetType() == typeof(Explode))
+        else if (ability.GetType() == typeof(Explosion))
         {
-            Explode explosion = ((Explode)(ability));
+            Explosion explosion = ((Explosion)(ability));
             DamageAllInRadius(unit, explosion.radius, explosion.damage);
             DestroyUnit(unit);
         }

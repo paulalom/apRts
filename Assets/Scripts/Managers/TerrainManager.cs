@@ -617,17 +617,17 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float AveragePoints(float p1, float p2, float p3, float p4)
     {
-        return (p1 + p2 + p3 + p4) * 0.25f;
+        return (p1 + p2 + p3 + p4)/4;
     }
 
     static float AveragePoints(float p1, float p2, float p3)
     {
-        return (p1 + p2 + p3) * 0.33f;
+        return (p1 + p2 + p3)/3;
     }
 
     static float GetRandHeight(int depth)
     {
-        return 0; // UnityEngine.Random.Range(-0.2f, 0.2f) / Mathf.Pow(2, depth);
+        return UnityEngine.Random.Range(-0.1f, 0.1f) / Mathf.Pow(2, depth);
     }
 
     // Only x,z coords are used. This way we can pass in 3d objects without converting

@@ -24,6 +24,7 @@ public class RTSGameObject : MonoBehaviour
     public Ability defaultAbility;
     public int ownerId;
     public int kills = 0;
+    public float flyHeight = 0;
 
     void Awake()
     {

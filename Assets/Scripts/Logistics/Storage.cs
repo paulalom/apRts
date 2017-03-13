@@ -7,13 +7,14 @@ using UnityEngine.Events;
 
 public class Storage : MonoBehaviour {
 
-    public int size = 5000;
-    public int freeSpace = 5000; //todo
+    public int size;
+    public int usedSpace;
+    public int freeSpace; //todo
     //public int maxItemQtyPerSlot; todo
     Dictionary<Type, int> items = new Dictionary<Type, int>();
     public HashSet<Type> canContain = new HashSet<Type>();
-    public UnityEvent onStorageChangedEvent;
-    public UnityEvent onStorageAddEvent;
+    public UnityEvent onStorageChangedEvent = new UnityEvent();
+    public UnityEvent onStorageAddEvent = new UnityEvent();
     public List<Type> requiredAccessComponents = new List<Type>();
 
     void Awake()
@@ -95,19 +96,44 @@ public class Storage : MonoBehaviour {
         }
         else
         {
-            if (!items.ContainsKey(type))
-            {
-                items.Add(type, count);
-            }
-            else
-            {
-                items[type] += count;
-            }
-            onStorageAddEvent.Invoke();
+            AddItemInternal(type, count);
             return count;
         }
 
         //onStorageChangedEvent.Invoke();
+    }
+
+    private void AddItemInternal(Type type, int count)
+    {
+        if (!items.ContainsKey(type))
+        {
+            items.Add(type, count);
+        }
+        else
+        {
+            items[type] += count;
+        }
+        freeSpace -= count;
+        usedSpace += count;
+        onStorageAddEvent.Invoke();
+    }
+
+    private void TakeItemInternal(Type type, int count)
+    {
+        if (items[type] == count)
+        {
+            items.Remove(type);
+        }
+        else if (items[type] < count)
+        {
+            throw new Exception("Invalid use of TakeItemInternal");
+        }
+        else
+        {
+            items[type] -= count;
+        }
+        freeSpace += count;
+        usedSpace -= count;
     }
 
     /// <summary>
@@ -125,7 +151,7 @@ public class Storage : MonoBehaviour {
         }
         else if (items[type] > count)
         {
-            items[type] -= count;
+            TakeItemInternal(type, count);
             return count;
         }
         else if (items[type] < count)
@@ -137,13 +163,13 @@ public class Storage : MonoBehaviour {
             else
             {
                 count = items[type];
-                items.Remove(type);
+                TakeItemInternal(type, count);
                 return count;
             }
         }
         else // amount in storage = requested amount
         {
-            items.Remove(type);
+            TakeItemInternal(type, count);
             return count;
         }
 

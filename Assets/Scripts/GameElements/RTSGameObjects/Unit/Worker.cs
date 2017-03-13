@@ -31,11 +31,11 @@ public class Worker : RTSGameObject
         producer.productionCost[typeof(Factory)].Add(typeof(Iron), 500);
         producer.productionCost[typeof(Factory)].Add(typeof(Stone), 2500);
         producer.productionCost[typeof(Factory)].Add(typeof(Wood), 500);
-        producer.productionCost[typeof(Factory)].Add(typeof(Tool), 200);
+        producer.productionCost[typeof(Factory)].Add(typeof(Tool), 200);/*
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Wood), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Stone), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Iron), 50);
-        producer.productionCost[typeof(HarvestingStation)].Add(typeof(Tool), 10);
+        producer.productionCost[typeof(HarvestingStation)].Add(typeof(Tool), 10);*/
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Iron), 150);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Stone), 100);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Wood), 100);

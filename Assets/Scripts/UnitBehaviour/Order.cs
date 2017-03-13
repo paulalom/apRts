@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public enum OrderType
 {
@@ -13,6 +13,7 @@ public enum OrderType
     Give,
     Take,
     Harvest,
+    Construct,
     UseAbillity
 }
 

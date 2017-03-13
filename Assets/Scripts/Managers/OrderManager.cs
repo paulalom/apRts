@@ -155,9 +155,20 @@ public class OrderManager : MonoBehaviour {
             if (orders[completer].Count == 0)
             {
                 orders.Remove(completer);
+                completer.Idle = true;
             }
         }
         completedOrders.Clear();
+    }
+
+    public void CompleteOrder(RTSGameObject unit)
+    {
+        orders[unit].RemoveAt(0);
+        if (orders[unit].Count == 0)
+        {
+            orders.Remove(unit);
+            unit.Idle = true;
+        }
     }
 
     
@@ -316,6 +327,7 @@ public class OrderManager : MonoBehaviour {
         if (!orders.ContainsKey(unit))
         {
             orders.Add(unit, new List<Order>());
+            unit.Idle = false;
         }
         if (validateOrder)
         {

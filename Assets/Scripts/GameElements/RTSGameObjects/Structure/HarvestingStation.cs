@@ -19,7 +19,7 @@ public class HarvestingStation : RTSGameObject {
         producer = GetComponent<Producer>();
         consumer = GetComponent<Consumer>();
         harvester = GetComponent<Harvester>();
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         unitType = UnitType.Structure;
 
         foreach (Type t in defaultCanContain)
@@ -31,7 +31,7 @@ public class HarvestingStation : RTSGameObject {
     void Start()
     {
         int layerMask = LayerMask.NameToLayer("Resource");
-        harvester.harvestTarget = (ResourceDeposit)(gameManager.GetNearestUnitInRangeOfType(this, harvester.harvestingRange, 1 << layerMask));
+        harvester.harvestTarget = (ResourceDeposit)(rtsGameObjectManager.GetNearestComponentInRange(GetComponent<Collider>(), transform.position, harvester.harvestingRange, 1 << layerMask));
         if (harvester.harvestTarget != null)
         {
             harvester.IsActive = true;

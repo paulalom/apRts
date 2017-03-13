@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.Events;
 using System.Collections.Generic;
 using System;
 
@@ -25,6 +25,22 @@ public class RTSGameObject : MonoBehaviour
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
+    private bool idle = false;
+    public bool Idle { get { return idle; } set
+        {
+            if (value && !idle)
+            {
+                idle = value;
+                onIdle.Invoke(this);
+            } else if (!value && idle)
+            {
+                idle = value;
+            }
+        }
+    }
+    
+    public class OnIdleEvent : UnityEvent<RTSGameObject> { }
+    public OnIdleEvent onIdle = new OnIdleEvent();
 
     void Awake()
     {
@@ -62,7 +78,8 @@ public class RTSGameObject : MonoBehaviour
                 {
                     rtsGameObjectManager.TakeItem(this, order.target, order.item);
                 }
-                orderManager.orders[this].Clear();
+                orderManager.CompleteOrder(this);
+                
             }
         }
     }

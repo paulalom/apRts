@@ -399,7 +399,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     Dictionary<Type, int> items = new Dictionary<Type, int>();
                     if (resourceRandom > 0.4 + (steepness / 30) && height >= waterThreshold - 10)
                     {
-                        items.Add(typeof(Wood), 2000);
+                        items.Add(typeof(Wood), 20000);
                         go = rtsGameObjectManager.NewDeposit(DepositType.Forest,
                                                         items, 
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution), 
@@ -411,8 +411,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     }
                     else if(resourceRandom > 0.4)
                     {
-                        items.Add(typeof(Iron), 800);
-                        items.Add(typeof(Stone), 1600);
+                        items.Add(typeof(Iron), 8000);
+                        items.Add(typeof(Stone), 16000);
                         go = rtsGameObjectManager.NewDeposit(DepositType.Iron,
                                                         items,
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
@@ -424,8 +424,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     }
                     else if (resourceRandom > 0.3)
                     {
-                        items.Add(typeof(Coal), 800);
-                        items.Add(typeof(Stone), 1600);
+                        items.Add(typeof(Coal), 8000);
+                        items.Add(typeof(Stone), 16000);
                         go = rtsGameObjectManager.NewDeposit(DepositType.Coal,
                                                         items,
                                                         new Vector3(terrain.transform.position.x + x * (chunkSizeX / Resolution),
@@ -627,7 +627,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float GetRandHeight(int depth)
     {
-        return UnityEngine.Random.Range(-0.1f, 0.1f) / Mathf.Pow(2, depth);
+        return UnityEngine.Random.Range(-0.13f, 0.13f) / Mathf.Pow(2, depth);
     }
 
     // Only x,z coords are used. This way we can pass in 3d objects without converting

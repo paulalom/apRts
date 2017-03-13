@@ -117,6 +117,7 @@
     <Compile Include="Assets\Scripts\Logistics\StationNotInUse.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
+    <Compile Include="Assets\Scripts\Managers\AIManager.cs" />
     <Compile Include="Assets\Scripts\Managers\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Managers\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\Managers\CombatManager.cs" />
@@ -131,7 +132,9 @@
     <Compile Include="Assets\Scripts\UI\FloatingText.cs" />
     <Compile Include="Assets\Scripts\UI\Selecter.cs" />
     <Compile Include="Assets\Scripts\UI\TestEvent.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\CollectResources.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Order.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\Plan.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
     <Compile Include="Assets\Scripts\World\MultiTerrain.cs" />

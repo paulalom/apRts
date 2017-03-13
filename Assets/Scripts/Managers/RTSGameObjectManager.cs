@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+using UnityEngine.Events;
 
 //All of the manager classes could probaby be static
 public class RTSGameObjectManager : MonoBehaviour {
@@ -22,6 +23,11 @@ public class RTSGameObjectManager : MonoBehaviour {
     private List<RTSGameObject> unitCreationQueue = new List<RTSGameObject>();
     private List<RTSGameObject> unitDestructionQueue = new List<RTSGameObject>();
 
+    public LayerMask rtsGameObjectLayerMask;
+    
+    public class OnUnitCreatedEvent : UnityEvent<RTSGameObject> { }
+    public OnUnitCreatedEvent onUnitCreated = new OnUnitCreatedEvent();
+
     void Awake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
@@ -29,7 +35,9 @@ public class RTSGameObjectManager : MonoBehaviour {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         prefabs = new Dictionary<string, GameObject>();
-        
+        rtsGameObjectLayerMask = 1 << LayerMask.NameToLayer("RTSGameObject");
+
+
         if (InspectorPrefabNames.Length != InspectorPrefabTypes.Length)
         {
             throw new System.Exception("fix the prefabs arrays in the rts game object manager");
@@ -77,7 +85,7 @@ public class RTSGameObjectManager : MonoBehaviour {
                     Destroy(go, go.GetComponent<ParticleSystem>().duration);
                 }
 
-                Destroy(unit.gameObject);
+                Destroy(unit.gameObject, 0.1f); // .1s delay is hack to ensure this loop finishes before objects are destroyed
             }
             unitDestructionQueue.Clear();
         }
@@ -238,7 +246,8 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             terrainManager.FlattenTerrainUnderObject(rtsGo);
         }
-
+        onUnitCreated.Invoke(rtsGo);
+        rtsGo.Idle = true;
         return go;
     }
 
@@ -254,6 +263,22 @@ public class RTSGameObjectManager : MonoBehaviour {
         harvester.IsActive = true;
         return true;
     }
+
+    /*
+    public void TakeItems(RTSGameObject taker, RTSGameObject target, Dictionary<Type, int> items)
+    {
+        Storage targetStorage = target.GetComponent<Storage>();
+        Storage takerStorage = taker.GetComponent<Storage>();
+        targetStorage.TakeItems(items);
+        takerStorage.AddItems(items);
+    }
+    public void GiveItems(RTSGameObject giver, RTSGameObject target, Dictionary<Type, int> items)
+    {
+        Storage targetStorage = target.GetComponent<Storage>();
+        Storage giverStorage = giver.GetComponent<Storage>();
+        giverStorage.TakeItems(items);
+        targetStorage.AddItems(items);
+    }*/
 
     public void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
     {
@@ -306,8 +331,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     public void DamageAllInRadius(RTSGameObject source, float range, float damage)
     {
-        LayerMask layerMask = LayerMask.NameToLayer("RTSGameObject");
-        List<Component> defenses = gameManager.GetAllComponentsInRangeOfType(source, range, 1 << layerMask, typeof(Defense));
+        List<Defense> defenses = GetAllComponentsInRangeOfType<Defense>(source.transform.position, range, rtsGameObjectLayerMask);
         foreach(Defense defense in defenses)
         {
             defense.hull.hullPoints -= damage; // simplistic for now
@@ -326,5 +350,56 @@ public class RTSGameObjectManager : MonoBehaviour {
     public bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)
     {
         return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
+    }
+       
+    public List<componentType> GetAllComponentsInRangeOfType<componentType>(Vector3 source, float range, LayerMask mask)
+    {
+        Collider[] objectsInRange = GetAllCollidersInRangeOfType(source, range, mask);
+        List<componentType> componentsInRange = new List<componentType>();
+        foreach (Collider collider in objectsInRange)
+        {
+            componentType component = collider.GetComponent<componentType>();
+            if (component != null)
+            {
+                componentsInRange.Add(component);
+            }
+        }
+        return componentsInRange;
+    }
+
+    private Collider[] GetAllCollidersInRangeOfType(Vector3 source, float range, LayerMask mask)
+    {
+        return Physics.OverlapSphere(source, range, mask);
+    }
+    
+    // O(n) search + whatever sphereCast is (couldnt find it, but im assuming with octTree implementation it should be O(log(n))
+    public RTSGameObject GetNearestComponentInRange(Collider sourceCollider, Vector3 searchPosition, float range, LayerMask mask, Type ComponentType = null)
+    {
+        Collider closest = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        Collider[] objectsInRange = GetAllCollidersInRangeOfType(searchPosition, range, mask);
+
+        foreach (Collider c in objectsInRange)
+        {
+            if (c == sourceCollider || (ComponentType != null && c.GetComponent(ComponentType) == null))
+            {
+                continue;
+            }
+            Vector3 directionToTarget = c.transform.position - searchPosition;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                closest = c;
+            }
+        }
+        if (closest != null)
+        {
+            return closest.GetComponent<RTSGameObject>();
+        }
+        else
+        {
+            return null;
+        }
     }
 }

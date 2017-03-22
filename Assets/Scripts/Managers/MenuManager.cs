@@ -41,6 +41,12 @@ public class MenuManager : MonoBehaviour {
         drawInventoryMenus();
     }
 
+    void DrawConstructionMenu()
+    {
+        drawMenu(constructionMenuRect);
+        drawMenuButtons(constructionMenuRect, constructionIcons);
+    }
+
     void drawMenu(Rect menu)
     {
         GUIStyle container = new GUIStyle();
@@ -139,11 +145,5 @@ public class MenuManager : MonoBehaviour {
             }
             i++;
         }
-    }
-
-    void DrawConstructionMenu()
-    {
-        drawMenu(constructionMenuRect);
-        drawMenuButtons(constructionMenuRect, constructionIcons);
     }
 }

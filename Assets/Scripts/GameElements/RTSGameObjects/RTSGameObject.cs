@@ -25,21 +25,20 @@ public class RTSGameObject : MonoBehaviour
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
-    private bool idle = false;
+    float lastIdleTime;
+    float updateIdleInterval = 3;
+    public bool idle = false;
     public bool Idle { get { return idle; } set
         {
-            if (value && !idle)
+            if (value != idle)
             {
-                idle = value;
-                onIdle.Invoke(this);
-            } else if (!value && idle)
-            {
+                onIdle.Invoke(this, value);
                 idle = value;
             }
         }
     }
     
-    public class OnIdleEvent : UnityEvent<RTSGameObject> { }
+    public class OnIdleEvent : UnityEvent<RTSGameObject, bool> { }
     public OnIdleEvent onIdle = new OnIdleEvent();
 
     void Awake()
@@ -57,7 +56,11 @@ public class RTSGameObject : MonoBehaviour
 
     void Update()
     {
-        
+        if (idle && lastIdleTime + updateIdleInterval < Time.time)
+        {
+            onIdle.Invoke(this, idle);
+            lastIdleTime = Time.time;
+        }
     }
 
     // Temporary solution to prevent units from entering buildings until pathing is set up
@@ -79,8 +82,10 @@ public class RTSGameObject : MonoBehaviour
                     rtsGameObjectManager.TakeItem(this, order.target, order.item);
                 }
                 orderManager.CompleteOrder(this);
-                
             }
+            Mover mover = GetComponent<Mover>();
+            Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
+            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2);
         }
     }
 

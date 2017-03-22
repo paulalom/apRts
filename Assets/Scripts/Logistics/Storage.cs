@@ -118,7 +118,7 @@ public class Storage : MonoBehaviour {
         onStorageAddEvent.Invoke();
     }
 
-    private void TakeItemInternal(Type type, int count)
+    private int TakeItemInternal(Type type, int count, bool allOrNone)
     {
         if (items[type] == count)
         {
@@ -126,7 +126,15 @@ public class Storage : MonoBehaviour {
         }
         else if (items[type] < count)
         {
-            throw new Exception("Invalid use of TakeItemInternal");
+            if (allOrNone)
+            {
+                return 0;
+            }
+            else
+            {
+                count = items[type];
+                items[type] -= count;
+            }
         }
         else
         {
@@ -134,6 +142,7 @@ public class Storage : MonoBehaviour {
         }
         freeSpace += count;
         usedSpace -= count;
+        return count;
     }
 
     /// <summary>
@@ -149,28 +158,9 @@ public class Storage : MonoBehaviour {
         {
             return 0;
         }
-        else if (items[type] > count)
+        else
         {
-            TakeItemInternal(type, count);
-            return count;
-        }
-        else if (items[type] < count)
-        {
-            if (allOrNone)
-            {
-                return 0;
-            }
-            else
-            {
-                count = items[type];
-                TakeItemInternal(type, count);
-                return count;
-            }
-        }
-        else // amount in storage = requested amount
-        {
-            TakeItemInternal(type, count);
-            return count;
+            return TakeItemInternal(type, count, allOrNone);
         }
 
         //onStorageChangedEvent.Invoke();

@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour {
     AbilityManager abilityManager;
     UIManager uiManager;
     PlayerManager playerManager;
+    SettingsManager settingsManager;
     public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
@@ -33,6 +34,7 @@ public class GameManager : MonoBehaviour {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
     }
 
     // Use this for initialization
@@ -47,8 +49,7 @@ public class GameManager : MonoBehaviour {
 
         HandleInput();
         orderManager.CarryOutOrders(playerManager.Units);
-        // Ideally this would only happen for units that have moved
-        // maybe orderManager returns list of affected units and passes to rtsGameObjectManager
+        // make this only happen for units whose position has changed
         rtsGameObjectManager.SnapToTerrainHeight(playerManager.Units);
         /*
         
@@ -86,44 +87,74 @@ public class GameManager : MonoBehaviour {
         {
             uiManager.mouseDown = Input.mousePosition;
         }
-        if (Input.GetKeyUp(KeyCode.G))
-        {
-            nextOrder = new Order() { type = OrderType.Guard, orderRange = 1f };
-        }
-        if (Input.GetKeyUp(KeyCode.P))
-        {
-            nextOrder = new Order() { type = OrderType.Patrol, orderRange = 1f };
-        }
-        if (Input.GetKeyUp(KeyCode.S))
-        {
-            nextOrder = new Order() { type = OrderType.Stop, orderRange = 1f };
-        }
-        if (Input.GetKeyUp(KeyCode.H))
-        {
-            nextOrder = new Order() { type = OrderType.Harvest, orderRange = 15f };
-        }
-        if (Input.GetKeyUp(KeyCode.F))
-        {
-            nextOrder = new Order() { type = OrderType.Follow, orderRange = 6f };
-        }
-        if (Input.GetKeyUp(KeyCode.A))
-        {
-            nextOrder = new Order() { type = OrderType.UseAbillity };
-        }
 
-        if (rayCast)
+        foreach (KeyValuePair<string, Setting> setting in settingsManager.keyboardSettings)
         {
-            if (Input.GetKey(KeyCode.T))
+            if (setting.Value.activationType == "KeyUp")
             {
-                try { //Try catch to swallow exception. FixMe
-                    // only does raiseTerrain
-                    terrainManager.ModifyTerrain(hit.point, .001f, 20);
-                }
-                catch (Exception e)
+                if (Input.GetKeyUp(setting.Value.key))
                 {
-
+                    bool modifiersActivated = true;
+                    foreach (KeyCode modifier in setting.Value.keyModifiers)
+                    {
+                        if (!Input.GetKey(modifier))
+                        {
+                            modifiersActivated = false;
+                            break;
+                        }
+                    }
+                    if (modifiersActivated)
+                    {
+                        float cameraElevationRate = 1f;
+                        switch (setting.Key) {
+                            case "CamY+":
+                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
+                                break;
+                            case "CamY-":
+                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
+                                break;
+                            case "RaiseTerrain":
+                                if (rayCast)
+                                {
+                                    try
+                                    { //Try catch to swallow exception. FixMe
+                                      // only does raiseTerrain
+                                        terrainManager.ModifyTerrain(hit.point, .001f, 20);
+                                    }
+                                    catch (Exception e) { }
+                                }
+                                break;
+                            case "SpawnFactory":
+                                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
+                                break;
+                            case "Guard":
+                                nextOrder = new Order() { type = OrderType.Guard, orderRange = 1f };
+                                break;
+                            case "Patrol":
+                                nextOrder = new Order() { type = OrderType.Patrol, orderRange = 1f };
+                                break;
+                            case "Stop":
+                                nextOrder = new Order() { type = OrderType.Stop, orderRange = 1f };
+                                break;
+                            case "Harvest":
+                                nextOrder = new Order() { type = OrderType.Harvest, orderRange = 15f };
+                                break;
+                            case "Follow":
+                                nextOrder = new Order() { type = OrderType.Follow, orderRange = 6f };
+                                break;
+                            case "UseAbility":
+                                nextOrder = new Order() { type = OrderType.UseAbillity };
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
             }
+        }
+        
+        if (rayCast)
+        {
             if (Input.GetKeyUp(KeyCode.Mouse0) && uiManager.mouseDown == Input.mousePosition)
             {
                 ProcessNextOrderInput(hit);
@@ -155,30 +186,8 @@ public class GameManager : MonoBehaviour {
                 }
                 nextOrder = null;
             }
-
-            if (Input.GetKeyUp(KeyCode.Q))
-            {
-
-            }
-            if (Input.GetKey(KeyCode.C))
-            {
-                float cameraElevationRate = 1f;
-                if (Input.GetKey(KeyCode.LeftShift))
-                {
-                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
-                }
-                else {
-                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
-                }
-            }
-            if (Input.GetKeyUp(KeyCode.E))
-            {
-                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
-            }
-
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z) + 5, hit.point.z);
         }
-
         CheckBoxSelectionEvent();
     }
 
@@ -212,7 +221,7 @@ public class GameManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in playerManager.SelectedUnits)
             {
-                if (nextOrder.type == OrderType.UseAbillity)
+                if (nextOrder.type == OrderType.UseAbillity && unit.defaultAbility != null)
                 {
                     nextOrder.ability = unit.defaultAbility;
                     nextOrder.ability.target = objectClicked;

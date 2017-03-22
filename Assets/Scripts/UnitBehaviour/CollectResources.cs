@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 public class CollectResources : Plan {
 
-    int shouldDumpCargoThreshold = 30;
-    int shouldGetFromHarvestingStationThreshold = 30;
-    int shouldGetDepositAtFactoryThreshold = 30;
+    int shouldDumpCargoThreshold = 50;
+    int shouldGetFromHarvestingStationThreshold = 50;
+    int shouldDepositAtFactoryThreshold = 50;
     float rangeToSearchForResources = 300;
     RTSGameObjectManager rtsGameObjectManager;
 
@@ -24,6 +24,7 @@ public class CollectResources : Plan {
         {
             steps.AddRange(DumpCargoAtNearestDepot(unit, unit.transform.position));
             steps.AddRange(TakeFromNearestHarvestingStation(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
+            steps.AddRange(DumpCargoAtNearestDepot(unit, unit.transform.position));
         }
         else
         {
@@ -64,7 +65,7 @@ public class CollectResources : Plan {
         foreach (Factory factory in sortedFactories)
         {
             Storage storage = factory.GetComponent<Storage>();
-            if (storage != null && storage.freeSpace >= shouldGetDepositAtFactoryThreshold)
+            if (storage != null && storage.freeSpace >= shouldDepositAtFactoryThreshold)
             {
                 depot = factory.GetComponent<Factory>();
                 break;
@@ -89,6 +90,11 @@ public class CollectResources : Plan {
     {
         HarvestingStation station = null;
         List<Order> collectionOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
+
+        if (unit.storage.freeSpace <= 0)
+        {
+       //     return collectionOrders;
+        }
 
         List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfType<Harvester>(searchPosition,
                                                                             rangeToSearchForResources,

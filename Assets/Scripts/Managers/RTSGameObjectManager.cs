@@ -285,7 +285,10 @@ public class RTSGameObjectManager : MonoBehaviour {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage takerStorage = taker.GetComponent<Storage>();
         int taken = targetStorage.TakeItem(item.Key, item.Value, false);
-        takerStorage.AddItem(item.Key, taken);
+        if (takerStorage.AddItem(item.Key, taken) != taken)
+        {
+            targetStorage.AddItem(item.Key, item.Value - taken, false);
+        }
     }
 
     public void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
@@ -293,7 +296,10 @@ public class RTSGameObjectManager : MonoBehaviour {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage giverStorage = giver.GetComponent<Storage>();
         int given = giverStorage.TakeItem(item.Key, item.Value, false);
-        targetStorage.AddItem(item.Key, given);
+        if (targetStorage.AddItem(item.Key, given) != given)
+        {
+            targetStorage.AddItem(item.Key, item.Value - given, false);
+        }
     }
 
     public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed)

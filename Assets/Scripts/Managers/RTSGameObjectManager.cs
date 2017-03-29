@@ -285,9 +285,10 @@ public class RTSGameObjectManager : MonoBehaviour {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage takerStorage = taker.GetComponent<Storage>();
         int taken = targetStorage.TakeItem(item.Key, item.Value, false);
-        if (takerStorage.AddItem(item.Key, taken) != taken)
+        int acquired = takerStorage.AddItem(item.Key, taken, false);
+        if (acquired != taken)
         {
-            targetStorage.AddItem(item.Key, item.Value - taken, false);
+            targetStorage.AddItem(item.Key, taken - acquired, false);
         }
     }
 
@@ -296,9 +297,10 @@ public class RTSGameObjectManager : MonoBehaviour {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage giverStorage = giver.GetComponent<Storage>();
         int given = giverStorage.TakeItem(item.Key, item.Value, false);
-        if (targetStorage.AddItem(item.Key, given) != given)
+        int acquired = targetStorage.AddItem(item.Key, given, false);
+        if (acquired != given)
         {
-            targetStorage.AddItem(item.Key, item.Value - given, false);
+            giverStorage.AddItem(item.Key, given - acquired, false);
         }
     }
 

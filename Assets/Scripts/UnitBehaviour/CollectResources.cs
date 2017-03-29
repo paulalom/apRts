@@ -76,6 +76,7 @@ public class CollectResources : Plan {
         {
             return null;
         }
+
         List<Harvester> sortedHarvesters = harvesters
                                                 .OrderBy(
                                                 x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
@@ -96,16 +97,7 @@ public class CollectResources : Plan {
     {
         List<Order> dropOffOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
 
-        Factory depot = null;
-
-        if (unit.target == null || !unit.target.GetComponent<Factory>())
-        {
-            depot = GetTargetDepot(unit, searchPosition);
-        }
-        else
-        {
-            depot = unit.target.GetComponent<Factory>();
-        }
+        Factory depot = GetTargetDepot(unit, searchPosition);
         
         // No station meets criteria, unit should remain idle
         if (depot == null)
@@ -124,33 +116,25 @@ public class CollectResources : Plan {
 
     private List<Order> TakeFromNearestHarvestingStation(RTSGameObject unit, Vector3 searchPosition)
     {
-        HarvestingStation station = null;
+        HarvestingStation harvestingStation = null;
         List<Order> collectionOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
 
         if (unit.storage.freeSpace <= 0)
         {
            //return collectionOrders;
         }
-
-        if (unit.target == null || !unit.target.GetComponent<HarvestingStation>())
-        {
-            station = GetTargetHarvester(unit, searchPosition);
-        }
-        else
-        {
-            station = unit.target.GetComponent<HarvestingStation>();
-        }
+        harvestingStation = GetTargetHarvester(unit,searchPosition);
         
         // No station meets criteria, unit should remain idle
-        if (station == null)
+        if (harvestingStation == null)
         {
             return collectionOrders;
         }
         else
         {
-            foreach (KeyValuePair<Type, int> item in station.storage.GetItems())
+            foreach (KeyValuePair<Type, int> item in harvestingStation.storage.GetItems())
             {
-                collectionOrders.Add(new Order() { type = OrderType.Take, target = station, orderRange = 3f, item = new MyKVP<Type, int>(item) });
+                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, orderRange = 3f, item = new MyKVP<Type, int>(item) });
             }
             return collectionOrders;
         }

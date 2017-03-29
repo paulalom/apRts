@@ -85,26 +85,30 @@ public class Storage : MonoBehaviour {
     /// <returns>the number of items added</returns>
     public int AddItem(Type type, int count, bool allOrNone = true)
     {
-        if (freeSpace < count && allOrNone == true)
-        {
-            return 0;
-        }
-        else if (allOrNone == false)
-        {
-            //todo
-            return 0;
-        }
-        else
-        {
-            AddItemInternal(type, count);
-            return count;
-        }
+        
+         return AddItemInternal(type, count, allOrNone);
 
         //onStorageChangedEvent.Invoke();
     }
 
-    private void AddItemInternal(Type type, int count)
+    private int AddItemInternal(Type type, int count, bool allOrNone)
     {
+        if (freeSpace == 0)
+        {
+            return 0;
+        }
+        else if (freeSpace < count)
+        {
+            if (allOrNone)
+            {
+                return 0;
+            }
+            else
+            { 
+                count = freeSpace;
+            }
+        }
+
         if (!items.ContainsKey(type))
         {
             items.Add(type, count);
@@ -113,9 +117,11 @@ public class Storage : MonoBehaviour {
         {
             items[type] += count;
         }
+
         freeSpace -= count;
         usedSpace += count;
         onStorageAddEvent.Invoke();
+        return count;
     }
 
     private int TakeItemInternal(Type type, int count, bool allOrNone)

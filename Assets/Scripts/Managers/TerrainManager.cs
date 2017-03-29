@@ -251,11 +251,12 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         terrain.terrainData.splatPrototypes = terrainTextures;
         terrain.terrainData.treePrototypes = terrainTrees;
         terrain.transform.position = new Vector3(chunkSizeX * worldSpaceChunkIndex.x, 0, chunkSizeZ * worldSpaceChunkIndex.y);
+        /*
         Transform waterPlane = GameObject.Instantiate(waterPlanePrefab, terrainGO.transform.position, Quaternion.identity) as Transform;
         waterPlane.transform.position = new Vector3(waterPlane.position.x + chunkSizeX / 2, waterThreshold, waterPlane.position.z + chunkSizeZ / 2);
         waterPlane.localScale = new Vector3(5.1f, 1, 5.1f); // Yay magic
         waterPlane.SetParent(terrainGO.transform);
-        
+        */
         SetTerrainHeightMap(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTextures(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTrees(terrainGO.GetComponent<Terrain>());

@@ -20,13 +20,15 @@ public class RTSGameObject : MonoBehaviour
     protected RTSGameObjectManager rtsGameObjectManager;
     public GameObject graphicObject; // should this be a thing?
     public Storage storage; // SHOULD ONLY BE ACCESSED THROUGH rtsGameObjectManager.GetStorage?
+    public Mover mover = null;
     public UnitType unitType;
     public Ability defaultAbility;
+    public RTSGameObject target = null;
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
     float lastIdleTime;
-    float updateIdleInterval = 3;
+    float updateIdleInterval = 5;
     public bool idle = false;
     public bool Idle { get { return idle; } set
         {
@@ -52,6 +54,7 @@ public class RTSGameObject : MonoBehaviour
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
+        mover = GetComponent<Mover>();
     }
 
     void Update()
@@ -66,7 +69,7 @@ public class RTSGameObject : MonoBehaviour
     // Temporary solution to prevent units from entering buildings until pathing is set up
     void OnTriggerEnter(Collider other)
     {
-        if (GetComponent<Mover>() != null && rtsGameObjectManager != null)
+        if (mover != null && rtsGameObjectManager != null)
         {
             if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0)
             {
@@ -83,7 +86,6 @@ public class RTSGameObject : MonoBehaviour
                 }
                 orderManager.CompleteOrder(this);
             }
-            Mover mover = GetComponent<Mover>();
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
             rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2);
         }
@@ -91,7 +93,6 @@ public class RTSGameObject : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
-        Mover mover = GetComponent<Mover>();
         if (mover != null && rtsGameObjectManager != null)
         {
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;

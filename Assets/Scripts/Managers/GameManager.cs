@@ -35,6 +35,8 @@ public class GameManager : MonoBehaviour {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
+        //QualitySettings.vSyncCount = 0;
+        //Application.targetFrameRate = 120;
     }
 
     // Use this for initialization
@@ -88,7 +90,7 @@ public class GameManager : MonoBehaviour {
             uiManager.mouseDown = Input.mousePosition;
         }
 
-        foreach (KeyValuePair<string, Setting> setting in settingsManager.keyboardSettings)
+        foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
         {
             if (setting.Value.activationType == "KeyUp")
             {
@@ -124,9 +126,6 @@ public class GameManager : MonoBehaviour {
                                     catch (Exception e) { }
                                 }
                                 break;
-                            case "SpawnFactory":
-                                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
-                                break;
                             case "Guard":
                                 nextOrder = new Order() { type = OrderType.Guard, orderRange = 1f };
                                 break;
@@ -144,6 +143,32 @@ public class GameManager : MonoBehaviour {
                                 break;
                             case "UseAbility":
                                 nextOrder = new Order() { type = OrderType.UseAbillity };
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            else if (setting.Value.activationType == "KeyHold")
+            {
+                if (Input.GetKey(setting.Value.key))
+                {
+                    bool modifiersActivated = true;
+                    foreach (KeyCode modifier in setting.Value.keyModifiers)
+                    {
+                        if (!Input.GetKey(modifier))
+                        {
+                            modifiersActivated = false;
+                            break;
+                        }
+                    }
+                    if (modifiersActivated)
+                    {
+                        switch (setting.Key)
+                        {
+                            case "SpawnFactory":
+                                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
                                 break;
                             default:
                                 break;

@@ -30,13 +30,14 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("camY-", new Setting() { key = KeyCode.C, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
 
         defaultKeyboardSettings.Add("RaiseTerrain", new Setting() { key = KeyCode.T });
-        defaultKeyboardSettings.Add("SpawnFactory", new Setting() { key = KeyCode.Q });
         defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.A });
         defaultKeyboardSettings.Add("Stop", new Setting() { key = KeyCode.S });
         defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });
         defaultKeyboardSettings.Add("Patrol", new Setting() {  key = KeyCode.P });
         defaultKeyboardSettings.Add("Guard", new Setting() { key = KeyCode.G });
         defaultKeyboardSettings.Add("Follow", new Setting() { key = KeyCode.F });
+
+        defaultKeyboardSettings.Add("SpawnFactory", new Setting() { key = KeyCode.Q, activationType = "KeyHold" });
 
         for (int i = 0; i < 10; i++)
         {

@@ -8,7 +8,6 @@ using System.Collections;
 [RequireComponent(typeof(Shoot))]
 public class Tank : RTSGameObject {
     
-    public Mover mover;
     public Consumer consumer;
     public FlowSystem power;
 

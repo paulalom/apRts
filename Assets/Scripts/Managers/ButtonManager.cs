@@ -64,6 +64,10 @@ public class ButtonManager : MonoBehaviour {
                 uiManager.menuClicked = true;
             }
             i++;
+            if (i > 10)
+            {
+                break;
+            }
         }
         
         //Temporary selection code, a unit's inventory summary button was clicked so we select them

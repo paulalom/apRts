@@ -8,7 +8,7 @@ public class CollectResources : Plan {
     int shouldDumpCargoThreshold = 50;
     int shouldGetFromHarvestingStationThreshold = 50;
     int shouldDepositAtFactoryThreshold = 50;
-    float rangeToSearchForResources = 300;
+    float rangeToSearchForResources = 50;
     RTSGameObjectManager rtsGameObjectManager;
 
     public CollectResources()
@@ -24,7 +24,6 @@ public class CollectResources : Plan {
         {
             steps.AddRange(DumpCargoAtNearestDepot(unit, unit.transform.position));
             steps.AddRange(TakeFromNearestHarvestingStation(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
-            steps.AddRange(DumpCargoAtNearestDepot(unit, unit.transform.position));
         }
         else
         {
@@ -32,8 +31,6 @@ public class CollectResources : Plan {
             steps.AddRange(DumpCargoAtNearestDepot(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
         }
         
-
-
         return steps;
     }
 
@@ -43,34 +40,73 @@ public class CollectResources : Plan {
         return unit.storage.freeSpace < shouldDumpCargoThreshold;
     }
 
-    private List<Order> DumpCargoAtNearestDepot(RTSGameObject unit, Vector3 searchPosition)
+    private Factory GetTargetDepot(RTSGameObject unit, Vector3 searchPosition)
     {
-        Factory depot = null;
-        List<Order> dropOffOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
-
         List<Factory> factories = rtsGameObjectManager.GetAllComponentsInRangeOfType<Factory>(searchPosition,
                                                                             rangeToSearchForResources,
                                                                             rtsGameObjectManager.rtsGameObjectLayerMask);
         if (factories == null || factories.Count == 0)
         {
-            return dropOffOrders;
+            return null;
         }
 
         List<Factory> sortedFactories = factories
                 .OrderBy(
                       x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
                         .ToList();
-        
+
 
         foreach (Factory factory in sortedFactories)
         {
             Storage storage = factory.GetComponent<Storage>();
             if (storage != null && storage.freeSpace >= shouldDepositAtFactoryThreshold)
             {
-                depot = factory.GetComponent<Factory>();
-                break;
+                return factory.GetComponent<Factory>();
             }
         }
+        return null;
+    }
+
+    private HarvestingStation GetTargetHarvester(RTSGameObject unit, Vector3 searchPosition)
+    {
+        List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfType<Harvester>(searchPosition,
+                                                                            rangeToSearchForResources,
+                                                                            rtsGameObjectManager.rtsGameObjectLayerMask);
+        if (harvesters == null || harvesters.Count == 0)
+        {
+            return null;
+        }
+        List<Harvester> sortedHarvesters = harvesters
+                                                .OrderBy(
+                                                x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
+                                                    .ToList();
+
+        foreach (Harvester harvester in sortedHarvesters)
+        {
+            Storage storage = harvester.GetComponent<Storage>();
+            if (storage != null && storage.usedSpace >= shouldGetFromHarvestingStationThreshold)
+            {
+                return harvester.GetComponent<HarvestingStation>();
+            }
+        }
+        return null;
+    }
+
+    private List<Order> DumpCargoAtNearestDepot(RTSGameObject unit, Vector3 searchPosition)
+    {
+        List<Order> dropOffOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
+
+        Factory depot = null;
+
+        if (unit.target == null || !unit.target.GetComponent<Factory>())
+        {
+            depot = GetTargetDepot(unit, searchPosition);
+        }
+        else
+        {
+            depot = unit.target.GetComponent<Factory>();
+        }
+        
         // No station meets criteria, unit should remain idle
         if (depot == null)
         {
@@ -93,30 +129,18 @@ public class CollectResources : Plan {
 
         if (unit.storage.freeSpace <= 0)
         {
-       //     return collectionOrders;
+           //return collectionOrders;
         }
 
-        List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfType<Harvester>(searchPosition,
-                                                                            rangeToSearchForResources,
-                                                                            rtsGameObjectManager.rtsGameObjectLayerMask);
-        if (harvesters == null || harvesters.Count == 0)
+        if (unit.target == null || !unit.target.GetComponent<HarvestingStation>())
         {
-            return collectionOrders;
+            station = GetTargetHarvester(unit, searchPosition);
         }
-        List<Harvester> sortedHarvesters = harvesters            
-                                                .OrderBy(
-                                                x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
-                                                    .ToList();
+        else
+        {
+            station = unit.target.GetComponent<HarvestingStation>();
+        }
         
-        foreach (Harvester harvester in sortedHarvesters)
-        {
-            Storage storage = harvester.GetComponent<Storage>();
-            if (storage != null && storage.usedSpace >= shouldGetFromHarvestingStationThreshold)
-            {
-                station = harvester.GetComponent<HarvestingStation>();
-                break;
-            }
-        }
         // No station meets criteria, unit should remain idle
         if (station == null)
         {

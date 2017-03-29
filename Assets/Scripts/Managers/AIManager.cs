@@ -8,7 +8,6 @@ public class AIManager : MonoBehaviour {
     RTSGameObjectManager rtsGameObjectManager;
     OrderManager orderManager;
     float lastTime;
-    float updateInterval = 3;
 
     // Use this for initialization
     void Start () {
@@ -20,11 +19,6 @@ public class AIManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (lastTime + updateInterval < Time.time)
-        {
-           // SetPlanForIdleUnits();
-            lastTime = Time.time;
-        }
 	}
 
     void SubscribeToIdleEvents(RTSGameObject idleUnit)

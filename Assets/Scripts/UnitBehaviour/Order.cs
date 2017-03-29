@@ -26,6 +26,7 @@ public class Order {
     public MyKVP<Type, int> item;
     public RTSGameObject target;
     public Ability ability;
+    public bool repeatOnComplete = false;
 
     public Order() { }
 

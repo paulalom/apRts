@@ -151,8 +151,14 @@ public class OrderManager : MonoBehaviour {
         // not just the first one (if someone queues an order as one finishes, there will be problems)
         foreach (RTSGameObject completer in completedOrders)
         {
-            orders[completer].RemoveAt(0);
-            if (orders[completer].Count == 0)
+            List<Order> unitOrders = orders[completer];
+            Order completedOrder = orders[completer][0];
+            if (completedOrder.repeatOnComplete)
+            {
+                unitOrders.Add(completedOrder);
+            }
+            unitOrders.RemoveAt(0);
+            if (unitOrders.Count == 0)
             {
                 orders.Remove(completer);
                 completer.Idle = true;

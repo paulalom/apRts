@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour {
 
-    public Type[] typesWithMenuIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Worker), typeof(Tank), typeof(Factory), typeof(HarvestingStation), typeof(ResourceDeposit) };
+    public Type[] typesWithMenuIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(Worker), typeof(Tank), typeof(Factory), typeof(HarvestingStation), typeof(ResourceDeposit) };
     public static Dictionary<Type, Texture2D> menuIcon = new Dictionary<Type, Texture2D>();
+
+    static Dictionary<string, Type> numericMenuTypes;
 
     public List<FloatingText> floatingText;
     //public List<StatusGraphic> unitStatus;
@@ -15,6 +17,7 @@ public class UIManager : MonoBehaviour {
     void Awake()
     {
         menuIcon = new Dictionary<Type, Texture2D>();
+        numericMenuTypes = new Dictionary<string, Type>();
         floatingText = new List<FloatingText>();
         mouseDown = GameManager.vectorSentinel;
 
@@ -27,6 +30,26 @@ public class UIManager : MonoBehaviour {
             {
                 menuIcon[type] = Resources.Load<Texture2D>("MyAssets/Icons/None");
             }
+        }
+
+        numericMenuTypes["numeric_1"] = typeof(Worker);
+        numericMenuTypes["numeric_2"] = typeof(HarvestingStation);
+        numericMenuTypes["numeric_3"] = typeof(Factory);
+        numericMenuTypes["numeric_4"] = typeof(Tank);
+        numericMenuTypes["numeric_5"] = typeof(Tool);
+        numericMenuTypes["numeric_6"] = typeof(Paper);
+    }
+
+    public static Type GetNumericMenuType(string key)
+    {
+
+        if (numericMenuTypes.ContainsKey(key))
+        {
+            return numericMenuTypes[key];
+        }
+        else
+        {
+            return typeof(RTSGameObject);
         }
     }
 }

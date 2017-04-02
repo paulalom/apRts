@@ -93,7 +93,7 @@ public class Storage : MonoBehaviour {
 
     private int AddItemInternal(Type type, int count, bool allOrNone)
     {
-        if (freeSpace == 0)
+        if (freeSpace == 0 || count == 0)
         {
             return 0;
         }
@@ -126,6 +126,10 @@ public class Storage : MonoBehaviour {
 
     private int TakeItemInternal(Type type, int count, bool allOrNone)
     {
+        if (count == -1) // -1 take what you can
+        {
+            count = items[type];
+        }
         if (items[type] == count)
         {
             items.Remove(type);

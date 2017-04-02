@@ -35,6 +35,11 @@ public class HarvestingStation : RTSGameObject {
         if (harvester.harvestTarget != null)
         {
             harvester.IsActive = true;
+            idle = false;
+        }
+        else
+        {
+            idle = true; // AI Manager needs to find the harvester something to do
         }
     }
 
@@ -46,9 +51,7 @@ public class HarvestingStation : RTSGameObject {
             if (!harvester.Harvest())
             {
                 harvester.IsActive = false;
-
-                // todo
-                // find next harvest target
+                idle = true;
             }
         }
         else // REMOVE ME (and figure out why harvesters are deactivating randomly)

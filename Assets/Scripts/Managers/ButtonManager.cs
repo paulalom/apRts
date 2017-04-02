@@ -24,6 +24,7 @@ public class ButtonManager : MonoBehaviour {
         int i = 0;
         int j;
         int itemCount = 0;
+        int numInvsToDraw = Math.Min(playerManager.SelectedUnits.Count, 10);
 
         GUIStyle icon;
         Rect button;
@@ -32,7 +33,7 @@ public class ButtonManager : MonoBehaviour {
         foreach (RTSGameObject unit in playerManager.SelectedUnits)
         {
             j = 1;
-            Rect menu = new Rect(50, 250 + i * 55, 400, 50);
+            Rect menu = new Rect(10, 250 + i * 55 - numInvsToDraw * 10, 400, 50);
             itemCount = 0;
             Storage unitStorage = unit.GetComponent<Storage>();
             if (unitStorage == null)
@@ -64,7 +65,7 @@ public class ButtonManager : MonoBehaviour {
                 uiManager.menuClicked = true;
             }
             i++;
-            if (i > 10)
+            if (i > numInvsToDraw)
             {
                 break;
             }

@@ -8,9 +8,11 @@ using UnityEngine.Events;
 public class PlayerManager : MonoBehaviour {
 
     public List<Player> players;
-    public List<RTSGameObject> SelectedUnits { get { return players[0].selectedUnits; } }
+    
     public List<RTSGameObject> Units { get { return players[0].units; } }
+    public List<RTSGameObject> SelectedUnits { get { return players[0].selectedUnits; } }
     public UnityEvent OnSelectionChange { get { return players[0].onSelectionChange; } set { players[0].onSelectionChange = value; } }
+
     //public GameManager gameManager;
 
     void Awake()

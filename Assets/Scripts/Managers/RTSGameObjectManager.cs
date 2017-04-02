@@ -14,6 +14,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     public string[] InspectorPrefabNames;
     public GameObject[] InspectorPrefabTypes;
     public Dictionary<string, GameObject> prefabs;
+    public List<RTSGameObject> units;
     GameManager gameManager;
     TerrainManager terrainManager;
     PlayerManager playerManager;
@@ -230,8 +231,8 @@ public class RTSGameObjectManager : MonoBehaviour {
             rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
         }
         unitCreationQueue.Add(rtsGo);
-
-        if (type == typeof(Factory))
+        
+        if (gameManager.debug && type == typeof(Factory))
         {
             Dictionary<Type, int> items = new Dictionary<Type, int>();
             items.Add(typeof(Coal), 2000);
@@ -257,6 +258,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         Producer producer = taker.GetComponent<Producer>();
         if (target == null || harvester == null)
         {
+            Debug.Log("Whats Going on!?");
             return false; // some weird joojoo here
         }
         harvester.harvestTarget = target;

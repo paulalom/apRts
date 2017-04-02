@@ -19,6 +19,9 @@ public class GameManager : MonoBehaviour {
     public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
+    public bool debug = false;
+    
+    public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(Factory), typeof(Tank), typeof(HarvestingStation), typeof(PowerPlant) };
 
     // these are hackish and needs to change
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
@@ -90,7 +93,7 @@ public class GameManager : MonoBehaviour {
             uiManager.mouseDown = Input.mousePosition;
         }
 
-        foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
+        foreach (KeyValuePair<string, Setting> setting in settingsManager.keyboardSettings)
         {
             if (setting.Value.activationType == "KeyUp")
             {
@@ -147,6 +150,11 @@ public class GameManager : MonoBehaviour {
                             default:
                                 break;
                         }
+
+                        if (setting.Key.Contains("numeric_"))
+                        {
+                            QueueUnit(UIManager.GetNumericMenuType(setting.Key));
+                        }
                     }
                 }
             }
@@ -168,7 +176,10 @@ public class GameManager : MonoBehaviour {
                         switch (setting.Key)
                         {
                             case "SpawnFactory":
-                                rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
+                                if (debug)
+                                {
+                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
+                                }
                                 break;
                             default:
                                 break;
@@ -265,7 +276,7 @@ public class GameManager : MonoBehaviour {
             // objectClicked May be null
             RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
             // Select one
-            if (objectClicked != null)
+            if (objectClicked != null && selectableTypes.Contains(objectClicked.GetType()))
             {
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
@@ -331,6 +342,10 @@ public class GameManager : MonoBehaviour {
     {
         foreach (RTSGameObject unit in units)
         { 
+            if (!selectableTypes.Contains(unit.GetType()))
+            {
+                continue;
+            }
             if (unit.flagRenderer.isVisible)
             {
                 Vector3 camPos = mainCamera.GetComponent<Camera>().WorldToScreenPoint(unit.transform.position);
@@ -392,21 +407,22 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        GameObject startingFactory = rtsGameObjectManager.SpawnUnit(typeof(Factory), startLocation);
+        GameObject commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation);
 
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
-        startingItems.Add(typeof(Tool), 20);
-        startingItems.Add(typeof(Iron), 200);
-        startingItems.Add(typeof(Wood), 500);
+        startingItems.Add(typeof(Iron), 1000);
+        startingItems.Add(typeof(Stone), 4500);
+        startingItems.Add(typeof(Wood), 1000);
+        startingItems.Add(typeof(Tool), 400);
         startingItems.Add(typeof(Coal), 2000);
 
-        startingFactory.GetComponent<Storage>().AddItems(startingItems);
+        commander.GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(startLocation.x + 50,
             terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 150,
             startLocation.y - 50);
-        mainCamera.transform.LookAt(startingFactory.transform);
+        mainCamera.transform.LookAt(commander.transform);
         
     }
 

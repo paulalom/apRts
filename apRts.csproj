@@ -99,6 +99,7 @@
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\Factory.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\HarvestingStation.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\PowerPlant.cs" />
+    <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Commander.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Tank.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Worker.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\AbilitySubsystem.cs" />

@@ -8,7 +8,7 @@ public class CollectResources : Plan {
     int shouldDumpCargoThreshold = 50;
     int shouldGetFromHarvestingStationThreshold = 50;
     int shouldDepositAtFactoryThreshold = 50;
-    float rangeToSearchForResources = 50;
+    float rangeToSearchForResources = 100;
     RTSGameObjectManager rtsGameObjectManager;
 
     public CollectResources()
@@ -108,7 +108,7 @@ public class CollectResources : Plan {
         {
             foreach (KeyValuePair<Type, int> item in unit.storage.GetItems())
             {
-                dropOffOrders.Add(new Order() { type = OrderType.Give, target = depot, orderRange = 3f, item = new MyKVP<Type, int>(item) });
+                dropOffOrders.Add(new Order() { type = OrderType.Give, target = depot, orderRange = 3f, item = new MyKVP<Type, int>(item.Key, -1) });
             }
             return dropOffOrders;
         }
@@ -134,7 +134,7 @@ public class CollectResources : Plan {
         {
             foreach (KeyValuePair<Type, int> item in harvestingStation.storage.GetItems())
             {
-                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, orderRange = 3f, item = new MyKVP<Type, int>(item) });
+                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, orderRange = 3f, item = new MyKVP<Type, int>(item.Key, -1) });
             }
             return collectionOrders;
         }

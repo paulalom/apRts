@@ -43,6 +43,22 @@ public class Producer : MonoBehaviour {
         storage = GetComponent<Storage>();
         productionQueue = new List<MyKVP<Type, int>>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+
+        foreach (Type type in canProduce)
+        {
+            if (!productionCost.ContainsKey(type))
+            {
+                //producer.productionCost.Add(type, new Dictionary<Type, int>()); // This wont fix it, but it will fail quietly
+            }
+            if (!productionTime.ContainsKey(type))
+            {
+                productionTime.Add(type, 30); // default
+            }
+            if (!productionQuantity.ContainsKey(type))
+            {
+                productionQuantity.Add(type, 1); // default
+            }
+        }
     }
 
     // This is called once per frame
@@ -68,7 +84,14 @@ public class Producer : MonoBehaviour {
             throw new System.Exception("Y'all be crazy... Aint nothin to produce. ");
         }
         Type typeToProduce = productionQueue[0].Key;
-        int qtyToProduce = productionQuantity[productionQueue[0].Key];
+        int qtyToProduce = 1;
+        try {
+            qtyToProduce = productionQuantity[productionQueue[0].Key];
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Probably productionQuantity doesnt contain: " + productionQueue[0].Key);
+        }
         if (storage.canContain.Contains(typeToProduce))
         {
             return ProduceToStorage(typeToProduce, qtyToProduce);
@@ -130,7 +153,14 @@ public class Producer : MonoBehaviour {
             IsActive = false;
             return;
         }
-        timeLeftToProduce = productionTime[productionQueue[0].Key];
+        try
+        {
+            timeLeftToProduce = productionTime[productionQueue[0].Key];
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Probably productionTime doesnt contain: " + productionQueue[0].Key);
+        }
     }
 
     public bool TryQueueItem(Type type, int quantity)

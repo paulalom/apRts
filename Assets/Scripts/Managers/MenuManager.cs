@@ -63,24 +63,9 @@ public class MenuManager : MonoBehaviour {
             GUIStyle icon = new GUIStyle();
             icon.normal.background = iconList[x];
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
-            if (GUI.Button(button, x.ToString(), icon))
+            if (GUI.Button(button, (x+1).ToString(), icon))
             {
-                if (x == 0)
-                {
-                    gameManager.QueueUnit(typeof(Worker));
-                }
-                else if (x == 1)
-                {
-                    gameManager.QueueUnit(typeof(HarvestingStation));
-                }
-                else if (x == 2)
-                {
-                    gameManager.QueueUnit(typeof(Factory));
-                }
-                else if (x == 3)
-                {
-                    gameManager.QueueUnit(typeof(Tank));
-                }
+                gameManager.QueueUnit(UIManager.GetNumericMenuType("numeric_" + (x + 1)));
                 uiManager.menuClicked = true;
             }
         }
@@ -95,17 +80,13 @@ public class MenuManager : MonoBehaviour {
     {
         int i = 0;
         int j;
+        int numInvsToDraw = Math.Min(playerManager.SelectedUnits.Count, 10);
         
         foreach (RTSGameObject unit in playerManager.SelectedUnits)
         {
-            // todo fix me bad bad bad bad
-            if (unit.GetType() == typeof(BasicCannonProjectile))
-            {
-                continue;
-            }
             GUIStyle container = new GUIStyle();
             container.normal.background = menuGraphic;
-            Rect menu = new Rect(50, 250 + i * 55, 400, 50);
+            Rect menu = new Rect(10, 250 + i * 55 - numInvsToDraw * 10, 400, 50);
             if (GUI.Button(menu, "", container))
             {
                 Debug.Log("Menu button!");
@@ -144,6 +125,11 @@ public class MenuManager : MonoBehaviour {
                 uiManager.menuClicked = true;
             }
             i++;
+
+            if (i > numInvsToDraw)
+            {
+                break;
+            }
         }
     }
 }

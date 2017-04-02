@@ -47,24 +47,11 @@ public class Factory : RTSGameObject
 
         producer.productionTime[typeof(Worker)] = 2;
         producer.productionTime[typeof(Tank)] = 2;
+        producer.productionTime[typeof(Paper)] = 2;
+        producer.productionTime[typeof(Tool)] = 2;
 
         producer.productionQuantity[typeof(Paper)] = 10;
         producer.productionQuantity[typeof(Tool)] = 10;
-        foreach (Type type in producer.canProduce)
-        {
-            if (!producer.productionCost.ContainsKey(type))
-            {
-                //producer.productionCost.Add(type, new Dictionary<Type, int>()); // This wont fix it, but it will fail quietly
-            }
-            if (!producer.productionTime.ContainsKey(type))
-            {
-                producer.productionTime.Add(type, 30); // default
-            }
-            if (!producer.productionQuantity.ContainsKey(type))
-            {
-                producer.productionQuantity.Add(type, 1); // default
-            }
-        }
 
         consumer.operationCosts[typeof(Coal)] = 3;
         consumer.operationInterval = .3f;

@@ -42,6 +42,9 @@ public class SettingsManager : MonoBehaviour {
         for (int i = 0; i < 10; i++)
         {
             defaultKeyboardSettings.Add("numeric_" + i, new Setting() { key = KeyCode.Alpha0 + i });
+            defaultKeyboardSettings.Add("ALTnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftAlt } });
+            defaultKeyboardSettings.Add("SHIFTnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
+            defaultKeyboardSettings.Add("CTRLnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftControl } });
         }
 
         keyboardSettings = defaultKeyboardSettings;

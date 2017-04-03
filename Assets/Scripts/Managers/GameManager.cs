@@ -16,12 +16,13 @@ public class GameManager : MonoBehaviour {
     UIManager uiManager;
     PlayerManager playerManager;
     SettingsManager settingsManager;
+    AIManager aiManager;
     public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
     public bool debug = false;
     
-    public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(Factory), typeof(Tank), typeof(HarvestingStation), typeof(PowerPlant) };
+    public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     // these are hackish and needs to change
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
+        aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 120;
     }
@@ -439,7 +441,7 @@ public class GameManager : MonoBehaviour {
             Producer producer = unit.GetComponent<Producer>();
             if (producer != null)
             {
-                producer.TryQueueItem(type, quantity);
+                aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
             }
         }
     }

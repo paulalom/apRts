@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour {
 
-    public Type[] typesWithMenuIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(Worker), typeof(Tank), typeof(Factory), typeof(HarvestingStation), typeof(ResourceDeposit) };
+    public Type[] typesWithMenuIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(Worker), typeof(Tank), typeof(HarvestingStation), typeof(Factory), typeof(ResourceDeposit) };
     public static Dictionary<Type, Texture2D> menuIcon = new Dictionary<Type, Texture2D>();
 
     static Dictionary<string, Type> numericMenuTypes;

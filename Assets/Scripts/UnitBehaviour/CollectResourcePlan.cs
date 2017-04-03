@@ -8,12 +8,13 @@ public class CollectResources : Plan {
     int shouldDumpCargoThreshold = 50;
     int shouldGetFromHarvestingStationThreshold = 50;
     int shouldDepositAtFactoryThreshold = 50;
-    float rangeToSearchForResources = 100;
     RTSGameObjectManager rtsGameObjectManager;
+    AIManager aiManager;
 
     public CollectResources()
     {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+        aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
     }
 
     public List<Order> GetPlanSteps(RTSGameObject unit)
@@ -40,10 +41,11 @@ public class CollectResources : Plan {
         return unit.storage.freeSpace < shouldDumpCargoThreshold;
     }
 
+    // should merge the get target functions but ill do that later
     private Factory GetTargetDepot(RTSGameObject unit, Vector3 searchPosition)
     {
         List<Factory> factories = rtsGameObjectManager.GetAllComponentsInRangeOfType<Factory>(searchPosition,
-                                                                            rangeToSearchForResources,
+                                                                            aiManager.rangeToSearchForResources,
                                                                             rtsGameObjectManager.rtsGameObjectLayerMask);
         if (factories == null || factories.Count == 0)
         {
@@ -70,7 +72,7 @@ public class CollectResources : Plan {
     private HarvestingStation GetTargetHarvester(RTSGameObject unit, Vector3 searchPosition)
     {
         List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfType<Harvester>(searchPosition,
-                                                                            rangeToSearchForResources,
+                                                                            aiManager.rangeToSearchForResources,
                                                                             rtsGameObjectManager.rtsGameObjectLayerMask);
         if (harvesters == null || harvesters.Count == 0)
         {

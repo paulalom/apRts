@@ -20,7 +20,7 @@ public class Producer : MonoBehaviour {
     public Dictionary<Type, Dictionary<Type, int>> productionCost = new Dictionary<Type, Dictionary<Type, int>>();
     RTSGameObjectManager rtsGameObjectManager;
 
-    float timeLeftToProduce = 0;
+    public float timeLeftToProduce = 0;
     private bool _isActive = false;
     // If we turn on, start counting production duration from the correct time
     public bool IsActive {
@@ -132,9 +132,21 @@ public class Producer : MonoBehaviour {
         }
     }
 
+    public void CancelProduction()
+    {
+        if (productionQueue.Count >= 1)
+        {
+            storage.AddItems(productionCost[productionQueue[0].Key]);
+            PopProductionQueue();
+            if (productionQueue.Count == 0)
+            {
+                IsActive = false;
+            }
+        }
+    }
+
     void PopProductionQueue()
     {
-        // We done it boys! remove one from the queue
         if (productionQueue[0].Value > 1)
         {
             productionQueue[0] = new MyKVP<Type, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
@@ -163,11 +175,11 @@ public class Producer : MonoBehaviour {
         }
     }
 
-    public bool TryQueueItem(Type type, int quantity)
+    public bool TryQueueItem(Type type, int quantity, bool preValidated = false)
     {
         try
         {
-            if (ValidateNewProductionRequest(type, quantity))
+            if (preValidated || ValidateNewProductionRequest(type, quantity))
             {
                 Dictionary<Type, int> costs = new Dictionary<Type, int>();
                 foreach (KeyValuePair<Type, int> item in productionCost[type])
@@ -199,14 +211,14 @@ public class Producer : MonoBehaviour {
         }
 
         //Queueing automatically turns producer on
-        if (productionQueue.Count == 1)
+        if (productionQueue.Count == 1 && productionQueue[0].Value == 1)
         {
             StartNextProduction();
             IsActive = true;
         }
     }
 
-    private bool ValidateNewProductionRequest(Type type, int quantity) {
+    public bool ValidateNewProductionRequest(Type type, int quantity) {
         if (canProduce.Contains(type))
         {
             return true;

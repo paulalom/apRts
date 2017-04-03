@@ -2,13 +2,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-
 // This class is a hack on the MenuManager (hack) class because overlapping buttons must be in seperate scripts so you can use GUI.Depth
 public class ButtonManager : MonoBehaviour {
 
     GameManager gameManager;
     PlayerManager playerManager;
     UIManager uiManager;
+    public Texture2D progressBarBackTex, progressBarFrontTex;
 
     void Start ()
     {
@@ -64,6 +64,32 @@ public class ButtonManager : MonoBehaviour {
                 newSelectedUnit = unit;
                 uiManager.menuClicked = true;
             }
+
+            Producer producer = unit.GetComponent<Producer>();
+            if (producer != null && producer.productionQueue.Count >= 1)
+            {
+                MyKVP<Type, int> nextInQueue = producer.productionQueue[0];
+                icon = new GUIStyle();
+                icon.normal.background = UIManager.menuIcon[nextInQueue.Key];
+                icon.normal.textColor = Color.red;
+                button = new Rect(menu.width - 50, menu.y + 5, 40, 40);
+                
+                GUIStyle progressBarBackStyle = new GUIStyle();
+                progressBarBackStyle.normal.background = progressBarBackTex;
+                Rect progressBarBack = new Rect(menu.width - 48, menu.y + 37, 36, 5);
+                GUIStyle progressBarFrontStyle = new GUIStyle();
+                progressBarFrontStyle.normal.background = progressBarFrontTex;
+                Rect progressBarFront = new Rect(menu.width - 46, menu.y + 38, 34 *(producer.productionTime[nextInQueue.Key] - producer.timeLeftToProduce)/producer.productionTime[nextInQueue.Key], 3);
+
+                if (GUI.Button(button, nextInQueue.Value.ToString(), icon) 
+                    || GUI.Button(progressBarBack, "", progressBarBackStyle) 
+                    || GUI.Button(progressBarFront, "", progressBarFrontStyle))
+                {
+                    producer.CancelProduction();
+                }
+
+            }
+
             i++;
             if (i > numInvsToDraw)
             {

@@ -14,8 +14,8 @@ public class Worker : RTSGameObject
     {
         storage = GetComponent<Storage>();
         producer = GetComponent<Producer>();
-        producer.canProduce.Add(typeof(HarvestingStation));
         producer.canProduce.Add(typeof(Factory));
+        producer.canProduce.Add(typeof(HarvestingStation));
 
         foreach (Type t in defaultCanContain)
         {
@@ -33,11 +33,11 @@ public class Worker : RTSGameObject
         producer.productionCost.Add(typeof(HarvestingStation), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(PowerPlant), new Dictionary<Type, int>());
 
-        /*
+        
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Wood), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Stone), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Iron), 50);
-        producer.productionCost[typeof(HarvestingStation)].Add(typeof(Tool), 10);*/
+        producer.productionCost[typeof(HarvestingStation)].Add(typeof(Tool), 10);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Iron), 150);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Stone), 100);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Wood), 100);

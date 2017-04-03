@@ -188,6 +188,44 @@ public class Storage : MonoBehaviour {
         return true;
     }
 
+    public bool HasItems(List<MyKVP<Type, int>> hasItems)
+    {
+        foreach (MyKVP<Type, int> item in hasItems)
+        {
+            if (!items.ContainsKey(item.Key) || items[item.Key] < item.Value)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public List<MyKVP<Type, int>> CheckForItemsInOrder(List<MyKVP<Type, int>> itemsToSearch)
+    {
+        List<MyKVP<Type, int>> foundItems = new List<MyKVP<Type, int>>();
+        Dictionary<Type, int> qtyFoundItems = new Dictionary<Type, int>();
+        foreach (MyKVP<Type, int> item in itemsToSearch)
+        {
+            if (items.ContainsKey(item.Key) && items[item.Key] > item.Value + (qtyFoundItems.ContainsKey(item.Key) ? qtyFoundItems[item.Key] : 0))
+            {
+                foundItems.Add(item);
+                if (!qtyFoundItems.ContainsKey(item.Key))
+                {
+                    qtyFoundItems.Add(item.Key, item.Value);
+                }
+                else
+                {
+                    qtyFoundItems[item.Key] += item.Value;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        return foundItems;
+    }
+
     void DebugStorage()
     {
         string debugMessage = this + "[";

@@ -1,25 +1,31 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.Events;
 
-public class AIManager : MonoBehaviour {
+public class AIManager : MonoBehaviour
+{
 
-    List <Plan> plans = new List<Plan>();
+    Dictionary<RTSGameObject, Plan> unitPlans = new Dictionary<RTSGameObject, Plan>();
     RTSGameObjectManager rtsGameObjectManager;
     OrderManager orderManager;
+    public float rangeToSearchForResources = 100;
     float lastTime;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
         lastTime = Time.time;
     }
-	
-	// Update is called once per frame
-	void Update () {
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+    }
 
     void SubscribeToIdleEvents(RTSGameObject idleUnit)
     {
@@ -32,20 +38,25 @@ public class AIManager : MonoBehaviour {
         {
             if (!SetNewPlanForUnit(unit))
             {
-               // idleUnits.Add(unit);
+                // idleUnits.Add(unit);
             }
         }
         else
         {
-          //  idleUnits.Remove(unit);
+            //  idleUnits.Remove(unit);
         }
     }
-   
 
-    bool SetNewPlanForUnit(RTSGameObject unit)
+
+    public bool SetNewPlanForUnit(RTSGameObject unit)
     {
         if (unit.GetType() == typeof(Worker))
         {
+            if (orderManager.orders.ContainsKey(unit))
+            {
+                orderManager.orders[unit].Clear();
+            }
+            // need to take advantage of unitPlans here to create a repeating plan so we dont need to search every time for the nearest resource
             CollectResources collectPlan = new CollectResources();
             List<Order> planOrders = collectPlan.GetPlanSteps(unit);
             foreach (Order order in planOrders)
@@ -56,6 +67,24 @@ public class AIManager : MonoBehaviour {
             {
                 return false;
             }
+        }
+        return true;
+    }
+
+    public bool SetNewPlanForUnit(RTSGameObject unit, Plan plan)
+    {
+        List<Order> planOrders = plan.GetPlanSteps(unit);
+        if (orderManager.orders.ContainsKey(unit))
+        {
+            orderManager.orders[unit].Clear();
+        }
+        foreach (Order order in planOrders)
+        {
+            orderManager.QueueOrder(unit, order);
+        }
+        if (planOrders.Count == 0)
+        {
+            return false;
         }
         return true;
     }

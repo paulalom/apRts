@@ -169,38 +169,6 @@ public class RTSGameObjectManager : MonoBehaviour {
         return go;
     }
 
-    public Storage GetStorage(RTSGameObject accessor, RTSGameObject obj)
-    {
-        if (accessor is ResourceDeposit)
-        {
-            if (accessor.GetComponent<Harvester>() != null)
-            {
-                return obj.storage;
-            }
-            else
-            {
-                throw new MissingComponentException("Non-Harvester attempting to harvest" + accessor.name);
-            }
-        }
-        else
-        {
-            return obj.storage;
-        }
-    }
-
-    public bool TakeFromStorage(RTSGameObject taker, RTSGameObject target, Dictionary<Type, int> items)
-    {
-        if (target.storage.TakeItems(items)) // Do they have the items?
-        {
-            if (!taker.storage.AddItems(items)) // Do we have room?
-            {
-                target.storage.AddItems(items); // Nope, put em back
-                return false;
-            }
-        }
-        return true; // Success!
-    }
-
 
     //The "around" bit is todo
     public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
@@ -265,23 +233,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         harvester.IsActive = true;
         return true;
     }
-
-    /*
-    public void TakeItems(RTSGameObject taker, RTSGameObject target, Dictionary<Type, int> items)
-    {
-        Storage targetStorage = target.GetComponent<Storage>();
-        Storage takerStorage = taker.GetComponent<Storage>();
-        targetStorage.TakeItems(items);
-        takerStorage.AddItems(items);
-    }
-    public void GiveItems(RTSGameObject giver, RTSGameObject target, Dictionary<Type, int> items)
-    {
-        Storage targetStorage = target.GetComponent<Storage>();
-        Storage giverStorage = giver.GetComponent<Storage>();
-        giverStorage.TakeItems(items);
-        targetStorage.AddItems(items);
-    }*/
-
+    
     public void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();

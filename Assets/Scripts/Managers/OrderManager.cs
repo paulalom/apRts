@@ -32,7 +32,16 @@ public class OrderManager : MonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                if (order.type == OrderType.Follow)
+                if (order.type == OrderType.Construct)
+                {
+                    Producer producer = unit.GetComponent<Producer>();
+                    if (producer != null)
+                    {
+                        producer.TryQueueItem(order.item.Key, order.item.Value);
+                    } 
+                    completedOrders.Add(unit);
+                }
+                else if (order.type == OrderType.Follow)
                 {
                     if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {

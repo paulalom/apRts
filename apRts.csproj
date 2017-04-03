@@ -134,7 +134,8 @@
     <Compile Include="Assets\Scripts\UI\FloatingText.cs" />
     <Compile Include="Assets\Scripts\UI\Selecter.cs" />
     <Compile Include="Assets\Scripts\UI\TestEvent.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\CollectResources.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\CollectResourcePlan.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\ConstructionPlan.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Order.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Plan.cs" />
     <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />

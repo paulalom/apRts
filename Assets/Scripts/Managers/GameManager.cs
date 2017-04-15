@@ -20,7 +20,8 @@ public class GameManager : MonoBehaviour {
     public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
     float prevTime;
     Order nextOrder;
-    public bool debug = false;
+    public bool debug = true;
+    public float dt = .001f;
     
     public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
@@ -53,17 +54,14 @@ public class GameManager : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         float now = Time.time;
+        debug = true;
+        dt = now - prevTime;
 
         HandleInput();
-        orderManager.CarryOutOrders(playerManager.Units);
+        orderManager.CarryOutOrders(playerManager.Units, dt);
         // make this only happen for units whose position has changed
         rtsGameObjectManager.SnapToTerrainHeight(playerManager.Units);
-        /*
-        
-        if (now - prevTime > 0.05)
-        {
-            
-        }*/
+
         prevTime = now;
     }
 
@@ -95,7 +93,7 @@ public class GameManager : MonoBehaviour {
             uiManager.mouseDown = Input.mousePosition;
         }
 
-        foreach (KeyValuePair<string, Setting> setting in settingsManager.keyboardSettings)
+        foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
         {
             if (setting.Value.activationType == "KeyUp")
             {

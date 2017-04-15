@@ -6,8 +6,10 @@ using System.Collections;
 // just imagine, batteries filled with tanks!
 public class FlowSystem : Subsystem {
 
-    public float maxRateIn;
-    public float maxRateOut;
+    public float powerIn;
+    public float powerInInterval;
+    public float powerOut;
+    public float powerOutInterval;
     public float capacity;
     public float currentCharge;
     public Type flowTypeIn; // Energy, Magic, Power etc..

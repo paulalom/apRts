@@ -55,6 +55,7 @@ public class RTSGameObject : MonoBehaviour
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         mover = GetComponent<Mover>();
+        
     }
 
     void Update()
@@ -87,7 +88,7 @@ public class RTSGameObject : MonoBehaviour
                 orderManager.CompleteOrder(this);
             }
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2);
+            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2, gameManager.dt);
         }
     }
 
@@ -96,7 +97,7 @@ public class RTSGameObject : MonoBehaviour
         if (mover != null && rtsGameObjectManager != null)
         {
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2);
+            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2, gameManager.dt);
         }
     }
 }

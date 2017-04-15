@@ -18,7 +18,7 @@ public class OrderManager : MonoBehaviour {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
-    public void CarryOutOrders(List<RTSGameObject> units)
+    public void CarryOutOrders(List<RTSGameObject> units, float dt)
     {
         /*
         MoveUnits(units);
@@ -34,18 +34,30 @@ public class OrderManager : MonoBehaviour {
 
                 if (order.type == OrderType.Construct)
                 {
-                    Producer producer = unit.GetComponent<Producer>();
-                    if (producer != null)
+                    if (order.phase == OrderPhase.Active)
                     {
-                        producer.TryQueueItem(order.item.Key, order.item.Value);
-                    } 
-                    completedOrders.Add(unit);
+                        Producer producer = unit.GetComponent<Producer>();
+                        if (producer.TryQueueItem(order.item.Key, order.item.Value))
+                        {
+                            order.phase = OrderPhase.Wait;
+                            //completedOrders.Add(unit);
+                        }
+                    }
+                    // need to figure out a way to display construction queue
+                    else 
+                    { 
+                        order.waitTimeAfterOrder -= dt;
+                        if (order.waitTimeAfterOrder <= 0)
+                        {
+                            completedOrders.Add(unit);
+                        }
+                    }
                 }
                 else if (order.type == OrderType.Follow)
                 {
                     if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                     }
                 }
                 else if (order.type == OrderType.Give)
@@ -57,7 +69,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                     }
                 }
                 else if (order.type == OrderType.Guard)
@@ -71,7 +83,7 @@ public class OrderManager : MonoBehaviour {
                         // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
                         if (unit.GetComponent<Mover>() != null)
                         {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                         }
                         else
                         {
@@ -90,7 +102,7 @@ public class OrderManager : MonoBehaviour {
                         // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
                         if (unit.GetComponent<Mover>() != null)
                         {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
                         }
                     }
                 }
@@ -106,7 +118,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
                     }
                 }
                 else if (order.type == OrderType.Patrol)
@@ -120,7 +132,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
                     }
                 }
                 else if (order.type == OrderType.Stop)
@@ -137,7 +149,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                     }
                 }
                 else if (order.type == OrderType.UseAbillity)
@@ -150,7 +162,7 @@ public class OrderManager : MonoBehaviour {
                     }
                     else
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z));
+                        rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z), dt);
                     }
                 }
             }
@@ -320,7 +332,7 @@ public class OrderManager : MonoBehaviour {
 
     private bool CheckTargetExists(RTSGameObject target)
     {
-            return target != null;
+        return target != null;
     }
 
     private bool CheckCanMove(RTSGameObject unit)
@@ -330,11 +342,24 @@ public class OrderManager : MonoBehaviour {
 
     public bool SetOrder(RTSGameObject unit, Order order, bool validateOrder = true)
     {
-        if (orders.ContainsKey(unit))
+        if (validateOrder)
         {
-            orders[unit].Clear();
+            if (ValidateOrder(unit, order))
+            {
+                CancelOrders(unit);
+                QueueOrder(unit, order, false);
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        return QueueOrder(unit, order, validateOrder);
+        else
+        {
+            CancelOrders(unit);
+            QueueOrder(unit, order, false);
+            return true;
+        }
     }
 
     public bool QueueOrder(RTSGameObject unit, Order order, bool validateOrder = true)
@@ -361,5 +386,27 @@ public class OrderManager : MonoBehaviour {
             orders[unit].Add(new Order(order));
             return true;
         }
+    }
+
+    public void CancelOrders(RTSGameObject unit)
+    {
+        if (orders.ContainsKey(unit) && orders[unit].Count > 0)
+        {
+            // Dequeue productions
+            Producer producer = unit.GetComponent<Producer>();
+            foreach (Order o in orders[unit])
+            {
+                if (o.type == OrderType.Construct)
+                {
+                    producer.CancelProduction();
+                }
+            }
+            orders[unit].Clear();
+        }
+    }
+
+    public void CancelOrder(RTSGameObject unit, Order order)
+    {
+
     }
 }

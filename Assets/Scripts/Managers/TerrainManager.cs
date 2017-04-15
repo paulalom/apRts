@@ -586,10 +586,17 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     public float GetHeightFromGlobalCoords(float xPos, float zPos)
     {
-        Vector2 chunkCoords = GetChunkIndexFromGlobalCoords(xPos, zPos);
-        Terrain terrain = terrainChunks[chunkCoords].GetComponent<Terrain>();
-        Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);
-        return terrain.terrainData.GetHeight((int)(terrainRelativePosition.x / resolutionRatio), (int)(terrainRelativePosition.y / resolutionRatio));
+        try {
+            Vector2 chunkCoords = GetChunkIndexFromGlobalCoords(xPos, zPos);
+            Terrain terrain = terrainChunks[chunkCoords].GetComponent<Terrain>();
+            Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);
+            return terrain.terrainData.GetHeight((int)(terrainRelativePosition.x / resolutionRatio), (int)(terrainRelativePosition.y / resolutionRatio));
+        }
+        catch(Exception e)
+        {
+            Debug.Log("Exception: Unit likely outside of world. Coords: " + xPos + ", " + zPos);
+            return 0;
+        }
     }
 
     public static Vector2 GetTerrainRelativePosition(float xPos, float zPos)

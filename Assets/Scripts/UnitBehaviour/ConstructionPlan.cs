@@ -43,12 +43,12 @@ public class ConstructionPlan : Plan {
 
         if (missingResources.Count == 0)
         {
-            planSteps.AddRange(ConstructThings(unit));
+            planSteps.AddRange(ConstructThings(unit, producer));
         }
         else if (missingResources.Count != costs.Count) // we have some resources, so try to get more otherwise build
         {
             planSteps.AddRange(GetResources(unit, missingResources));
-            planSteps.AddRange(ConstructThings(unit));
+            planSteps.AddRange(ConstructThings(unit, producer));
         }
         else
         {
@@ -59,7 +59,7 @@ public class ConstructionPlan : Plan {
             }
             else
             {
-                planSteps.AddRange(ConstructThings(unit));
+                planSteps.AddRange(ConstructThings(unit, producer));
             }
         }
         
@@ -159,7 +159,7 @@ public class ConstructionPlan : Plan {
         }
     }
 
-    List<Order> ConstructThings(RTSGameObject unit)
+    List<Order> ConstructThings(RTSGameObject unit, Producer producer)
     {
         List<Order> constructionOrders = new List<Order>();
 
@@ -167,7 +167,7 @@ public class ConstructionPlan : Plan {
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(new Order() { type = OrderType.Construct, item = thingToBuild, orderRange = 3f });
+                constructionOrders.Add(new Order() { type = OrderType.Construct, item = thingToBuild, orderRange = 3f, waitTimeAfterOrder = producer.productionTime[thingToBuild.Key] });
             }
         }
         return constructionOrders;

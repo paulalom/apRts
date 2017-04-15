@@ -258,19 +258,19 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
     }
 
-    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed)
+    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed, float dt)
     {
         Mover mover = unit.GetComponent<Mover>();
         if (mover.isActive)
         {
-            Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed);
+            Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed * dt);
             unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
         }
     }
 
-    public void MoveUnit(RTSGameObject unit, Vector2 targetPos)
+    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float dt)
     {
-        MoveUnit(unit, targetPos, unit.GetComponent<Mover>().moveSpeed);
+        MoveUnit(unit, targetPos, unit.GetComponent<Mover>().moveSpeed, dt);
     }
 
     public void UseAbility(RTSGameObject unit, RTSGameObject target, Vector3 targetPosition, Ability ability)

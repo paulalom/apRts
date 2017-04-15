@@ -74,10 +74,10 @@ public class AIManager : MonoBehaviour
     public bool SetNewPlanForUnit(RTSGameObject unit, Plan plan)
     {
         List<Order> planOrders = plan.GetPlanSteps(unit);
-        if (orderManager.orders.ContainsKey(unit))
+        /*if (orderManager.orders.ContainsKey(unit) && orderManager.orders[unit].Count > 0)
         {
             orderManager.orders[unit].Clear();
-        }
+        }*/
         foreach (Order order in planOrders)
         {
             orderManager.QueueOrder(unit, order);

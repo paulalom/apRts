@@ -6,7 +6,6 @@ public class FloatingText : MonoBehaviour {
     
     public float duration = 5; // text on screen for 5s
     private float leftRightinterval = 0.75f; // text moves left to right in this number of seconds
-    private float leftRightDisplacement = 0.1f; // Distance text moves left/right
     private float distToTop = 10; // distance the text travels in the y direction
     private float startTime;
     private float lastDirectionChange;

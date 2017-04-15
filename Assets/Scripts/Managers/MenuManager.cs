@@ -79,7 +79,6 @@ public class MenuManager : MonoBehaviour {
     void drawInventoryMenus()
     {
         int i = 0;
-        int j;
         int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
         
         foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)

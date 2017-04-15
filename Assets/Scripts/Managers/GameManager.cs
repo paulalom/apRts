@@ -477,9 +477,14 @@ public class GameManager : MonoBehaviour {
         foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
         {
             Producer producer = unit.GetComponent<Producer>();
-            if (producer != null)
+            Mover mover = unit.GetComponent<Mover>();
+            if (producer != null && mover != null)
             {
                 aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
+            }
+            else
+            {
+                producer.TryQueueItem(type, quantity);
             }
         }
     }

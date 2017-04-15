@@ -57,8 +57,26 @@ public class AIManager : MonoBehaviour
                 orderManager.orders[unit].Clear();
             }
             // need to take advantage of unitPlans here to create a repeating plan so we dont need to search every time for the nearest resource
-            CollectResources collectPlan = new CollectResources();
+            CollectResourcesPlan collectPlan = new CollectResourcesPlan();
             List<Order> planOrders = collectPlan.GetPlanSteps(unit);
+            foreach (Order order in planOrders)
+            {
+                orderManager.QueueOrder(unit, order);
+            }
+            if (planOrders.Count == 0)
+            {
+                return false;
+            }
+        }
+        else if (unit.GetType() == typeof(Tank) && unit.ownerId == 2)
+        {
+            if (orderManager.orders.ContainsKey(unit))
+            {
+                orderManager.orders[unit].Clear();
+            }
+            // need to take advantage of unitPlans here to create a repeating plan so we dont need to search every time for the nearest resource
+            AttackNearestEnemyPlan attackPlan = new AttackNearestEnemyPlan();
+            List<Order> planOrders = attackPlan.GetPlanSteps(unit);
             foreach (Order order in planOrders)
             {
                 orderManager.QueueOrder(unit, order);

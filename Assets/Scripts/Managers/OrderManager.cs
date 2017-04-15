@@ -32,9 +32,9 @@ public class OrderManager : MonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                if (order.type == OrderType.Construct)
+                if (order.phase == OrderPhase.Active)
                 {
-                    if (order.phase == OrderPhase.Active)
+                    if (order.type == OrderType.Construct)
                     {
                         Producer producer = unit.GetComponent<Producer>();
                         if (producer.TryQueueItem(order.item.Key, order.item.Value))
@@ -43,126 +43,135 @@ public class OrderManager : MonoBehaviour {
                             //completedOrders.Add(unit);
                         }
                     }
-                    // need to figure out a way to display construction queue
-                    else 
-                    { 
-                        order.waitTimeAfterOrder -= dt;
-                        if (order.waitTimeAfterOrder <= 0)
-                        {
-                            completedOrders.Add(unit);
-                        }
-                    }
-                }
-                else if (order.type == OrderType.Follow)
-                {
-                    if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    else if (order.type == OrderType.Follow)
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                    }
-                }
-                else if (order.type == OrderType.Give)
-                {
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
-                    {
-                        rtsGameObjectManager.GiveItem(unit, order.target, order.item);
-                        completedOrders.Add(unit);
-                    }
-                    else
-                    {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                    }
-                }
-                else if (order.type == OrderType.Guard)
-                {
-                    if (false) // There is a unit threatening the target
-                    {
-                        // engage!
-                    }
-                    else // Follow
-                    {
-                        // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
-                        if (unit.GetComponent<Mover>() != null)
+                        if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
                         {
                             rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                         }
+                    }
+                    else if (order.type == OrderType.Give)
+                    {
+                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
+                        {
+                            rtsGameObjectManager.GiveItem(unit, order.target, order.item);
+                            completedOrders.Add(unit);
+                        }
                         else
                         {
-                            // If the unit moves out of range, remove the guard order
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
                         }
                     }
-                }
-                else if (order.type == OrderType.Harvest)
-                {
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    else if (order.type == OrderType.Guard)
                     {
-                        rtsGameObjectManager.Harvest(unit, (ResourceDeposit)order.target);
+                        if (false) // There is a unit threatening the target
+                        {
+                            // engage!
+                        }
+                        else // Follow
+                        {
+                            // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
+                            if (unit.GetComponent<Mover>() != null)
+                            {
+                                rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
+                            }
+                            else
+                            {
+                                // If the unit moves out of range, remove the guard order
+                            }
+                        }
                     }
-                    else
+                    else if (order.type == OrderType.Harvest)
                     {
-                        // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
-                        if (unit.GetComponent<Mover>() != null)
+                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                        {
+                            rtsGameObjectManager.Harvest(unit, (ResourceDeposit)order.target);
+                        }
+                        else
+                        {
+                            // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
+                            if (unit.GetComponent<Mover>() != null)
+                            {
+                                rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
+                            }
+                        }
+                    }
+                    else if (order.type == OrderType.HoldPosition)
+                    {
+                        // Unnecessary for now, but later!
+                    }
+                    else if (order.type == OrderType.Move)
+                    {
+                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                        {
+                            completedOrders.Add(unit);
+                        }
+                        else
                         {
                             rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
                         }
                     }
-                }
-                else if (order.type == OrderType.HoldPosition)
-                {
-                    // Unnecessary for now, but later!
-                }
-                else if (order.type == OrderType.Move)
-                {
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    else if (order.type == OrderType.Patrol)
+                    {
+                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                        {
+                            Vector3 tempVariablesMakeThingsEasierToUnderstand = order.targetPosition;
+                            order.targetPosition = order.orderIssuedPosition;
+                            order.orderIssuedPosition = tempVariablesMakeThingsEasierToUnderstand;
+                            SetOrder(unit, order);
+                        }
+                        else
+                        {
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
+                        }
+                    }
+                    else if (order.type == OrderType.Stop)
                     {
                         completedOrders.Add(unit);
+                        // Is this really an order? Setting to stop clears the queue. What does it mean to queue a stop order?
                     }
-                    else
+                    else if (order.type == OrderType.Take)
                     {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
+                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
+                        {
+                            rtsGameObjectManager.TakeItem(unit, order.target, order.item);
+                            completedOrders.Add(unit);
+                        }
+                        else
+                        {
+                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
+                        }
+                    }
+                    else if (order.type == OrderType.UseAbillity)
+                    {
+                        Vector3 targetPos = order.target == null ? order.targetPosition : order.target.transform.position;
+                        // will need to figure out a different method for dealing with cooldowns, as this can be interrupted. For now this stops the AI from shooting every frame
+                        if (order.phase == OrderPhase.Active)
+                        {
+                            if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, targetPos, order.orderRange))
+                            {
+                                rtsGameObjectManager.UseAbility(unit, order.target, order.targetPosition, order.ability);
+                                completedOrders.Add(unit);
+                            }
+                            else
+                            {
+                                rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z), dt);
+                            }
+                        }
+                        else if (order.phase == OrderPhase.Wait)
+                        {
+
+                        }
+
                     }
                 }
-                else if (order.type == OrderType.Patrol)
+                // need to figure out a way to display construction queue
+                else
                 {
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
+                    order.waitTimeAfterOrder -= dt;
+                    if (order.waitTimeAfterOrder <= 0)
                     {
-                        Vector3 tempVariablesMakeThingsEasierToUnderstand = order.targetPosition;
-                        order.targetPosition = order.orderIssuedPosition;
-                        order.orderIssuedPosition = tempVariablesMakeThingsEasierToUnderstand;
-                        SetOrder(unit, order);
-                    }
-                    else
-                    {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
-                    }
-                }
-                else if (order.type == OrderType.Stop)
-                {
-                    completedOrders.Add(unit);
-                    // Is this really an order? Setting to stop clears the queue. What does it mean to queue a stop order?
-                }
-                else if (order.type == OrderType.Take)
-                {
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
-                    {
-                        rtsGameObjectManager.TakeItem(unit, order.target, order.item);
                         completedOrders.Add(unit);
-                    }
-                    else
-                    {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                    }
-                }
-                else if (order.type == OrderType.UseAbillity)
-                {
-                    Vector3 targetPos = order.target == null ? order.targetPosition : order.target.transform.position;
-                    if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, targetPos, order.orderRange))
-                    {
-                        rtsGameObjectManager.UseAbility(unit, order.target, order.targetPosition, order.ability);
-                        completedOrders.Add(unit);
-                    }
-                    else
-                    {
-                        rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z), dt);
                     }
                 }
             }

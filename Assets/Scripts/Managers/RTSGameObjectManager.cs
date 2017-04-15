@@ -14,7 +14,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     public string[] InspectorPrefabNames;
     public GameObject[] InspectorPrefabTypes;
     public Dictionary<string, GameObject> prefabs;
-    public List<RTSGameObject> units;
+//    public List<RTSGameObject> units;
     GameManager gameManager;
     TerrainManager terrainManager;
     PlayerManager playerManager;
@@ -22,7 +22,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     // lazy method to prevent spawning from breaking foreach loops
     private List<RTSGameObject> unitCreationQueue = new List<RTSGameObject>();
-    private List<RTSGameObject> unitDestructionQueue = new List<RTSGameObject>();
+    private HashSet<RTSGameObject> unitDestructionQueue = new HashSet<RTSGameObject>();
 
     public LayerMask rtsGameObjectLayerMask;
     
@@ -64,7 +64,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in unitCreationQueue)
             {
-                playerManager.AddUnit(unit);
+                playerManager.AddUnit(unit, unit.ownerId);
             }
             unitCreationQueue.Clear();
         }
@@ -72,23 +72,30 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in unitDestructionQueue)
             {
-                playerManager.Units.Remove(unit);
-                playerManager.SelectedUnits.Remove(unit);
-                
-                // I don't think this is the right way to handle death animations, but it should be good enough for now.
-                Explosion explosion = unit.GetComponent<Explosion>();
-                if (explosion != null)
-                {
-                    GameObject go = Instantiate(prefabs["Explosion"],
-                                                        unit.transform.position,
-                                                        Quaternion.identity) as GameObject;
-                    go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
-                    Destroy(go, go.GetComponent<ParticleSystem>().duration);
-                }
+                playerManager.players[unit.ownerId].units.Remove(unit);
+                playerManager.players[unit.ownerId].units.Remove(unit);
 
-                Destroy(unit.gameObject, 0.1f); // .1s delay is hack to ensure this loop finishes before objects are destroyed
+                try {
+                    // I don't think this is the right way to handle death animations, but it should be good enough for now.
+                    Explosion explosion = unit.GetComponent<Explosion>();
+                    if (explosion != null)
+                    {
+                        GameObject go = Instantiate(prefabs["Explosion"],
+                                                            unit.transform.position,
+                                                            Quaternion.identity) as GameObject;
+                        go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
+                        Destroy(go, go.GetComponent<ParticleSystem>().duration);
+                    }
+
+                    Destroy(unit.gameObject, .2f); // .2s delay is hack to ensure this loop finishes before objects are destroyed
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("Exception: Trying to destroy an object which no longer exists");
+                }
             }
             unitDestructionQueue.Clear();
+            
         }
     }
 
@@ -131,14 +138,14 @@ public class RTSGameObjectManager : MonoBehaviour {
             color = Color.green;
             name = "ForstDeposit";
         }
-        name += playerManager.GetNumUnits();
+        name += playerManager.GetNumUnits(0);
         return NewDeposit(name, color, type, items, position);
     }
 
 
     public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position)
     {
-        GameObject go = SpawnUnit(typeof(ResourceDeposit), position);
+        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0);
         ResourceDeposit deposit = go.GetComponent<ResourceDeposit>();
         deposit.type = type;
         go.name = name;
@@ -180,23 +187,28 @@ public class RTSGameObjectManager : MonoBehaviour {
         for (int i = 0; i < quantity; i++)
         {
             SpawnUnit(type, new Vector3(producer.transform.position.x + producer.transform.localScale.x/2 + prefabs[type.ToString()].transform.localScale.x/2 + 1, 
-                producer.transform.position.y, producer.transform.position.z));
+                producer.transform.position.y, producer.transform.position.z), producer.GetComponent<RTSGameObject>().ownerId);
         }
         return true;
     }
 
-    public GameObject SpawnUnit(Type type, Vector3 position)
+    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId)
     {
         Debug.Log(type.ToString());
         GameObject go = Instantiate(prefabs[type.ToString()],
             position,
             Quaternion.identity) as GameObject;
-        go.name = type.ToString() + playerManager.GetNumUnits(type);
+        go.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
         RTSGameObject rtsGo = go.GetComponent<RTSGameObject>();
+        rtsGo.ownerId = ownerId;
         rtsGo.flagRenderer = go.GetComponent<Renderer>();
         if (rtsGo.flagRenderer == null)
         {
             rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
+        }
+        if (ownerId == 2)
+        {
+            rtsGo.flagRenderer.material.color = Color.black;
         }
         unitCreationQueue.Add(rtsGo);
         
@@ -278,7 +290,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         if (ability.GetType() == typeof(Shoot))
         {
             // still need to refine the damage system of course
-            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position).GetComponent<BasicCannonProjectile>();
+            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
             projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
             orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explosion>()});
@@ -313,7 +325,24 @@ public class RTSGameObjectManager : MonoBehaviour {
     {
         return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.z - o2.z) < dist;
     }
-       
+    
+    public RTSGameObject GetNearestEnemy(RTSGameObject unit)
+    {
+        float minDist = -1;
+        RTSGameObject closest = null;
+        float dist;
+        foreach (RTSGameObject rtsGo in playerManager.GetEnemyUnits(unit))
+        {
+            dist = (unit.transform.position - rtsGo.transform.position).sqrMagnitude;
+            if (dist < minDist || minDist == -1)
+            {
+                closest = rtsGo;
+                minDist = dist;
+            }
+        }
+        return closest;
+    }
+
     public List<componentType> GetAllComponentsInRangeOfType<componentType>(Vector3 source, float range, LayerMask mask)
     {
         Collider[] objectsInRange = GetAllCollidersInRangeOfType(source, range, mask);

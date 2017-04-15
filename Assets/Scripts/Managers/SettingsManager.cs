@@ -6,6 +6,7 @@ public class Setting
 {
     //public Action action;
     public KeyCode key;
+    public bool smartCast = false;
     public string activationType = "KeyUp";
     public List<KeyCode> keyModifiers = new List<KeyCode>();
 }
@@ -30,7 +31,7 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("camY-", new Setting() { key = KeyCode.C, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
 
         defaultKeyboardSettings.Add("RaiseTerrain", new Setting() { key = KeyCode.T });
-        defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.A });
+        defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.E, smartCast = true });
         defaultKeyboardSettings.Add("Stop", new Setting() { key = KeyCode.S });
         defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });
         defaultKeyboardSettings.Add("Patrol", new Setting() {  key = KeyCode.P });

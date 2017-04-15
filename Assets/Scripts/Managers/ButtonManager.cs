@@ -24,13 +24,13 @@ public class ButtonManager : MonoBehaviour {
         int i = 0;
         int j;
         int itemCount = 0;
-        int numInvsToDraw = Math.Min(playerManager.SelectedUnits.Count, 10);
+        int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
 
         GUIStyle icon;
         Rect button;
         RTSGameObject newSelectedUnit = null;
 
-        foreach (RTSGameObject unit in playerManager.SelectedUnits)
+        foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
         {
             j = 1;
             Rect menu = new Rect(10, 250 + i * 55 - numInvsToDraw * 10, 400, 50);
@@ -100,7 +100,7 @@ public class ButtonManager : MonoBehaviour {
         //Temporary selection code, a unit's inventory summary button was clicked so we select them
         if (newSelectedUnit != null)
         {
-            foreach (RTSGameObject unit in playerManager.SelectedUnits)
+            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
                 if (unit != newSelectedUnit)
                 {
@@ -108,8 +108,8 @@ public class ButtonManager : MonoBehaviour {
                     unit.flagRenderer.material.color = Color.white;
                 }
             }
-            playerManager.SelectedUnits.Clear();
-            playerManager.SelectedUnits.Add(newSelectedUnit);
+            playerManager.PlayerSelectedUnits.Clear();
+            playerManager.PlayerSelectedUnits.Add(newSelectedUnit);
         }
     }
 }

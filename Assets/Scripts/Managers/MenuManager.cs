@@ -25,7 +25,7 @@ public class MenuManager : MonoBehaviour {
         //something is wonky with the height, magic *3 ftw
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
-        playerManager.OnSelectionChange.AddListener(UpdateInventoryMenuDisplay);
+        playerManager.OnPlayerSelectionChange.AddListener(UpdateInventoryMenuDisplay);
     }
 	
 	// Update is called once per frame
@@ -80,9 +80,9 @@ public class MenuManager : MonoBehaviour {
     {
         int i = 0;
         int j;
-        int numInvsToDraw = Math.Min(playerManager.SelectedUnits.Count, 10);
+        int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
         
-        foreach (RTSGameObject unit in playerManager.SelectedUnits)
+        foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
         {
             GUIStyle container = new GUIStyle();
             container.normal.background = menuGraphic;

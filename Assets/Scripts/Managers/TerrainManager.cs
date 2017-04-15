@@ -200,7 +200,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                         cameraChunkMoveVector.y == 0 ? i + newCenterChunkGlobalIndex.y : newCenterChunkGlobalIndex.y);
                 if (!terrainChunks.ContainsKey(chunkIndex))
                 {
-                    terrainChunks[chunkIndex] = GenerateChunk(chunkIndex);
+                    GenerateChunk(chunkIndex);
                 }
             }
         }
@@ -213,7 +213,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                     Vector2 chunkIndex = new Vector2(newCenterChunkGlobalIndex.x + x, newCenterChunkGlobalIndex.y + y);
                     if (!terrainChunks.ContainsKey(chunkIndex))
                     {
-                        terrainChunks[chunkIndex] = GenerateChunk(chunkIndex);
+                        GenerateChunk(chunkIndex);
                     }
                 }
             }
@@ -237,7 +237,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         oldCenterChunkGlobalIndex += cameraChunkMoveVector;
     }
 
-    GameObject GenerateChunk(Vector2 worldSpaceChunkIndex)
+    void GenerateChunk(Vector2 worldSpaceChunkIndex)
     {
         Debug.Log("Generating Chunk world index (" + worldSpaceChunkIndex.x + "," + worldSpaceChunkIndex.y + "))");
         GameObject terrainGO = new GameObject();
@@ -261,8 +261,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         SetTerrainTextures(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTrees(terrainGO.GetComponent<Terrain>());
         SetTerrainResources(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
-        
-        return terrainGO;
+
+        terrainChunks[worldSpaceChunkIndex] = terrainGO;
     }
 
     void SetTerrainHeightMap(Terrain terrain, Vector2 worldSpaceChunkIndex)
@@ -621,6 +621,22 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     public static Vector2 GetChunkIndexFromCameraPos(Vector3 cameraPosition)
     {
         return GetChunkIndexFromGlobalCoords(cameraPosition.x, cameraPosition.z);
+    }
+
+    public void CheckIfUnitsInTerrain(List<RTSGameObject> units)
+    {
+        foreach (RTSGameObject unit in units)
+        {
+            if (!DoesTerrainExistForPoint(unit.transform.position))
+            {
+                GenerateChunk(GetChunkIndexFromGlobalCoords(unit.transform.position.x, unit.transform.position.z));
+            }
+        }
+    }
+
+    public bool DoesTerrainExistForPoint(Vector3 point)
+    {
+        return terrainChunks.ContainsKey(GetChunkIndexFromGlobalCoords(point.x, point.z));
     }
 
     static float AveragePoints(float p1, float p2, float p3, float p4)

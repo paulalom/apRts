@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
-public class CollectResources : Plan {
+public class CollectResourcesPlan : Plan {
 
     int shouldDumpCargoThreshold = 50;
     int shouldGetFromHarvestingStationThreshold = 50;
@@ -11,7 +11,7 @@ public class CollectResources : Plan {
     RTSGameObjectManager rtsGameObjectManager;
     AIManager aiManager;
 
-    public CollectResources()
+    public CollectResourcesPlan()
     {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();

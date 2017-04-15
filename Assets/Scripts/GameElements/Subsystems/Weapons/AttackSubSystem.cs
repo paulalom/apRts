@@ -12,7 +12,7 @@ public enum DamageType
 }
 
 [RequireComponent(typeof(Ability))]
-public class AttackSubSystem : AbilitySubsystem {
+public class AttackSubsystem : AbilitySubsystem {
     public Ability attack;
     public AttackType attackType;
     public DamageType damageType;

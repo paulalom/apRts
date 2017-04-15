@@ -9,9 +9,9 @@ public class PlayerManager : MonoBehaviour {
 
     public List<Player> players;
     
-    public List<RTSGameObject> Units { get { return players[0].units; } }
-    public List<RTSGameObject> SelectedUnits { get { return players[0].selectedUnits; } }
-    public UnityEvent OnSelectionChange { get { return players[0].onSelectionChange; } set { players[0].onSelectionChange = value; } }
+    public List<RTSGameObject> PlayerUnits { get { return players[1].units; } }
+    public List<RTSGameObject> PlayerSelectedUnits { get { return players[1].selectedUnits; } }
+    public UnityEvent OnPlayerSelectionChange { get { return players[1].onSelectionChange; } set { players[1].onSelectionChange = value; } }
 
     //public GameManager gameManager;
 
@@ -26,18 +26,46 @@ public class PlayerManager : MonoBehaviour {
         }
     }
 
-    public int GetNumUnits(Type type)
+    public int GetNumUnits(Type type, int playerId)
     {
-        return Units.Count(i => i.GetType() == type);
+        return players[playerId].units.Count(i => i.GetType() == type);
     }
 
-    public int GetNumUnits()
+    public int GetNumUnits(int playerId)
     {
-        return Units.Count;
+        return players[playerId].units.Count;
     }
 
-    public void AddUnit(RTSGameObject unit)
+    public void AddUnit(RTSGameObject unit, int playerId)
     {
-        Units.Add(unit);
+        players[playerId].units.Add(unit);
+    }
+
+
+    // We should store these lists (nonneutral, enemyUnits etc..) and maintain them rather than building them each time.
+    public List<RTSGameObject> GetNonNeutralUnits()
+    {
+        List <RTSGameObject> units = new List<RTSGameObject>();
+        foreach(Player player in players)
+        {
+            if (player.Name != "Neutral")
+            {
+                units.AddRange(player.units);
+            }
+        }
+        return units;
+    }
+    
+    public List<RTSGameObject> GetEnemyUnits(RTSGameObject unit)
+    {
+        List<RTSGameObject> units = new List<RTSGameObject>();
+        foreach (Player player in players)
+        {
+            if (player.Name != "Neutral" && players[unit.ownerId] != player)
+            {
+                units.AddRange(player.units);
+            }
+        }
+        return units;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Cannon : AttackSubSystem {
+public class Cannon : AttackSubsystem {
 
     // Use this for initialization
     void Start () {

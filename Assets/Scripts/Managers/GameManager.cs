@@ -18,11 +18,14 @@ public class GameManager : MonoBehaviour {
     SettingsManager settingsManager;
     AIManager aiManager;
     public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
-    float prevTime;
+    float prevTime, lastEnemySpawn;
     Order nextOrder;
     public bool debug = true;
     public float dt = .001f;
-    
+    float mouseSlipTolerance = 10; // The square root of the distance you are allowed to move your mouse before a drag select is detected
+    public int myPlayerId = 1, enemyPlayerId = 2;
+    public float enemySpawnRateBase;
+    RTSGameObject commander;
     public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     // these are hackish and needs to change
@@ -58,13 +61,40 @@ public class GameManager : MonoBehaviour {
         dt = now - prevTime;
 
         HandleInput();
-        orderManager.CarryOutOrders(playerManager.Units, dt);
+        orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
         // make this only happen for units whose position has changed
-        rtsGameObjectManager.SnapToTerrainHeight(playerManager.Units);
+        rtsGameObjectManager.SnapToTerrainHeight(playerManager.GetNonNeutralUnits());
+        SpawnEnemies();
+        terrainManager.CheckIfUnitsInTerrain(playerManager.GetNonNeutralUnits());
 
         prevTime = now;
     }
 
+    void SpawnEnemies()
+    {
+        float nextEnemySpawn = enemySpawnRateBase / (1 + (.05f * (Time.time / 30)));
+        
+        if (Time.time - lastEnemySpawn > nextEnemySpawn)
+        {
+            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId);
+            lastEnemySpawn = Time.time;
+        }
+    }
+
+    Vector3 GetEnemySpawnPosition()
+    {
+        return RandomCircle(commander.transform.position, 200);
+    }
+
+    Vector3 RandomCircle(Vector3 center, float radius)
+    {
+        float ang = UnityEngine.Random.value * 360;
+        Vector3 pos;
+        pos.x = center.x + radius * Mathf.Sin(ang * Mathf.Deg2Rad);
+        pos.y = center.y;
+        pos.z = center.z + radius * Mathf.Cos(ang * Mathf.Deg2Rad);
+        return pos;
+    }
 
     void OnGUI()
     {
@@ -178,13 +208,22 @@ public class GameManager : MonoBehaviour {
                             case "SpawnFactory":
                                 if (debug)
                                 {
-                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point);
+                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1);
                                 }
                                 break;
                             default:
                                 break;
                         }
                     }
+                }
+            }
+
+            if (setting.Value.smartCast)
+            {
+                ProcessNextOrderInput(hit);
+                if (nextOrder != null)
+                {
+                    nextOrder = null;
                 }
             }
         }
@@ -208,14 +247,14 @@ public class GameManager : MonoBehaviour {
                 nextOrder = new Order() { type = OrderType.Move, targetPosition = hit.point, orderRange = .3f };
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
-                    foreach (RTSGameObject unit in playerManager.SelectedUnits)
+                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
                         orderManager.QueueOrder(unit, nextOrder);
                     }
                 }
                 else
                 {
-                    foreach (RTSGameObject unit in playerManager.SelectedUnits)
+                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
                         orderManager.SetOrder(unit, nextOrder);
                     }
@@ -241,7 +280,7 @@ public class GameManager : MonoBehaviour {
         nextOrder.targetPosition = hit.point;
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            foreach (RTSGameObject unit in playerManager.SelectedUnits)
+            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
                 if (nextOrder.type == OrderType.UseAbillity)
                 {
@@ -249,13 +288,14 @@ public class GameManager : MonoBehaviour {
                     nextOrder.ability.target = objectClicked;
                     nextOrder.ability.targetPosition = hit.point;
                     nextOrder.orderRange = unit.defaultAbility.range;
+                    nextOrder.waitTimeAfterOrder = unit.defaultAbility.cooldown;
                 }
                 orderManager.QueueOrder(unit, nextOrder);
             }
         }
         else
         {
-            foreach (RTSGameObject unit in playerManager.SelectedUnits)
+            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
                 if (nextOrder.type == OrderType.UseAbillity && unit.defaultAbility != null)
                 {
@@ -276,19 +316,19 @@ public class GameManager : MonoBehaviour {
             // objectClicked May be null
             RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
             // Select one
-            if (objectClicked != null && selectableTypes.Contains(objectClicked.GetType()))
+            if (objectClicked != null && selectableTypes.Contains(objectClicked.GetType()) && objectClicked.ownerId == myPlayerId)
             {
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
-                    foreach (RTSGameObject unit in playerManager.SelectedUnits)
+                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
                         unit.selected = false;
                         unit.flagRenderer.material.color = Color.white;
                     }
-                    playerManager.SelectedUnits.Clear();
+                    playerManager.PlayerSelectedUnits.Clear();
                 }
 
-                playerManager.SelectedUnits.Add(objectClicked);
+                playerManager.PlayerSelectedUnits.Add(objectClicked);
                 objectClicked.selected = true;
                 objectClicked.flagRenderer.material.color = Color.red;
             }
@@ -304,9 +344,9 @@ public class GameManager : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!uiManager.menuClicked && Input.mousePosition != uiManager.mouseDown) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            if (!uiManager.menuClicked && (Input.mousePosition - uiManager.mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
             {
-                CheckSelected(playerManager.Units);
+                CheckSelected(playerManager.PlayerUnits);
             }
             uiManager.mouseDown = vectorSentinel;
         }
@@ -342,7 +382,7 @@ public class GameManager : MonoBehaviour {
     {
         foreach (RTSGameObject unit in units)
         { 
-            if (!selectableTypes.Contains(unit.GetType()))
+            if (!selectableTypes.Contains(unit.GetType()) || unit.ownerId != myPlayerId)
             {
                 continue;
             }
@@ -355,7 +395,7 @@ public class GameManager : MonoBehaviour {
             if (unit.selected)
             {
                 unit.flagRenderer.material.color = Color.red;
-                if (!playerManager.SelectedUnits.Contains(unit))
+                if (!playerManager.PlayerSelectedUnits.Contains(unit))
                 {
                     Select(unit, true);
                 }
@@ -372,13 +412,13 @@ public class GameManager : MonoBehaviour {
     {
         if (select)
         {
-            playerManager.SelectedUnits.Add(obj);
+            playerManager.PlayerSelectedUnits.Add(obj);
         }
         else
         {
-            playerManager.SelectedUnits.Remove(obj);
+            playerManager.PlayerSelectedUnits.Remove(obj);
         }
-        playerManager.OnSelectionChange.Invoke();
+        playerManager.OnPlayerSelectionChange.Invoke();
     }
 
     /* selection to be refactored ends here */
@@ -407,8 +447,8 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        GameObject commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation);
-
+        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation, 1).GetComponent<RTSGameObject>();
+        
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
         startingItems.Add(typeof(Iron), 1000);
@@ -420,7 +460,7 @@ public class GameManager : MonoBehaviour {
         commander.GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(startLocation.x + 50,
-            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 150,
+            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 300,
             startLocation.y - 50);
         mainCamera.transform.LookAt(commander.transform);
         
@@ -434,7 +474,7 @@ public class GameManager : MonoBehaviour {
 
     public void QueueUnit(Type type, int quantity)
     {
-        foreach (RTSGameObject unit in playerManager.SelectedUnits)
+        foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
         {
             Producer producer = unit.GetComponent<Producer>();
             if (producer != null)

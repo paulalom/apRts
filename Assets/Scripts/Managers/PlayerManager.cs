@@ -8,6 +8,7 @@ using UnityEngine.Events;
 public class PlayerManager : MonoBehaviour {
 
     public List<Player> players;
+    public World activeWorld;
     
     public List<RTSGameObject> PlayerUnits { get { return players[1].units; } }
     public List<RTSGameObject> PlayerSelectedUnits { get { return players[1].selectedUnits; } }

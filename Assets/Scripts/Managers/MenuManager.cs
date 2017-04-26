@@ -102,7 +102,7 @@ public class MenuManager : MonoBehaviour {
                             type = OrderType.Give,
                             target = unit,
                             orderRange = 3f,
-                            item = gameManager.itemTransferSource.Value
+                            items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }
                         });
                     }
                     // Destination is a transporter
@@ -113,7 +113,7 @@ public class MenuManager : MonoBehaviour {
                             type = OrderType.Take,
                             target = sourceUnit,
                             orderRange = 3f,
-                            item = gameManager.itemTransferSource.Value
+                            items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }
                         });
                     }
                     else

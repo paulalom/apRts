@@ -37,7 +37,7 @@ public class OrderManager : MonoBehaviour {
                     if (order.type == OrderType.Construct)
                     {
                         Producer producer = unit.GetComponent<Producer>();
-                        if (producer.TryQueueItem(order.item.Key, order.item.Value))
+                        if (producer.TryQueueItem(order.items[0].Key, order.items[0].Value))
                         {
                             order.phase = OrderPhase.Wait;
                             //completedOrders.Add(unit);
@@ -54,7 +54,7 @@ public class OrderManager : MonoBehaviour {
                     {
                         if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                         {
-                            rtsGameObjectManager.GiveItem(unit, order.target, order.item);
+                            rtsGameObjectManager.GiveItems(unit, order.target, order.items);
                             completedOrders.Add(unit);
                         }
                         else
@@ -134,7 +134,7 @@ public class OrderManager : MonoBehaviour {
                     {
                         if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
                         {
-                            rtsGameObjectManager.TakeItem(unit, order.target, order.item);
+                            rtsGameObjectManager.TakeItems(unit, order.target, order.items);
                             completedOrders.Add(unit);
                         }
                         else
@@ -418,4 +418,5 @@ public class OrderManager : MonoBehaviour {
     {
 
     }
+
 }

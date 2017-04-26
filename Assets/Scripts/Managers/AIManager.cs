@@ -11,7 +11,6 @@ public class AIManager : MonoBehaviour
     RTSGameObjectManager rtsGameObjectManager;
     OrderManager orderManager;
     public float rangeToSearchForResources = 100;
-    float lastTime;
 
     // Use this for initialization
     void Start()
@@ -19,7 +18,6 @@ public class AIManager : MonoBehaviour
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
-        lastTime = Time.time;
     }
 
     // Update is called once per frame

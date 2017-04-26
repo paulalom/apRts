@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour {
     [HideInInspector]
     public OrderManager orderManager;
     RTSGameObjectManager rtsGameObjectManager;
-    AbilityManager abilityManager;
     UIManager uiManager;
     PlayerManager playerManager;
     SettingsManager settingsManager;
@@ -24,6 +23,7 @@ public class GameManager : MonoBehaviour {
     public float dt = .001f;
     float mouseSlipTolerance = 10; // The square root of the distance you are allowed to move your mouse before a drag select is detected
     public int myPlayerId = 1, enemyPlayerId = 2;
+    int numWorlds = 0;
     public float enemySpawnRateBase;
     RTSGameObject commander;
     public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
@@ -38,7 +38,6 @@ public class GameManager : MonoBehaviour {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
-        abilityManager = GameObject.FindGameObjectWithTag("AbilityManager").GetComponent<AbilityManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
@@ -51,7 +50,34 @@ public class GameManager : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        playerManager.activeWorld = GenerateWorld(GetWorldSettings(numWorlds));
+        numWorlds++;
+        mainCamera.world = playerManager.activeWorld;
         SetUpPlayer();
+    }
+
+
+    WorldSettings GetWorldSettings(int randomSeed)
+    {
+        return new WorldSettings()
+        {
+            randomSeed = randomSeed,
+            resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
+            resourceRarityRating = WorldSettings.starterWorldResourceRarity,
+            sizeRating = WorldSettings.starterWorldSizeRating,
+            numStartLocations = WorldSettings.starterWorldNumStartLocations,
+            aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
+            aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
+        };
+    }
+
+    World GenerateWorld(WorldSettings worldSettings)
+    {
+        World world = new World() { worldSettings = worldSettings };
+
+        world.BuildWorld(terrainManager);
+
+        return world;
     }
 
     // Update is called once per frame
@@ -65,7 +91,7 @@ public class GameManager : MonoBehaviour {
         // make this only happen for units whose position has changed
         rtsGameObjectManager.SnapToTerrainHeight(playerManager.GetNonNeutralUnits());
         SpawnEnemies();
-        terrainManager.CheckIfUnitsInTerrain(playerManager.GetNonNeutralUnits());
+        rtsGameObjectManager.CheckIfUnitsInTerrain(playerManager.GetNonNeutralUnits());
 
         prevTime = now;
     }
@@ -76,7 +102,7 @@ public class GameManager : MonoBehaviour {
         
         if (Time.time - lastEnemySpawn > nextEnemySpawn)
         {
-            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId);
+      //      rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, playerManager.activeWorld);
             lastEnemySpawn = Time.time;
         }
     }
@@ -154,7 +180,7 @@ public class GameManager : MonoBehaviour {
                                     try
                                     { //Try catch to swallow exception. FixMe
                                       // only does raiseTerrain
-                                        terrainManager.ModifyTerrain(hit.point, .001f, 20);
+                                        terrainManager.ModifyTerrain(hit.point, .001f, 20, playerManager.activeWorld);
                                     }
                                     catch (Exception e) { }
                                 }
@@ -208,7 +234,7 @@ public class GameManager : MonoBehaviour {
                             case "SpawnFactory":
                                 if (debug)
                                 {
-                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1);
+                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.activeWorld);
                                 }
                                 break;
                             default:
@@ -261,7 +287,7 @@ public class GameManager : MonoBehaviour {
                 }
                 nextOrder = null;
             }
-            terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z) + 5, hit.point.z);
+            terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
         }
         CheckBoxSelectionEvent();
     }
@@ -447,7 +473,7 @@ public class GameManager : MonoBehaviour {
                                             startTerrainPositionOffset.y);
 
         // Our start location is a factory! hooray
-        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation, 1).GetComponent<RTSGameObject>();
+        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation, 1, playerManager.activeWorld).GetComponent<RTSGameObject>();
         
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
@@ -460,7 +486,7 @@ public class GameManager : MonoBehaviour {
         commander.GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(startLocation.x + 50,
-            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y) + 300,
+            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, playerManager.activeWorld) + 200,
             startLocation.y - 50);
         mainCamera.transform.LookAt(commander.transform);
         

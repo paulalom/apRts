@@ -241,4 +241,21 @@ public class Storage : MonoBehaviour {
     {
         return items;
     }
+    public List<MyKVP<Type, int>> GetItemsMyKVP()
+    {
+        List<MyKVP<Type, int>> outItems = new List<MyKVP<Type, int>>();
+        foreach (KeyValuePair<Type,int> item in items){
+            outItems.Add(new MyKVP<Type, int>(item));
+        }
+        return outItems;
+    }
+    public List<MyKVP<Type, int>> GetItemsMyKVP(int quantity)
+    {
+        List<MyKVP<Type, int>> outItems = new List<MyKVP<Type, int>>();
+        foreach (KeyValuePair<Type, int> item in items)
+        {
+            outItems.Add(new MyKVP<Type, int>(item.Key, quantity));
+        }
+        return outItems;
+    }
 }

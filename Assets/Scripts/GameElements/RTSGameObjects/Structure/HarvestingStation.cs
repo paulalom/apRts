@@ -8,7 +8,6 @@ using System.Collections;
 public class HarvestingStation : RTSGameObject {
 
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone) };
-    Producer producer;
     Consumer consumer;
     Harvester harvester;
     bool isActive = false;
@@ -16,7 +15,6 @@ public class HarvestingStation : RTSGameObject {
     void Awake()
     {
         storage = GetComponent<Storage>();
-        producer = GetComponent<Producer>();
         consumer = GetComponent<Consumer>();
         harvester = GetComponent<Harvester>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();

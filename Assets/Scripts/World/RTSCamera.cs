@@ -6,6 +6,7 @@ public class RTSCamera : MonoBehaviour {
     bool isRotating = false;
     Vector3 mouseStartPostion;
     Vector3 startRotation;
+    public World world;
     public Vector2 RotationSensitivity = new Vector2 (0.5f, 0.5f);
     public Vector2 TranslationSensitivity = new Vector2(1f, 1f);
     public float zoomSensitivity = 15f;
@@ -107,7 +108,7 @@ public class RTSCamera : MonoBehaviour {
     {
         foreach (ICameraObserver i in observers)
         {
-            i.OnCameraMove(transform.position);
+            i.OnCameraMove(transform.position, world);
         }
     }
 }

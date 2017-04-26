@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 public enum OrderType
 {
@@ -31,7 +32,7 @@ public class Order {
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
     public float orderRange;
-    public MyKVP<Type, int> item;
+    public List<MyKVP<Type, int>> items;
     public RTSGameObject target;
     public Ability ability;
     public bool repeatOnComplete = false;
@@ -46,7 +47,7 @@ public class Order {
         targetPosition = o.targetPosition;
         orderIssuedPosition = o.orderIssuedPosition;
         orderRange = o.orderRange;
-        item = o.item;
+        items = o.items;
         target = o.target;
         ability = o.ability;
         waitTimeAfterOrder = o.waitTimeAfterOrder;

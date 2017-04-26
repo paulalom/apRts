@@ -27,7 +27,7 @@ public class Harvester : Transporter
             }
         }
     }
-    private Dictionary<Type, int> harvestItems = new Dictionary<Type, int>();
+    //private Dictionary<Type, int> harvestItems = new Dictionary<Type, int>();
 
     void Awake()
     {

@@ -149,10 +149,7 @@ public class ConstructionPlan : Plan {
         }
         else
         {
-            foreach (MyKVP<Type, int> missingItem in missingResources)
-            {
-                collectionOrders.Add(new Order() { type = OrderType.Take, target = depot, orderRange = 3f, item = missingItem });
-            }
+            collectionOrders.Add(new Order() { type = OrderType.Take, target = depot, items = missingResources });
             // After we collect, we move back
             collectionOrders.Add(new Order() { type = OrderType.Move, targetPosition = unit.transform.position, orderRange = 1f });
             return collectionOrders;
@@ -167,7 +164,7 @@ public class ConstructionPlan : Plan {
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(new Order() { type = OrderType.Construct, item = thingToBuild, orderRange = 3f, waitTimeAfterOrder = producer.productionTime[thingToBuild.Key] });
+                constructionOrders.Add(new Order() { type = OrderType.Construct, items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, waitTimeAfterOrder = producer.productionTime[thingToBuild.Key] });
             }
         }
         return constructionOrders;

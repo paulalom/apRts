@@ -99,18 +99,18 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
     }
 
-    public void SnapToTerrainHeight(RTSGameObject obj)
+    public void SnapToTerrainHeight(RTSGameObject obj, World world)
     {
         TerrainManager tMan = gameManager.terrainManager;
         Vector3 position = obj.transform.position;
-        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z) + obj.transform.localScale.y/2 + obj.flyHeight;
+        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z, world) + obj.transform.localScale.y/2 + obj.flyHeight;
         obj.transform.position = position;
     }
     public void SnapToTerrainHeight(List<RTSGameObject> objs)
     {
         foreach (RTSGameObject obj in objs)
         {
-            SnapToTerrainHeight(obj);
+            SnapToTerrainHeight(obj, obj.world);
         }
     }
 
@@ -119,7 +119,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     }
 
-    public GameObject NewDeposit(DepositType type, Dictionary<Type, int> items, Vector3 position)
+    public GameObject NewDeposit(DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
         Color color = Color.gray;
         string name = "Deposit";
@@ -139,13 +139,13 @@ public class RTSGameObjectManager : MonoBehaviour {
             name = "ForstDeposit";
         }
         name += playerManager.GetNumUnits(0);
-        return NewDeposit(name, color, type, items, position);
+        return NewDeposit(name, color, type, items, position, world);
     }
 
 
-    public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position)
+    public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
-        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0);
+        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, world);
         ResourceDeposit deposit = go.GetComponent<ResourceDeposit>();
         deposit.type = type;
         go.name = name;
@@ -180,39 +180,38 @@ public class RTSGameObjectManager : MonoBehaviour {
     //The "around" bit is todo
     public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
     {
+        RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
         if (!prefabs.ContainsKey(type.ToString()))
         {
             throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
         }
         for (int i = 0; i < quantity; i++)
         {
+            
             SpawnUnit(type, new Vector3(producer.transform.position.x + producer.transform.localScale.x/2 + prefabs[type.ToString()].transform.localScale.x/2 + 1, 
-                producer.transform.position.y, producer.transform.position.z), producer.GetComponent<RTSGameObject>().ownerId);
+                producer.transform.position.y, producer.transform.position.z), rtsGo.ownerId, rtsGo.world);
         }
         return true;
     }
 
-    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId)
+    private RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, World world)
     {
-        Debug.Log(type.ToString());
-        GameObject go = Instantiate(prefabs[type.ToString()],
-            position,
-            Quaternion.identity) as GameObject;
-        go.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
-        RTSGameObject rtsGo = go.GetComponent<RTSGameObject>();
+        RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
         rtsGo.ownerId = ownerId;
-        rtsGo.flagRenderer = go.GetComponent<Renderer>();
+        rtsGo.world = world;
+        rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
         if (rtsGo.flagRenderer == null)
         {
-            rtsGo.flagRenderer = go.GetComponentInChildren<Renderer>();
+            rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
         }
         if (ownerId == 2)
         {
             rtsGo.flagRenderer.material.color = Color.black;
         }
+
         unitCreationQueue.Add(rtsGo);
-        
-        if (gameManager.debug && type == typeof(Factory))
+
+        if (gameManager.debug && rtsGo.GetType() == typeof(Factory))
         {
             Dictionary<Type, int> items = new Dictionary<Type, int>();
             items.Add(typeof(Coal), 2000);
@@ -225,11 +224,25 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
         if (rtsGo.unitType == UnitType.Structure)
         {
-            terrainManager.FlattenTerrainUnderObject(rtsGo);
+            terrainManager.FlattenTerrainUnderObject(rtsGo, world);
         }
         onUnitCreated.Invoke(rtsGo);
         rtsGo.Idle = true;
-        return go;
+        return rtsGo;
+    }
+
+    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId, World world)
+    {
+        Debug.Log("Spawning " + type.ToString());
+
+        GameObject newUnit = Instantiate(prefabs[type.ToString()],
+            position,
+            Quaternion.identity) as GameObject;
+        newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
+
+        BuildNewRTSGameObject(newUnit, ownerId, world);
+        
+        return newUnit;
     }
 
     public bool Harvest(RTSGameObject taker, ResourceDeposit target)
@@ -245,7 +258,23 @@ public class RTSGameObjectManager : MonoBehaviour {
         harvester.IsActive = true;
         return true;
     }
-    
+
+    public void TakeItems(RTSGameObject taker, RTSGameObject target, List<MyKVP<Type, int>> items)
+    {
+        foreach (MyKVP<Type, int> item in items)
+        {
+            TakeItem(taker, target, item);
+        }
+    }
+
+    public void GiveItems(RTSGameObject giver, RTSGameObject target, List<MyKVP<Type, int>> items)
+    {
+        foreach (MyKVP<Type, int> item in items)
+        {
+            GiveItem(giver, target, item);
+        }
+    }
+
     public void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
@@ -257,7 +286,6 @@ public class RTSGameObjectManager : MonoBehaviour {
             targetStorage.AddItem(item.Key, taken - acquired, false);
         }
     }
-
     public void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
@@ -290,7 +318,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         if (ability.GetType() == typeof(Shoot))
         {
             // still need to refine the damage system of course
-            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId).GetComponent<BasicCannonProjectile>();
+            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.world).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
             projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
             orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explosion>()});
@@ -341,6 +369,14 @@ public class RTSGameObjectManager : MonoBehaviour {
             }
         }
         return closest;
+    }
+    
+    public void CheckIfUnitsInTerrain(List<RTSGameObject> units)
+    {
+        foreach (RTSGameObject unit in units)
+        {
+            terrainManager.GenerateChunkAtPositionIfMissing(unit.transform.position, unit.world);
+        }
     }
 
     public List<componentType> GetAllComponentsInRangeOfType<componentType>(Vector3 source, float range, LayerMask mask)

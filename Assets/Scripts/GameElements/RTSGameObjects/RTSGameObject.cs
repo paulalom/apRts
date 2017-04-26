@@ -24,6 +24,7 @@ public class RTSGameObject : MonoBehaviour
     public UnitType unitType;
     public Ability defaultAbility;
     public RTSGameObject target = null;
+    public World world;
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
@@ -77,18 +78,22 @@ public class RTSGameObject : MonoBehaviour
                 // Give and take could potentially be an event driven system like this, 
                 // Move towards could be simplified (it wont need to check if we're in range, this trigger will do that)
                 Order order = orderManager.orders[this][0];
-                if (order.type == OrderType.Give)
+
+                if ((order.type == OrderType.Give || order.type == OrderType.Take) && other.gameObject == order.target.gameObject)
                 {
-                    rtsGameObjectManager.GiveItem(this, order.target, order.item);
+                    if (order.type == OrderType.Give)
+                    {
+                        rtsGameObjectManager.GiveItems(this, order.target, order.items);
+                    }
+                    else if (order.type == OrderType.Take)
+                    {
+                        rtsGameObjectManager.TakeItems(this, order.target, order.items);
+                    }
+                    orderManager.CompleteOrder(this);
                 }
-                else if (order.type == OrderType.Take)
-                {
-                    rtsGameObjectManager.TakeItem(this, order.target, order.item);
-                }
-                orderManager.CompleteOrder(this);
             }
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2, gameManager.dt);
+            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, gameManager.dt);
         }
     }
 
@@ -97,7 +102,7 @@ public class RTSGameObject : MonoBehaviour
         if (mover != null && rtsGameObjectManager != null)
         {
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed * 2, gameManager.dt);
+            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, gameManager.dt);
         }
     }
 }

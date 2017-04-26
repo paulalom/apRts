@@ -34,7 +34,6 @@ public class Producer : MonoBehaviour {
             }
         }
     }
-    bool producing = false;
     float previousTime;
 
     // Use this for initialization

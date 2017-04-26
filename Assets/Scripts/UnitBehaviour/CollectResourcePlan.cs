@@ -108,9 +108,10 @@ public class CollectResourcesPlan : Plan {
         }
         else
         {
-            foreach (KeyValuePair<Type, int> item in unit.storage.GetItems())
+            List<MyKVP<Type, int>> items = unit.storage.GetItemsMyKVP(-1);
+            if (items.Count != 0)
             {
-                dropOffOrders.Add(new Order() { type = OrderType.Give, target = depot, orderRange = 3f, item = new MyKVP<Type, int>(item.Key, -1) });
+                dropOffOrders.Add(new Order() { type = OrderType.Give, target = depot, items = items });
             }
             return dropOffOrders;
         }
@@ -134,9 +135,9 @@ public class CollectResourcesPlan : Plan {
         }
         else
         {
-            foreach (KeyValuePair<Type, int> item in harvestingStation.storage.GetItems())
-            {
-                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, orderRange = 3f, item = new MyKVP<Type, int>(item.Key, -1) });
+            List<MyKVP<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
+            if (items.Count != 0) {
+                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, items = items });
             }
             return collectionOrders;
         }

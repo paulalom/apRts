@@ -16,6 +16,7 @@ public class DayNightCycle : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        return;
         float dt = Time.deltaTime;
         time += dt;
         directionalLight.transform.rotation = Quaternion.Euler(new Vector3(time / dayLength * 180, 330, 0));

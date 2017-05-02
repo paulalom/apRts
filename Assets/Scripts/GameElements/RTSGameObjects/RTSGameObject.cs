@@ -25,6 +25,7 @@ public class RTSGameObject : MonoBehaviour
     public Ability defaultAbility;
     public RTSGameObject target = null;
     public World world;
+    public Vector3 prevPositionForHeightMapCheck;
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
@@ -49,6 +50,7 @@ public class RTSGameObject : MonoBehaviour
         storage = GetComponent<Storage>();
         flagRenderer = GetComponent<Renderer>(); // just get any part of the object
         unitType = UnitType.Unit;
+        prevPositionForHeightMapCheck = transform.position;
     }
     void Start()
     {

@@ -95,22 +95,39 @@ public class RTSGameObjectManager : MonoBehaviour {
                 }
             }
             unitDestructionQueue.Clear();
-            
         }
     }
 
     public void SnapToTerrainHeight(RTSGameObject obj, World world)
     {
-        TerrainManager tMan = gameManager.terrainManager;
         Vector3 position = obj.transform.position;
-        position.y = tMan.GetHeightFromGlobalCoords(position.x, position.z, world) + obj.transform.localScale.y/2 + obj.flyHeight;
+        position.y = terrainManager.GetHeightFromGlobalCoords(position.x, position.z, world) + obj.transform.localScale.y/2 + obj.flyHeight;
         obj.transform.position = position;
     }
-    public void SnapToTerrainHeight(List<RTSGameObject> objs)
+    public void SnapToTerrain(RTSGameObject obj, World world)
+    {
+        if (!terrainManager.DoesTerrainExistForPoint(obj.transform.position, world))
+        {
+            SnapToTerrainHeight(obj, obj.world);
+        }
+    }
+
+    public void SnapToTerrain(List<RTSGameObject> objs, World world)
     {
         foreach (RTSGameObject obj in objs)
         {
-            SnapToTerrainHeight(obj, obj.world);
+            if (obj.prevPositionForHeightMapCheck != obj.transform.position)
+            {
+                if (terrainManager.DoesTerrainExistForPoint(obj.transform.position, world))
+                {
+                    SnapToTerrainHeight(obj, obj.world);
+                }
+                else
+                {
+                    //SnapToTerrain(obj, obj.world);
+                }
+            }
+            obj.prevPositionForHeightMapCheck = obj.transform.position;
         }
     }
 
@@ -194,7 +211,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         return true;
     }
 
-    private RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, World world)
+    public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, World world)
     {
         RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
         rtsGo.ownerId = ownerId;
@@ -208,9 +225,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             rtsGo.flagRenderer.material.color = Color.black;
         }
-
-        unitCreationQueue.Add(rtsGo);
-
+        
         if (gameManager.debug && rtsGo.GetType() == typeof(Factory))
         {
             Dictionary<Type, int> items = new Dictionary<Type, int>();
@@ -222,13 +237,19 @@ public class RTSGameObjectManager : MonoBehaviour {
             items.Add(typeof(Tool), 100);
             rtsGo.storage.AddItems(items);
         }
-        if (rtsGo.unitType == UnitType.Structure)
-        {
-            terrainManager.FlattenTerrainUnderObject(rtsGo, world);
-        }
-        onUnitCreated.Invoke(rtsGo);
-        rtsGo.Idle = true;
+        InsertRTSGameObjectIntoGame(rtsGo);
         return rtsGo;
+    }
+
+    public void InsertRTSGameObjectIntoGame(RTSGameObject unit)
+    {
+        if (unit.unitType == UnitType.Structure)
+        {
+            terrainManager.FlattenTerrainUnderObject(unit, unit.world);
+        }
+        onUnitCreated.Invoke(unit);
+        unit.Idle = true;
+        unitCreationQueue.Add(unit);
     }
 
     public GameObject SpawnUnit(Type type, Vector3 position, int ownerId, World world)
@@ -244,7 +265,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         
         return newUnit;
     }
-
+    
     public bool Harvest(RTSGameObject taker, ResourceDeposit target)
     {
         Harvester harvester = taker.GetComponent<Harvester>();

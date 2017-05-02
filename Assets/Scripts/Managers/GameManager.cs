@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
+using System.Collections;
 
 public class GameManager : MonoBehaviour {
 
@@ -20,6 +21,8 @@ public class GameManager : MonoBehaviour {
     float prevTime, lastEnemySpawn;
     Order nextOrder;
     public bool debug = true;
+    string gameMode = "NOT Survival";
+    public static string mainSceneName = "Main Scene";
     public float dt = .001f;
     float mouseSlipTolerance = 10; // The square root of the distance you are allowed to move your mouse before a drag select is detected
     public int myPlayerId = 1, enemyPlayerId = 2;
@@ -28,7 +31,6 @@ public class GameManager : MonoBehaviour {
     RTSGameObject commander;
     public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
-    // these are hackish and needs to change
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
     public Texture2D selectionHighlight;
     public static Rect selectionBox = new Rect(0, 0, 0, 0);
@@ -45,27 +47,75 @@ public class GameManager : MonoBehaviour {
         aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 120;
+        LoadingScreenManager.SetLoadingProgress(0.05f);
     }
 
     // Use this for initialization
     void Start()
     {
-        playerManager.activeWorld = GenerateWorld(GetWorldSettings(numWorlds));
-        numWorlds++;
-        mainCamera.world = playerManager.activeWorld;
-        SetUpPlayer();
+        StartCoroutine(SetupWorld());
+        Debug.Log("done");
     }
 
+    IEnumerator SetupWorld()
+    {
+        LoadingScreenManager.SetLoadingProgress(0.10f);
+        yield return null;
+        WorldSettings worldSettings = GetWorldSettings(numWorlds);
+        LoadingScreenManager.GetInstance().ReplaceTextTokens(LoadingScreenManager.GetWorldGenerationTextTokens(worldSettings));
+        for (int i = 0; i < 30; i++)
+        {
+            LoadingScreenManager.SetLoadingProgress(.15f + 0.02f * i);
+            yield return null;
+        }
+        playerManager.activeWorld = GenerateWorld(worldSettings);
+        LoadingScreenManager.SetLoadingProgress(0.85f);
+        yield return null;
+        numWorlds++;
+        mainCamera.world = playerManager.activeWorld;
+        SetUpPlayer(playerManager.activeWorld);
+        LoadingScreenManager.SetLoadingProgress(0.99f);
+        LoadingScreenManager.CompleteLoadingScreen();
+    }
 
+    // Update is called once per frame
+    void Update() {
+        float now = Time.time;
+        debug = true;
+        dt = now - prevTime;
+
+        HandleInput();
+        orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
+        rtsGameObjectManager.SnapToTerrain(playerManager.GetNonNeutralUnits(), playerManager.activeWorld);
+        if (gameMode == "Survival")
+        {
+            SpawnEnemies();
+        }
+
+        prevTime = now;
+    }
+
+    void SpawnEnemies()
+    {
+        float nextEnemySpawn = enemySpawnRateBase / (1 + (.05f * (Time.time / 30)));
+        
+        if (Time.time - lastEnemySpawn > nextEnemySpawn)
+        {
+            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, playerManager.activeWorld);
+            lastEnemySpawn = Time.time;
+        }
+    }
+    
     WorldSettings GetWorldSettings(int randomSeed)
     {
         return new WorldSettings()
         {
             randomSeed = randomSeed,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
-            resourceRarityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = WorldSettings.starterWorldSizeRating,
-            numStartLocations = WorldSettings.starterWorldNumStartLocations,
+            resourceQualityRating = WorldSettings.starterWorldResourceRarity,
+            sizeRating = 8,//WorldSettings.starterWorldSizeRating,
+            numStartLocations = 1,// WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 1.1f,//WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
         };
@@ -78,33 +128,6 @@ public class GameManager : MonoBehaviour {
         world.BuildWorld(terrainManager);
 
         return world;
-    }
-
-    // Update is called once per frame
-    void Update() {
-        float now = Time.time;
-        debug = true;
-        dt = now - prevTime;
-
-        HandleInput();
-        orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
-        // make this only happen for units whose position has changed
-        rtsGameObjectManager.SnapToTerrainHeight(playerManager.GetNonNeutralUnits());
-        SpawnEnemies();
-        rtsGameObjectManager.CheckIfUnitsInTerrain(playerManager.GetNonNeutralUnits());
-
-        prevTime = now;
-    }
-
-    void SpawnEnemies()
-    {
-        float nextEnemySpawn = enemySpawnRateBase / (1 + (.05f * (Time.time / 30)));
-        
-        if (Time.time - lastEnemySpawn > nextEnemySpawn)
-        {
-      //      rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, playerManager.activeWorld);
-            lastEnemySpawn = Time.time;
-        }
     }
 
     Vector3 GetEnemySpawnPosition()
@@ -300,7 +323,7 @@ public class GameManager : MonoBehaviour {
         }
 
         // objectClicked May be null
-        RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
+        RTSGameObject objectClicked = hit.collider != null ? hit.collider.GetComponentInParent<RTSGameObject>() : null;
 
         nextOrder.target = objectClicked;
         nextOrder.targetPosition = hit.point;
@@ -459,21 +482,13 @@ public class GameManager : MonoBehaviour {
         }
     }*/
 
-    void SetUpPlayer()
+    void SetUpPlayer(World world)
     {
-        //Temporary testing setup
-        //This shouldnt be outside of -1,-1 to 1,1 (probably get a null reference)
-        Vector2 startTerrainIndex = new Vector2(0, 0);
-        Vector2 startTerrainPositionOffset = new Vector2(0, 0); //x,z not larger than chunkSize (probably arrayoutofbounds)
-        //Terrain startTerrain = terrainManager.terrainChunks[startTerrainIndex].GetComponent<Terrain>();
-        // Height is managed by Awake and Move functions
-        // todo multiply by terrain index
-        Vector3 startLocation = new Vector3(startTerrainPositionOffset.x,
-                                            0,
-                                            startTerrainPositionOffset.y);
+        Vector2 startLocation = world.startLocations[world.nextAvailableStartLocation];
+        world.nextAvailableStartLocation++;
 
         // Our start location is a factory! hooray
-        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), startLocation, 1, playerManager.activeWorld).GetComponent<RTSGameObject>();
+        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), 1, world).GetComponent<RTSGameObject>();
         
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
@@ -486,10 +501,9 @@ public class GameManager : MonoBehaviour {
         commander.GetComponent<Storage>().AddItems(startingItems);
 
         mainCamera.transform.position = new Vector3(startLocation.x + 50,
-            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, playerManager.activeWorld) + 200,
+            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, world) + 200,
             startLocation.y - 50);
         mainCamera.transform.LookAt(commander.transform);
-        
     }
 
     public void QueueUnit(Type type)
@@ -513,20 +527,5 @@ public class GameManager : MonoBehaviour {
                 producer.TryQueueItem(type, quantity);
             }
         }
-    }
-    
-    public void CreateText(string text, Vector3 position)
-    {
-        Debug.Log("New floatingText: " + text);
-        position.y += 5; // floating text starts above the object
-        GameObject go = Instantiate(rtsGameObjectManager.prefabs["FloatingText"],
-            position,
-            Quaternion.identity) as GameObject;
-        go.name = "FloatingText" + uiManager.floatingText.Count();
-
-        FloatingText ft = go.GetComponent<FloatingText>();
-        ft.textMesh.text = text;
-        ft.transform.position = position;
-        uiManager.floatingText.Add(ft);
     }
 }

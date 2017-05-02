@@ -9,6 +9,7 @@ public class OrderManager : MonoBehaviour {
     List<RTSGameObject> completedOrders;
     RTSGameObjectManager rtsGameObjectManager;
     GameManager gameManager;
+    UIManager uiManager;
 
     void Awake()
     {
@@ -16,6 +17,7 @@ public class OrderManager : MonoBehaviour {
         completedOrders = new List<RTSGameObject>(); //max one order completion per frame
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
     }
 
     public void CarryOutOrders(List<RTSGameObject> units, float dt)
@@ -221,7 +223,7 @@ public class OrderManager : MonoBehaviour {
         if (order == null || unit == null)
         {
             errorMessage = "No order or Unit";
-            gameManager.CreateText(errorMessage, unit.transform.position);
+            uiManager.CreateText(errorMessage, unit.transform.position);
             return false;
         }
         if (order.type == OrderType.Move)
@@ -229,7 +231,7 @@ public class OrderManager : MonoBehaviour {
             if (!CheckCanMove(unit))
             {
                 errorMessage = "Can't Move!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -238,7 +240,7 @@ public class OrderManager : MonoBehaviour {
             if (!CheckTargetExists(order.target) || !CheckCanMove(unit))
             {
                 errorMessage = "Can't follow!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -247,7 +249,7 @@ public class OrderManager : MonoBehaviour {
             if (!ValidateStorageAccess(unit, order.target))
             {
                 errorMessage = "Can't Harvest!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -257,7 +259,7 @@ public class OrderManager : MonoBehaviour {
             if (!ValidateStorageAccess(unit, order.target))
             {
                 errorMessage = "Can't Give!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -266,7 +268,7 @@ public class OrderManager : MonoBehaviour {
             if (!ValidateStorageAccess(unit, order.target))
             {
                 errorMessage = "Can't Take!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }
@@ -276,7 +278,7 @@ public class OrderManager : MonoBehaviour {
             if (unit == order.target)
             {
                 errorMessage = "Can't " + order.type.ToString() + " self!";
-                gameManager.CreateText(errorMessage, unit.transform.position);
+                uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
             }
         }

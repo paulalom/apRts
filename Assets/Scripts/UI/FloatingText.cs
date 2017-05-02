@@ -48,6 +48,10 @@ public class FloatingText : MonoBehaviour {
 
         prevTime = Time.time;
     }
+    public void SetColor(Color color)
+    {
+        textMesh.color = color;
+    }
 
     void OnGUI()
     {

@@ -110,6 +110,7 @@
     <Compile Include="Assets\Scripts\GameElements\Subsystems\Subsystem.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\Weapons\AttackSubSystem.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\Weapons\Cannon.cs" />
+    <Compile Include="Assets\Scripts\JustC%23Things\MyBitMap.cs" />
     <Compile Include="Assets\Scripts\JustC%23Things\MyKVP.cs" />
     <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="Assets\Scripts\Managers\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\Managers\CombatManager.cs" />
     <Compile Include="Assets\Scripts\Managers\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\LoadingScreenManager.cs" />
     <Compile Include="Assets\Scripts\Managers\MenuManager.cs" />
     <Compile Include="Assets\Scripts\Managers\OrderManager.cs" />
     <Compile Include="Assets\Scripts\Managers\PlayerManager.cs" />
@@ -133,6 +135,8 @@
     <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
     <Compile Include="Assets\Scripts\UI\Button.cs" />
     <Compile Include="Assets\Scripts\UI\FloatingText.cs" />
+    <Compile Include="Assets\Scripts\UI\LoadTargetScene.cs" />
+    <Compile Include="Assets\Scripts\UI\LoadingScreen.cs" />
     <Compile Include="Assets\Scripts\UI\Selecter.cs" />
     <Compile Include="Assets\Scripts\UI\TestEvent.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\AttackNearestEnemyPlan.cs" />

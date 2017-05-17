@@ -111,7 +111,7 @@ public class CollectResourcesPlan : Plan {
             List<MyKVP<Type, int>> items = unit.storage.GetItemsMyKVP(-1);
             if (items.Count != 0)
             {
-                dropOffOrders.Add(new Order() { type = OrderType.Give, target = depot, items = items });
+                dropOffOrders.Add(new GiveOrder() { target = depot, items = items });
             }
             return dropOffOrders;
         }
@@ -137,7 +137,7 @@ public class CollectResourcesPlan : Plan {
         {
             List<MyKVP<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
             if (items.Count != 0) {
-                collectionOrders.Add(new Order() { type = OrderType.Take, target = harvestingStation, items = items });
+                collectionOrders.Add(new TakeOrder() { target = harvestingStation, items = items });
             }
             return collectionOrders;
         }

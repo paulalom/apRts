@@ -2,32 +2,26 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public enum OrderType
-{
-    Stop,
-    Move,
-    HoldPosition,
-    Patrol,
-    Follow,
-    Guard,
-    Give,
-    Take,
-    Harvest,
-    Construct,
-    UseAbillity,
-    Wait
-}
-
 public enum OrderPhase
 {
-    Active,
-    Wait
+    Activate,
+    Channel,
+    FinishChannel,
+    Complete
+}
+
+public enum OrderValidationResult
+{
+    Success,
+    Failure,
+    CantDoThat,
+    InvalidTarget,
+    NotOnSelf,
 }
 
 // Orders probably need to be rewritten into many classes (one per type?)
-public class Order {
+public abstract class Order {
     
-    public OrderType type;
     public OrderPhase phase;
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
@@ -36,13 +30,12 @@ public class Order {
     public RTSGameObject target;
     public Ability ability;
     public bool repeatOnComplete = false;
-    public float waitTimeAfterOrder;
+    public float remainingChannelTime;
 
     public Order() { }
 
     public Order(Order o)
     {
-        type = o.type;
         phase = o.phase;
         targetPosition = o.targetPosition;
         orderIssuedPosition = o.orderIssuedPosition;
@@ -50,6 +43,93 @@ public class Order {
         items = o.items;
         target = o.target;
         ability = o.ability;
-        waitTimeAfterOrder = o.waitTimeAfterOrder;
+        remainingChannelTime = o.remainingChannelTime;
+    }
+
+    public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
+    {
+        return OrderValidationResult.Success;
+    }
+
+    public virtual bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    {
+        return true;
+    }
+
+    public virtual bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    {
+        updateChannelDuration(dt);
+        return IsFinishedChanneling();
+    }
+
+    public virtual bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    {
+        return true;
+    }
+
+    protected void updateChannelDuration(float dt)
+    {
+        remainingChannelTime-= dt;
+    }
+    protected bool IsFinishedChanneling()
+    {
+        return remainingChannelTime <= 0;
+    }
+
+    protected static bool CheckHasComponent<T>(RTSGameObject unit)
+    {
+        return unit.GetComponent<T>() != null;
+    }
+
+    protected static bool CheckHasComponent(RTSGameObject unit, Type type)
+    {
+        return unit.GetComponent(type) != null;
+    }
+
+    protected static bool CheckTargetExists(RTSGameObject target)
+    {
+        return target != null;
+    }
+
+    protected static bool CheckCanMove(RTSGameObject unit)
+    {
+        return (unit.GetComponent<Mover>() != null);
+    }
+
+    protected OrderValidationResult ValidateAbilityUsage(RTSGameObject unit, Ability abilityToUse)
+    {
+        bool hasAbility = false;
+        foreach (Ability ability in unit.GetComponents<Ability>())
+        {
+            if (abilityToUse.GetType() == ability.GetType())
+            {
+                hasAbility = true;
+                break;
+            }
+        }
+        if (!hasAbility)
+        {
+            return OrderValidationResult.CantDoThat;
+        }
+
+        return OrderValidationResult.Success;
+    }
+
+    protected bool ValidateStorageAccess(RTSGameObject accessor, RTSGameObject target)
+    {
+        if (!CheckTargetExists(target) || !CheckCanMove(accessor) || !CheckHasComponent<Storage>(target) || !CheckHasComponent<Storage>(accessor))
+        {
+            return false;
+        }
+        else {
+            foreach (Type type in target.storage.requiredAccessComponents)
+            {
+                if (!CheckHasComponent(accessor, type))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

@@ -80,17 +80,15 @@ public class RTSGameObject : MonoBehaviour
                 // Give and take could potentially be an event driven system like this, 
                 // Move towards could be simplified (it wont need to check if we're in range, this trigger will do that)
                 Order order = orderManager.orders[this][0];
-
-                if ((order.type == OrderType.Give || order.type == OrderType.Take) && other.gameObject == order.target.gameObject)
+                
+                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.target.gameObject)
                 {
-                    if (order.type == OrderType.Give)
-                    {
-                        rtsGameObjectManager.GiveItems(this, order.target, order.items);
-                    }
-                    else if (order.type == OrderType.Take)
-                    {
-                        rtsGameObjectManager.TakeItems(this, order.target, order.items);
-                    }
+                    rtsGameObjectManager.GiveItems(this, order.target, order.items);
+                    orderManager.CompleteOrder(this);
+                }
+                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.target.gameObject)
+                {
+                    rtsGameObjectManager.TakeItems(this, order.target, order.items);
                     orderManager.CompleteOrder(this);
                 }
             }

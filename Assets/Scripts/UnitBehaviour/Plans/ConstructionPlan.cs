@@ -149,9 +149,9 @@ public class ConstructionPlan : Plan {
         }
         else
         {
-            collectionOrders.Add(new Order() { type = OrderType.Take, target = depot, items = missingResources });
+            collectionOrders.Add(new TakeOrder() { target = depot, items = missingResources });
             // After we collect, we move back
-            collectionOrders.Add(new Order() { type = OrderType.Move, targetPosition = unit.transform.position, orderRange = 1f });
+            collectionOrders.Add(new MoveOrder() { targetPosition = new Vector3(unit.transform.position.x, unit.transform.position.y, unit.transform.position.z), orderRange = 1f });
             return collectionOrders;
         }
     }
@@ -164,7 +164,7 @@ public class ConstructionPlan : Plan {
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(new Order() { type = OrderType.Construct, items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, waitTimeAfterOrder = producer.productionTime[thingToBuild.Key] });
+                constructionOrders.Add(new ConstructOrder() { items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, remainingChannelTime = producer.productionTime[thingToBuild.Key] });
             }
         }
         return constructionOrders;

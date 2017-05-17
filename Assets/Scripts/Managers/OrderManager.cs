@@ -10,6 +10,7 @@ public class OrderManager : MonoBehaviour {
     RTSGameObjectManager rtsGameObjectManager;
     GameManager gameManager;
     UIManager uiManager;
+    OrderFactory orderFactory;
 
     void Awake()
     {
@@ -18,6 +19,7 @@ public class OrderManager : MonoBehaviour {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        orderFactory = new OrderFactory();
     }
 
     public void CarryOutOrders(List<RTSGameObject> units, float dt)
@@ -34,147 +36,20 @@ public class OrderManager : MonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                if (order.phase == OrderPhase.Active)
+                switch (order.phase)
                 {
-                    if (order.type == OrderType.Construct)
-                    {
-                        Producer producer = unit.GetComponent<Producer>();
-                        if (producer.TryQueueItem(order.items[0].Key, order.items[0].Value))
-                        {
-                            order.phase = OrderPhase.Wait;
-                            //completedOrders.Add(unit);
-                        }
-                    }
-                    else if (order.type == OrderType.Follow)
-                    {
-                        if (!rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
-                        {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                        }
-                    }
-                    else if (order.type == OrderType.Give)
-                    {
-                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
-                        {
-                            rtsGameObjectManager.GiveItems(unit, order.target, order.items);
-                            completedOrders.Add(unit);
-                        }
-                        else
-                        {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                        }
-                    }
-                    else if (order.type == OrderType.Guard)
-                    {
-                        if (false) // There is a unit threatening the target
-                        {
-                            // engage!
-                        }
-                        else // Follow
-                        {
-                            // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
-                            if (unit.GetComponent<Mover>() != null)
-                            {
-                                rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                            }
-                            else
-                            {
-                                // If the unit moves out of range, remove the guard order
-                            }
-                        }
-                    }
-                    else if (order.type == OrderType.Harvest)
-                    {
-                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
-                        {
-                            rtsGameObjectManager.Harvest(unit, (ResourceDeposit)order.target);
-                        }
-                        else
-                        {
-                            // this order isnt invalid for things that cant move. Harvesting stations can't move, but this might be an action workers can take in the future
-                            if (unit.GetComponent<Mover>() != null)
-                            {
-                                rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
-                            }
-                        }
-                    }
-                    else if (order.type == OrderType.HoldPosition)
-                    {
-                        // Unnecessary for now, but later!
-                    }
-                    else if (order.type == OrderType.Move)
-                    {
-                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
-                        {
-                            completedOrders.Add(unit);
-                        }
-                        else
-                        {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
-                        }
-                    }
-                    else if (order.type == OrderType.Patrol)
-                    {
-                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.targetPosition, order.orderRange))
-                        {
-                            Vector3 tempVariablesMakeThingsEasierToUnderstand = order.targetPosition;
-                            order.targetPosition = order.orderIssuedPosition;
-                            order.orderIssuedPosition = tempVariablesMakeThingsEasierToUnderstand;
-                            SetOrder(unit, order);
-                        }
-                        else
-                        {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.targetPosition.x, order.targetPosition.z), dt);
-                        }
-                    }
-                    else if (order.type == OrderType.Stop)
-                    {
+                    case OrderPhase.Activate:
+                        order.phase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        break;
+                    case OrderPhase.Channel:
+                        order.phase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        break;
+                    case OrderPhase.FinishChannel:
+                        order.phase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        break;
+                    default:
                         completedOrders.Add(unit);
-                        // Is this really an order? Setting to stop clears the queue. What does it mean to queue a stop order?
-                    }
-                    else if (order.type == OrderType.Take)
-                    {
-                        if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, order.target.transform.position, order.orderRange))
-                        {
-                            rtsGameObjectManager.TakeItems(unit, order.target, order.items);
-                            completedOrders.Add(unit);
-                        }
-                        else
-                        {
-                            rtsGameObjectManager.MoveUnit(unit, new Vector2(order.target.transform.position.x, order.target.transform.position.z), dt);
-                        }
-                    }
-                    else if (order.type == OrderType.UseAbillity)
-                    {
-                        Vector3 targetPos = order.target == null ? order.targetPosition : order.target.transform.position;
-                        // will need to figure out a different method for dealing with cooldowns, as this can be interrupted. For now this stops the AI from shooting every frame
-                        if (order.phase == OrderPhase.Active)
-                        {
-                            if (rtsGameObjectManager.lazyWithinDist(unit.transform.position, targetPos, order.orderRange))
-                            {
-                                rtsGameObjectManager.UseAbility(unit, order.target, order.targetPosition, order.ability);
-                                completedOrders.Add(unit);
-                            }
-                            else
-                            {
-                                rtsGameObjectManager.MoveUnit(unit, new Vector2(targetPos.x, targetPos.z), dt);
-                            }
-                        }
-                        else if (order.phase == OrderPhase.Wait)
-                        {
-
-                        }
-
-                    }
-                }
-                // need to figure out a way to display construction queue
-                else
-                {
-                    order.waitTimeAfterOrder -= dt;
-                    if (order.waitTimeAfterOrder <= 0)
-                    {
-                        completedOrders.Add(unit);
-                    }
+                        break;
                 }
             }
         }
@@ -226,129 +101,29 @@ public class OrderManager : MonoBehaviour {
             uiManager.CreateText(errorMessage, unit.transform.position);
             return false;
         }
-        if (order.type == OrderType.Move)
-        {
-            if (!CheckCanMove(unit))
-            {
-                errorMessage = "Can't Move!";
+
+        switch (order.Validate(unit)){
+            case OrderValidationResult.Success:
+                return true;
+            case OrderValidationResult.CantDoThat:
+                errorMessage = "Can't do " + order.GetType() + "!";
                 uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
-            }
-        }
-        if (order.type == OrderType.Follow)
-        {
-            if (!CheckTargetExists(order.target) || !CheckCanMove(unit))
-            {
-                errorMessage = "Can't follow!";
+            case OrderValidationResult.Failure:
+                errorMessage = order.GetType() + " failed!";
                 uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
-            }
-        }
-        if (order.type == OrderType.Harvest)
-        {
-            if (!ValidateStorageAccess(unit, order.target))
-            {
-                errorMessage = "Can't Harvest!";
+            case OrderValidationResult.InvalidTarget:
+                errorMessage = "Can't do " + order.GetType() + " on that target!";
                 uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
-            }
-        }
-        // For give and take, there must be a target, and either it or the unit must be able to move.
-        if (order.type == OrderType.Give)
-        {
-            if (!ValidateStorageAccess(unit, order.target))
-            {
-                errorMessage = "Can't Give!";
+            case OrderValidationResult.NotOnSelf:
+                errorMessage = "Can't do " + order.GetType() + " on self!";
                 uiManager.CreateText(errorMessage, unit.transform.position);
                 return false;
-            }
+            default:
+                throw new NotImplementedException("Unhandled OrderValudationResult!");
         }
-        if (order.type == OrderType.Take)
-        {
-            if (!ValidateStorageAccess(unit, order.target))
-            {
-                errorMessage = "Can't Take!";
-                uiManager.CreateText(errorMessage, unit.transform.position);
-                return false;
-            }
-        }
-
-        if (order.type == OrderType.Take || order.type == OrderType.Give || order.type == OrderType.Harvest || order.type == OrderType.Follow)
-        {
-            if (unit == order.target)
-            {
-                errorMessage = "Can't " + order.type.ToString() + " self!";
-                uiManager.CreateText(errorMessage, unit.transform.position);
-                return false;
-            }
-        }
-
-        if (order.type == OrderType.UseAbillity)
-        {
-            if (!ValidateAbilities(unit, order))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private bool ValidateAbilities(RTSGameObject unit, Order order)
-    {
-        bool hasAbility = false;
-        foreach (Ability ability in unit.GetComponents<Ability>())
-        {
-            if (order.ability.GetType() == ability.GetType())
-            {
-                hasAbility = true;
-                break;
-            }
-        }
-        if (!hasAbility)
-        {
-            return false;
-        }
-        
-        return true;
-    }
-
-    private bool ValidateStorageAccess(RTSGameObject accessor, RTSGameObject target)
-    {
-        if (!CheckTargetExists(target) || !CheckCanMove(accessor) || !CheckHasComponent<Storage>(target) || !CheckHasComponent<Storage>(accessor))
-        {
-            return false;
-        }
-        else {
-            foreach (Type type in target.storage.requiredAccessComponents)
-            {
-                if (!CheckHasComponent(accessor, type))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private bool CheckHasComponent<T>(RTSGameObject unit)
-    {
-        return unit.GetComponent<T>() != null;
-    }
-
-    private bool CheckHasComponent(RTSGameObject unit, Type type)
-    {
-        return unit.GetComponent(type) != null;
-    }
-
-    private bool CheckTargetExists(RTSGameObject target)
-    {
-        return target != null;
-    }
-
-    private bool CheckCanMove(RTSGameObject unit)
-    {
-        return (unit.GetComponent<Mover>() != null);
     }
 
     public bool SetOrder(RTSGameObject unit, Order order, bool validateOrder = true)
@@ -384,7 +159,7 @@ public class OrderManager : MonoBehaviour {
         {
             if (ValidateOrder(unit, order))
             {
-                orders[unit].Add(new Order(order)); // clone because reference stuff is referential?
+                orders[unit].Add(order);
                 return true;
             }
             else
@@ -394,7 +169,7 @@ public class OrderManager : MonoBehaviour {
         }
         else
         {
-            orders[unit].Add(new Order(order));
+            orders[unit].Add(order);
             return true;
         }
     }
@@ -405,9 +180,9 @@ public class OrderManager : MonoBehaviour {
         {
             // Dequeue productions
             Producer producer = unit.GetComponent<Producer>();
-            foreach (Order o in orders[unit])
+            foreach (Order order in orders[unit])
             {
-                if (o.type == OrderType.Construct)
+                if (order.GetType() == typeof(ConstructOrder))
                 {
                     producer.CancelProduction();
                 }

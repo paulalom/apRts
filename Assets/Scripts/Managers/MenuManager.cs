@@ -97,9 +97,8 @@ public class MenuManager : MonoBehaviour {
                     // Source is a transporter
                     if (sourceUnit.GetComponent<Transporter>() != null && sourceUnit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(sourceUnit, new Order()
+                        gameManager.orderManager.SetOrder(sourceUnit, new GiveOrder()
                         {
-                            type = OrderType.Give,
                             target = unit,
                             orderRange = 3f,
                             items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }
@@ -108,9 +107,8 @@ public class MenuManager : MonoBehaviour {
                     // Destination is a transporter
                     else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(unit, new Order()
+                        gameManager.orderManager.SetOrder(unit, new TakeOrder()
                         {
-                            type = OrderType.Take,
                             target = sourceUnit,
                             orderRange = 3f,
                             items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }

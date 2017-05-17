@@ -342,7 +342,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.world).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
             projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
-            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new Order() { target = target, targetPosition = targetPosition, orderRange = 0.3f, type = OrderType.UseAbillity, ability = projectile.GetComponent<Explosion>()});
+            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explosion>()});
         }
         else if (ability.GetType() == typeof(Explosion))
         {

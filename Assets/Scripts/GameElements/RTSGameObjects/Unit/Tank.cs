@@ -29,7 +29,7 @@ public class Tank : RTSGameObject {
 
     void Update()
     {
-        if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0 && orderManager.orders[this][0].type == OrderType.Move)
+        if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0 && orderManager.orders[this][0].GetType() == typeof(MoveOrder))
         {
             if (!consumer.Operate())
             {

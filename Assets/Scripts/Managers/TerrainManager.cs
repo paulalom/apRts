@@ -659,29 +659,23 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     {
         MultiTerrain mt = new MultiTerrain();
         float minX = position.x - area.x / 2f,
-            maxX = position.x + area.x / 2f - 1,
+            maxX = position.x + area.x / 2f,
             minY = position.z - area.z / 2f,
-            maxY = position.z + area.z / 2f - 1;
+            maxY = position.z + area.z / 2f;
 
         Vector2 minTerrainIndex = GetChunkIndexFromGlobalCoords(minX, minY);
-        Vector2 maxTerrainIndex = GetChunkIndexFromGlobalCoords(maxX, maxY);
-        Vector2 minTerrainCoords = GetTerrainRelativePosition(minX, minY);
-        Vector2 maxTerrainCoords = GetTerrainRelativePosition(maxX, maxY);
+        Vector2 maxTerrainIndex = GetChunkIndexFromGlobalCoords(maxX - 1, maxY - 1);
         Vector2 minLocalTerrainStartPos = GetTerrainRelativePosition(minX, minY);
         Vector2 maxLocalTerrainEndPos = GetTerrainRelativePosition(maxX, maxY);
 
         // Terrain resolution, not actual coordinates
-        minTerrainCoords.x = (int)minTerrainCoords.x * resolutionRatio;
-        minTerrainCoords.y = (int)minTerrainCoords.y * resolutionRatio;
-        maxTerrainCoords.x = (int)maxTerrainCoords.x * resolutionRatio;
-        maxTerrainCoords.y = (int)maxTerrainCoords.y * resolutionRatio;
         minLocalTerrainStartPos.x = (int)(minLocalTerrainStartPos.x * resolutionRatio);
         minLocalTerrainStartPos.y = (int)(minLocalTerrainStartPos.y * resolutionRatio);
         maxLocalTerrainEndPos.x = (int)(maxLocalTerrainEndPos.x * resolutionRatio);
         maxLocalTerrainEndPos.y = (int)(maxLocalTerrainEndPos.y * resolutionRatio);
 
         // +1 because numTerrains is one more than the difference in indecies
-        int numTerrainsX = (int)(maxTerrainIndex.x - minTerrainIndex.x) + 1;
+        int numTerrainsX = (int)(maxTerrainIndex.x - minTerrainIndex.x + 1);
         int numTerrainsY = (int)(maxTerrainIndex.y - minTerrainIndex.y) + 1;
         Vector2[,] terrainCoords = new Vector2[numTerrainsX, numTerrainsY];
         Vector2[,] localTerrainStartPos = new Vector2[numTerrainsX, numTerrainsY];
@@ -775,7 +769,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                 {
                     for (int x = 0; x < dx; x++)
                     {
-                        if (heightsToChange == null || 
+                        if (heightsToChange == null || // Origin of map is top left, origin in unity is bottom right, so we need to invert the indecies. Also, y,x because unity height maps
                             heightsToChange[heightsToChange.height - 1 - (int)(y + terrains.terrainCoords[i, j].y * resolution),
                                             heightsToChange.width - 1 - (int)(x + terrains.terrainCoords[i, j].x * resolution)] == true)
                         {

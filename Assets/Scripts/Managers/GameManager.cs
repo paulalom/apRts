@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour {
     float prevTime, lastEnemySpawn;
     Order nextOrder;
     public bool debug = true;
-    string gameMode = "NOT Survival";
+    string gameMode = "Survival";
     public static string mainSceneName = "Main Scene";
     public float dt = .001f;
     float mouseSlipTolerance = 10; // The square root of the distance you are allowed to move your mouse before a drag select is detected
@@ -45,16 +45,15 @@ public class GameManager : MonoBehaviour {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
         aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
+        LoadingScreenManager.SetLoadingProgress(0.05f);
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 120;
-        LoadingScreenManager.SetLoadingProgress(0.05f);
     }
 
     // Use this for initialization
     void Start()
     {
         StartCoroutine(SetupWorld());
-        Debug.Log("done");
     }
 
     IEnumerator SetupWorld()
@@ -110,12 +109,12 @@ public class GameManager : MonoBehaviour {
     {
         return new WorldSettings()
         {
-            randomSeed = randomSeed,
+            randomSeed = 0,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = 8,//WorldSettings.starterWorldSizeRating,
-            numStartLocations = 1,// WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 1.1f,//WorldSettings.starterWorldStartLocationSizeRating,
+            sizeRating = 11,//WorldSettings.starterWorldSizeRating,
+            numStartLocations = 3,// WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 3f,//WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
         };
@@ -209,22 +208,22 @@ public class GameManager : MonoBehaviour {
                                 }
                                 break;
                             case "Guard":
-                                nextOrder = new Order() { type = OrderType.Guard, orderRange = 1f };
+                                nextOrder = new GuardOrder() { orderRange = 6f };
                                 break;
                             case "Patrol":
-                                nextOrder = new Order() { type = OrderType.Patrol, orderRange = 1f };
+                                nextOrder = new PatrolOrder() { orderRange = 1f };
                                 break;
                             case "Stop":
-                                nextOrder = new Order() { type = OrderType.Stop, orderRange = 1f };
+                                nextOrder = new StopOrder() { orderRange = 1f };
                                 break;
                             case "Harvest":
-                                nextOrder = new Order() { type = OrderType.Harvest, orderRange = 15f };
+                                nextOrder = new HarvestOrder() { orderRange = 15f };
                                 break;
                             case "Follow":
-                                nextOrder = new Order() { type = OrderType.Follow, orderRange = 6f };
+                                nextOrder = new FollowOrder() { orderRange = 6f };
                                 break;
                             case "UseAbility":
-                                nextOrder = new Order() { type = OrderType.UseAbillity };
+                                nextOrder = new UseAbilityOrder();
                                 break;
                             default:
                                 break;
@@ -293,7 +292,7 @@ public class GameManager : MonoBehaviour {
             // Right click to move/attack
             if (Input.GetKeyUp(KeyCode.Mouse1))
             {
-                nextOrder = new Order() { type = OrderType.Move, targetPosition = hit.point, orderRange = .3f };
+                nextOrder = new MoveOrder() { targetPosition = hit.point, orderRange = .3f };
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
                     foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
@@ -331,13 +330,13 @@ public class GameManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
-                if (nextOrder.type == OrderType.UseAbillity)
+                if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
                 {
                     nextOrder.ability = unit.defaultAbility;
                     nextOrder.ability.target = objectClicked;
                     nextOrder.ability.targetPosition = hit.point;
                     nextOrder.orderRange = unit.defaultAbility.range;
-                    nextOrder.waitTimeAfterOrder = unit.defaultAbility.cooldown;
+                    nextOrder.remainingChannelTime = unit.defaultAbility.cooldown;
                 }
                 orderManager.QueueOrder(unit, nextOrder);
             }
@@ -346,7 +345,7 @@ public class GameManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
-                if (nextOrder.type == OrderType.UseAbillity && unit.defaultAbility != null)
+                if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
                 {
                     nextOrder.ability = unit.defaultAbility;
                     nextOrder.ability.target = objectClicked;

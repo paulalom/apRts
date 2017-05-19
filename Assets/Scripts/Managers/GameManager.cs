@@ -21,10 +21,10 @@ public class GameManager : MonoBehaviour {
     float prevTime, lastEnemySpawn;
     Order nextOrder;
     public bool debug = true;
-    string gameMode = "Survival";
+    string gameMode = "NOT Survival";
     public static string mainSceneName = "Main Scene";
     public float dt = .001f;
-    float mouseSlipTolerance = 10; // The square root of the distance you are allowed to move your mouse before a drag select is detected
+    float mouseSlipTolerance = 4; // The square of the distance you are allowed to move your mouse before a drag select is detected
     public int myPlayerId = 1, enemyPlayerId = 2;
     int numWorlds = 0;
     public float enemySpawnRateBase;
@@ -72,7 +72,11 @@ public class GameManager : MonoBehaviour {
         yield return null;
         numWorlds++;
         mainCamera.world = playerManager.activeWorld;
-        SetUpPlayer(playerManager.activeWorld);
+        playerManager.InitPlayers(worldSettings.numStartLocations);
+        for (int i = 1; i <= playerManager.activeWorld.worldSettings.numStartLocations; i++)
+        {
+            SetUpPlayer(i, playerManager.activeWorld);
+        }
         LoadingScreenManager.SetLoadingProgress(0.99f);
         LoadingScreenManager.CompleteLoadingScreen();
     }
@@ -109,12 +113,12 @@ public class GameManager : MonoBehaviour {
     {
         return new WorldSettings()
         {
-            randomSeed = 0,
+            randomSeed = 2,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = 11,//WorldSettings.starterWorldSizeRating,
-            numStartLocations = 3,// WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 3f,//WorldSettings.starterWorldStartLocationSizeRating,
+            sizeRating = 4,//WorldSettings.starterWorldSizeRating,
+            numStartLocations = 5,// WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 1.1f,//WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
         };
@@ -188,25 +192,7 @@ public class GameManager : MonoBehaviour {
                     }
                     if (modifiersActivated)
                     {
-                        float cameraElevationRate = 1f;
                         switch (setting.Key) {
-                            case "CamY+":
-                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
-                                break;
-                            case "CamY-":
-                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
-                                break;
-                            case "RaiseTerrain":
-                                if (rayCast)
-                                {
-                                    try
-                                    { //Try catch to swallow exception. FixMe
-                                      // only does raiseTerrain
-                                        terrainManager.ModifyTerrain(hit.point, .001f, 20, playerManager.activeWorld);
-                                    }
-                                    catch (Exception e) { }
-                                }
-                                break;
                             case "Guard":
                                 nextOrder = new GuardOrder() { orderRange = 6f };
                                 break;
@@ -251,12 +237,30 @@ public class GameManager : MonoBehaviour {
                     }
                     if (modifiersActivated)
                     {
+                        float cameraElevationRate = 1f;
                         switch (setting.Key)
                         {
+                            case "CamY+":
+                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
+                                break;
+                            case "CamY-":
+                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
+                                break;
                             case "SpawnFactory":
                                 if (debug)
                                 {
                                     rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.activeWorld);
+                                }
+                                break;
+                            case "RaiseTerrain":
+                                if (rayCast)
+                                {
+                                    try
+                                    { //Try catch to swallow exception. FixMe
+                                      // only does raiseTerrain
+                                        terrainManager.ModifyTerrain(hit.point, .003f, 20, playerManager.activeWorld);
+                                    }
+                                    catch (Exception e) { }
                                 }
                                 break;
                             default:
@@ -481,13 +485,12 @@ public class GameManager : MonoBehaviour {
         }
     }*/
 
-    void SetUpPlayer(World world)
+    void SetUpPlayer(int playerId, World world)
     {
-        Vector2 startLocation = world.startLocations[world.nextAvailableStartLocation];
-        world.nextAvailableStartLocation++;
+        Vector2 startLocation = world.startLocations[playerId-1];
 
         // Our start location is a factory! hooray
-        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), 1, world).GetComponent<RTSGameObject>();
+        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), playerId, world).GetComponent<RTSGameObject>();
         
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
@@ -499,10 +502,13 @@ public class GameManager : MonoBehaviour {
 
         commander.GetComponent<Storage>().AddItems(startingItems);
 
-        mainCamera.transform.position = new Vector3(startLocation.x + 50,
-            terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, world) + 200,
-            startLocation.y - 50);
-        mainCamera.transform.LookAt(commander.transform);
+        if (playerId == 1)
+        {
+            mainCamera.transform.position = new Vector3(startLocation.x + 50,
+                terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, world) + 200,
+                startLocation.y - 50);
+            mainCamera.transform.LookAt(commander.transform);
+        }
     }
 
     public void QueueUnit(Type type)

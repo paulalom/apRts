@@ -44,4 +44,18 @@ public class MyBitMap
         bitMap[x + y * width] = value;
     }
 
+    public override string ToString()
+    {
+        string bitMap = "";
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                bitMap += this[x, y] ? "1" : "0";
+            }
+            bitMap += "\r\n";
+        }
+        return bitMap;
+    }
+
 }

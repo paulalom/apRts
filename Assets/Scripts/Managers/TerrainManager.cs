@@ -48,8 +48,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     //public Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
     
     //We need to maintain the ability to scale this value
-    public const int chunkSizeX = 128, chunkSizeZ = 128;
-    public const int resolution = chunkSizeX / 2;
+    public const int chunkSizeX = 130, chunkSizeZ = 130;
+    public const int resolution = chunkSizeX / 2; // MUST BE POWER OF 2 + 1
     public const float resolutionRatio = resolution / (float)chunkSizeX;
     const int chunkGraphics1dArrayLength = 3; // THIS MUST ALWAYS BE ODD BECAUSE IM LAZY
     
@@ -108,9 +108,11 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     // meh buggy/fails around chunk edges.. whatever its not needed right now
     public void ModifyTerrain(Vector3 position, float amount, int diameter, World world)
     {
+        Debug.Log("yep");
         Vector2 terrainIndex = GetChunkIndexFromGlobalCoords(position.x, position.z);
         if (!world.terrainChunks.ContainsKey(terrainIndex))
         {
+            Debug.Log("yep2");
             return;
         }
         Terrain mainTerrain = world.terrainChunks[terrainIndex].GetComponent<Terrain>();
@@ -260,12 +262,13 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         terrain = terrainGO.AddComponent<Terrain>();
         terrain.terrainData = new TerrainData();
         terrainGO.AddComponent<TerrainCollider>().terrainData = terrain.terrainData;
-        terrain.terrainData.heightmapResolution = chunkSizeX / 2;
+        terrain.terrainData.heightmapResolution = resolution;
         terrain.terrainData.size = new Vector3(chunkSizeX, 600, chunkSizeZ);
         terrain.terrainData.splatPrototypes = terrainTextures;
         terrain.terrainData.treePrototypes = terrainTrees;
         terrain.transform.position = new Vector3(chunkSizeX * worldSpaceChunkIndex.x, 0, chunkSizeZ * worldSpaceChunkIndex.y);
-        /*
+
+        /* Water commented out because it lags older machines. Need to find a replacement.
         Transform waterPlane = GameObject.Instantiate(waterPlanePrefab, terrainGO.transform.position, Quaternion.identity) as Transform;
         waterPlane.transform.position = new Vector3(waterPlane.position.x + chunkSizeX / 2, waterThreshold, waterPlane.position.z + chunkSizeZ / 2);
         waterPlane.localScale = new Vector3(5.1f, 1, 5.1f); // Yay magic
@@ -276,7 +279,6 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         SetTerrainTextures(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
         SetTerrainTrees(terrainGO.GetComponent<Terrain>());
         SetTerrainResources(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex, world);
-
         return terrainGO;
     }
 
@@ -649,7 +651,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float GetRandHeight(int depth)
     {
-        return UnityEngine.Random.Range(-0.13f, 0.13f) / Mathf.Pow(2, depth);
+        return 0;// UnityEngine.Random.Range(-0.13f, 0.13f) / Mathf.Pow(2, depth);
     }
 
     // Only x,z coords are used. This way we can pass in 3d objects without converting
@@ -659,12 +661,12 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     {
         MultiTerrain mt = new MultiTerrain();
         float minX = position.x - area.x / 2f,
-            maxX = position.x + area.x / 2f,
+            maxX = position.x + (area.x - 1) / 2f,
             minY = position.z - area.z / 2f,
-            maxY = position.z + area.z / 2f;
+            maxY = position.z + (area.z - 1) / 2f;
 
         Vector2 minTerrainIndex = GetChunkIndexFromGlobalCoords(minX, minY);
-        Vector2 maxTerrainIndex = GetChunkIndexFromGlobalCoords(maxX - 1, maxY - 1);
+        Vector2 maxTerrainIndex = GetChunkIndexFromGlobalCoords(maxX, maxY);
         Vector2 minLocalTerrainStartPos = GetTerrainRelativePosition(minX, minY);
         Vector2 maxLocalTerrainEndPos = GetTerrainRelativePosition(maxX, maxY);
 
@@ -675,7 +677,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         maxLocalTerrainEndPos.y = (int)(maxLocalTerrainEndPos.y * resolutionRatio);
 
         // +1 because numTerrains is one more than the difference in indecies
-        int numTerrainsX = (int)(maxTerrainIndex.x - minTerrainIndex.x + 1);
+        int numTerrainsX = (int)(maxTerrainIndex.x - minTerrainIndex.x) + 1;
         int numTerrainsY = (int)(maxTerrainIndex.y - minTerrainIndex.y) + 1;
         Vector2[,] terrainCoords = new Vector2[numTerrainsX, numTerrainsY];
         Vector2[,] localTerrainStartPos = new Vector2[numTerrainsX, numTerrainsY];
@@ -740,7 +742,6 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     public void SetTerrainHeights(MyBitMap terrainToSetWorldMap, float percentToRaise, World world)
     {
         MultiTerrain terrains = GetTerrainsInArea(new Vector3(world.worldSizeX, 0, world.worldSizeY), new Vector3(world.worldSizeX*2, 0, world.worldSizeY*2));
-
         SetTerrainHeights(terrains, percentToRaise, world, terrainToSetWorldMap);
     }
 
@@ -764,15 +765,15 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
                 int dx = (int)(terrains.localTerrainEndPos[i, j].x - terrains.localTerrainStartPos[i, j].x);
                 int dy = (int)(terrains.localTerrainEndPos[i, j].y - terrains.localTerrainStartPos[i, j].y);
                 float[,] newHeights = new float[dy, dx];
-                float[,] oldHeights = data.GetHeights(0,0,resolution,resolution);
+                float[,] oldHeights = data.GetHeights(0,0, resolution, resolution);
                 for (int y = 0; y < dy; y++)
                 {
                     for (int x = 0; x < dx; x++)
                     {
-                        if (heightsToChange == null || // Origin of map is top left, origin in unity is bottom right, so we need to invert the indecies. Also, y,x because unity height maps
-                            heightsToChange[heightsToChange.height - 1 - (int)(y + terrains.terrainCoords[i, j].y * resolution),
-                                            heightsToChange.width - 1 - (int)(x + terrains.terrainCoords[i, j].x * resolution)] == true)
-                        {
+                        if (heightsToChange == null || // Origin of map is top left, origin in unity is bottom right, so we need to invert the indecies.
+                            heightsToChange[(int)(x + terrains.terrainCoords[i, j].x * resolution),
+                                            (int)(y + terrains.terrainCoords[i, j].y * resolution)] == true)
+                        { // y,x because unity height maps have inverted indecies (probably for the reason mentioned above)
                             newHeights[y, x] = heightValue;
                         }
                         else

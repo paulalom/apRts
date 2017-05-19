@@ -54,6 +54,12 @@ public class World {
             safeZoneWorldMap = new MyBitMap(worldSizeX, worldSizeY, safeZoneWorldMap.bitMap.Or(safeZone.bitMap));
         }
         terrainManager.SetTerrainHeights(safeZoneWorldMap, .4f, this);
+        List<Vector2> coordStartLocations = new List<Vector2>();
+        foreach (Vector2 startLocation in startLocations)
+        {
+            coordStartLocations.Add(new Vector2(startLocation.x * 2, startLocation.y * 2));
+        }
+        startLocations = coordStartLocations;
     }
 
     List<MyBitMap> GenerateStartSafeZones(List<Vector2> startLocations, float playerStartSafeZoneArea, float exclusionBoundaryArea, float maxPercentDeviationInPlayerAreas)
@@ -81,7 +87,7 @@ public class World {
                 return null;
             }
             worldStartLocationPlusExclusionBoundaryBitMap = new MyBitMap(worldSizeX, worldSizeY, worldStartLocationPlusExclusionBoundaryBitMap.bitMap.Or(playerSafeZone.bitMap));
-            MyBitMap exclusionBoundary = GenerateExclusionBoundary(playerSafeZone, startLocation, playerStartSafeZoneArea, exclusionBoundaryArea / worldSettings.numStartLocations, (int)(worldArea - playerStartSafeZoneArea * worldSettings.numStartLocations) * maxPercentDeviationInPlayerAreas, worldStartLocationPlusExclusionBoundaryBitMap);
+            MyBitMap exclusionBoundary = null;// GenerateExclusionBoundary(playerSafeZone, startLocation, playerStartSafeZoneArea, exclusionBoundaryArea / worldSettings.numStartLocations, (int)(worldArea - playerStartSafeZoneArea * worldSettings.numStartLocations) * maxPercentDeviationInPlayerAreas, worldStartLocationPlusExclusionBoundaryBitMap);
             if (exclusionBoundary != null)
             {
                 worldStartLocationPlusExclusionBoundaryBitMap = new MyBitMap(worldSizeX, worldSizeY, worldStartLocationPlusExclusionBoundaryBitMap.bitMap.Or(exclusionBoundary.bitMap));

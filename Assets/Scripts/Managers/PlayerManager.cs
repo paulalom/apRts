@@ -4,26 +4,26 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
-// Things specific to this player?
 public class PlayerManager : MonoBehaviour {
 
     public List<Player> players;
     public World activeWorld;
     
+    // Neutral is player 0
     public List<RTSGameObject> PlayerUnits { get { return players[1].units; } }
     public List<RTSGameObject> PlayerSelectedUnits { get { return players[1].selectedUnits; } }
     public UnityEvent OnPlayerSelectionChange { get { return players[1].onSelectionChange; } set { players[1].onSelectionChange = value; } }
-
-    //public GameManager gameManager;
-
-    void Awake()
+    
+    public void InitPlayers(int numPlayers)
     {
-        //gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        foreach (Player player in players)
+        // Neutral is player 0, so need numPlayers+1
+        for (int i = 0; i < numPlayers + 1; i++)
         {
+            Player player = new Player();
             player.selectedUnits = new List<RTSGameObject>();
             player.units = new List<RTSGameObject>();
             player.onSelectionChange = new UnityEvent();
+            players.Add(player);
         }
     }
 
@@ -41,8 +41,7 @@ public class PlayerManager : MonoBehaviour {
     {
         players[playerId].units.Add(unit);
     }
-
-
+    
     // We should store these lists (nonneutral, enemyUnits etc..) and maintain them rather than building them each time.
     public List<RTSGameObject> GetNonNeutralUnits()
     {

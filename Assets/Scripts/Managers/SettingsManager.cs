@@ -27,10 +27,7 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("camZ-", new Setting() { actionName = "camZ-", key = KeyCode.S });
         */
 
-        defaultKeyboardSettings.Add("camY+", new Setting() { key = KeyCode.C });
-        defaultKeyboardSettings.Add("camY-", new Setting() { key = KeyCode.C, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
 
-        defaultKeyboardSettings.Add("RaiseTerrain", new Setting() { key = KeyCode.T });
         defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.E, smartCast = true });
         defaultKeyboardSettings.Add("Stop", new Setting() { key = KeyCode.S });
         defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });
@@ -38,6 +35,9 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("Guard", new Setting() { key = KeyCode.G });
         defaultKeyboardSettings.Add("Follow", new Setting() { key = KeyCode.F });
 
+        defaultKeyboardSettings.Add("camY+", new Setting() { key = KeyCode.C, activationType = "KeyHold" });
+        defaultKeyboardSettings.Add("camY-", new Setting() { key = KeyCode.C, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift }, activationType = "KeyHold" });
+        defaultKeyboardSettings.Add("RaiseTerrain", new Setting() { key = KeyCode.T, activationType = "KeyHold" });
         defaultKeyboardSettings.Add("SpawnFactory", new Setting() { key = KeyCode.Q, activationType = "KeyHold" });
 
         for (int i = 0; i < 10; i++)

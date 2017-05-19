@@ -17,7 +17,7 @@ public class LoadingScreenManager : MonoBehaviour
     [Header("Loading Visuals")]
     public List<Text> loadingText;
     public Image progressBar;
-    public Image fadeOverlay;
+    //public Image fadeOverlay;
 
     [Header("Timing Settings")]
     public float waitOnLoadEnd = 0.25f;
@@ -65,7 +65,7 @@ public class LoadingScreenManager : MonoBehaviour
         if (sceneToLoad < 0)
             return;
 
-        fadeOverlay.gameObject.SetActive(true); // Making sure it's on so that we can crossfade Alpha
+      //  fadeOverlay.gameObject.SetActive(true); // Making sure it's on so that we can crossfade Alpha
         currentScene = SceneManager.GetActiveScene();
         StartCoroutine(LoadAsync(sceneToLoad));
     }
@@ -128,12 +128,12 @@ public class LoadingScreenManager : MonoBehaviour
 
     void FadeIn()
     {
-        fadeOverlay.CrossFadeAlpha(0, fadeDuration, true);
+    //    fadeOverlay.CrossFadeAlpha(0, fadeDuration, true);
     }
 
     void FadeOut()
     {
-        fadeOverlay.CrossFadeAlpha(1, fadeDuration, true);
+        //fadeOverlay.CrossFadeAlpha(1, fadeDuration, true);
     }
 
     public void ReplaceTextTokens(List<KeyValuePair<string,string>> textTokens)

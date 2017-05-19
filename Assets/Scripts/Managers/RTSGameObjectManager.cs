@@ -221,10 +221,32 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
         }
-        if (ownerId == 2)
-        {
-            rtsGo.flagRenderer.material.color = Color.black;
+        switch (ownerId) {
+            case 2:
+                rtsGo.flagRenderer.material.color = Color.blue;
+                break;
+            case 3:
+                rtsGo.flagRenderer.material.color = Color.cyan;
+                break;
+            case 4:
+                rtsGo.flagRenderer.material.color = Color.magenta;
+                break;
+            case 5:
+                rtsGo.flagRenderer.material.color = Color.yellow;
+                break;
+            case 6:
+                rtsGo.flagRenderer.material.color = Color.green;
+                break;
+            case 7:
+                rtsGo.flagRenderer.material.color = Color.gray;
+                break;
+            case 8:
+                rtsGo.flagRenderer.material.color = Color.black;
+                break;
+            default:
+                break;
         }
+        
         
         if (gameManager.debug && rtsGo.GetType() == typeof(Factory))
         {

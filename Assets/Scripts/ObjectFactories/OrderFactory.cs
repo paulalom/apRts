@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class OrderFactory : MonoBehaviour {
+public class OrderFactory {
   
     public Order NewGiveOrder(RTSGameObject target, List<MyKVP<Type, int>> items)
     {

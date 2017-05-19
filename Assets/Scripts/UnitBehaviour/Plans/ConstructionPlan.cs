@@ -96,7 +96,7 @@ public class ConstructionPlan : Plan {
 
     List<MyKVP<Type, int>> CheckForMissingResources(RTSGameObject unit, List<MyKVP<Type, int>> costs)
     {
-        foreach (var item in unit.storage.CheckForItemsInOrder(costs))
+        foreach (var item in unit.storage.GetItemsInInventoryInOrder(costs))
         {
             costs.Remove(item);
         }

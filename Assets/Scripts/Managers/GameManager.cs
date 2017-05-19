@@ -116,9 +116,9 @@ public class GameManager : MonoBehaviour {
             randomSeed = 2,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = 4,//WorldSettings.starterWorldSizeRating,
-            numStartLocations = 5,// WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 1.1f,//WorldSettings.starterWorldStartLocationSizeRating,
+            sizeRating = WorldSettings.starterWorldSizeRating,
+            numStartLocations =  WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
         };

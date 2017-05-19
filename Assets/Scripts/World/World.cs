@@ -99,7 +99,7 @@ public class World {
     List<Vector2> GenerateStartLocations(float playerStartSafeZoneArea)
     {
         List<Vector2> startLocations = new List<Vector2>();
-        float minDistToOtherPlayers = playerStartSafeZoneArea/((worldSizeX + worldSizeY)/2) * .10f;
+        float minDistToOtherPlayers = Mathf.Sqrt(playerStartSafeZoneArea/Mathf.PI) / 2; // r = sqrt(A/PI), divide by 2 because we're not drawing circles and want it a bit more realistic
         
         for (int i = 0; i < worldSettings.numStartLocations; i++)
         {

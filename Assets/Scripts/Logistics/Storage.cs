@@ -200,13 +200,13 @@ public class Storage : MonoBehaviour {
         return true;
     }
 
-    public List<MyKVP<Type, int>> CheckForItemsInOrder(List<MyKVP<Type, int>> itemsToSearch)
+    public List<MyKVP<Type, int>> GetItemsInInventoryInOrder(List<MyKVP<Type, int>> itemsToGet)
     {
         List<MyKVP<Type, int>> foundItems = new List<MyKVP<Type, int>>();
         Dictionary<Type, int> qtyFoundItems = new Dictionary<Type, int>();
-        foreach (MyKVP<Type, int> item in itemsToSearch)
+        foreach (MyKVP<Type, int> item in itemsToGet)
         {
-            if (items.ContainsKey(item.Key) && items[item.Key] > item.Value + (qtyFoundItems.ContainsKey(item.Key) ? qtyFoundItems[item.Key] : 0))
+            if (items.ContainsKey(item.Key) && items[item.Key] >= item.Value + (qtyFoundItems.ContainsKey(item.Key) ? qtyFoundItems[item.Key] : 0))
             {
                 foundItems.Add(item);
                 if (!qtyFoundItems.ContainsKey(item.Key))

@@ -5,7 +5,7 @@ public class WorldSettings {
                       starterWorldNumStartLocations = 8;
     public static float starterWorldResourceAbundance = 6,
                         starterWorldResourceRarity = 3,
-                        starterWorldStartLocationSizeRating = 6,
+                        starterWorldStartLocationSizeRating = 2.2f,
                         starterWorldAIPresenceRating = 3,
                         starterWorldAIStrengthRating = 2;
 
@@ -14,7 +14,7 @@ public class WorldSettings {
                numStartLocations;
     public float resourceAbundanceRating, 
                 resourceQualityRating, 
-                startLocationSizeRating, // 10 means all planet space will be used by start locations
+                startLocationSizeRating, // 10 means 100% planet space will be used by start locations
                 aiPresenceRating, 
                 aiStrengthRating;
 }

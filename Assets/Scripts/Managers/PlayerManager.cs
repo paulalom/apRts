@@ -68,4 +68,9 @@ public class PlayerManager : MonoBehaviour {
         }
         return units;
     }
+
+    public List<RTSGameObject> GetNeutralUnits()
+    {
+        return players[0].units;
+    }
 }

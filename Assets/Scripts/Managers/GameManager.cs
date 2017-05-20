@@ -43,7 +43,6 @@ public class GameManager : MonoBehaviour {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
-        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
         aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
         LoadingScreenManager.SetLoadingProgress(0.05f);
         //QualitySettings.vSyncCount = 0;
@@ -53,6 +52,7 @@ public class GameManager : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
+        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
         StartCoroutine(SetupWorld());
     }
 
@@ -62,6 +62,7 @@ public class GameManager : MonoBehaviour {
         yield return null;
         WorldSettings worldSettings = GetWorldSettings(numWorlds);
         LoadingScreenManager.GetInstance().ReplaceTextTokens(LoadingScreenManager.GetWorldGenerationTextTokens(worldSettings));
+        // Loop to make loading bar look like its doing something
         for (int i = 0; i < 30; i++)
         {
             LoadingScreenManager.SetLoadingProgress(.15f + 0.02f * i);

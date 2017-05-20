@@ -15,7 +15,16 @@ public class World {
     {
         if (worldSettings == null)
         {
-            Debug.Log("Trying to build world with no settings!");
+            Debug.LogError("Trying to build world with no settings!");
+        }
+        if (worldSettings.startLocationSizeRating >= 9)
+        {
+            Debug.LogError("ERROR: WORLD GENERATION WILL LIKELY NEVER FINISH. ABORTING");
+            return;
+        }
+        else if (worldSettings.startLocationSizeRating > 0.6f)
+        {
+            Debug.LogWarning("WARNING: WORLD GENERATION MAY TAKE A LONG TIME WITH THESE SETTINGS! (startLocationSizeRating >= 6)");
         }
         int chunkRadiusInWorld = worldSettings.sizeRating;
         

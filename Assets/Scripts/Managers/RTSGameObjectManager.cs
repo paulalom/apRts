@@ -65,6 +65,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             foreach (RTSGameObject unit in unitCreationQueue)
             {
                 playerManager.AddUnit(unit, unit.ownerId);
+                SnapToTerrainHeight(unit, unit.world);
             }
             unitCreationQueue.Clear();
         }

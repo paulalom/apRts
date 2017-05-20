@@ -17,7 +17,7 @@ public class SettingsManager : MonoBehaviour {
     public Dictionary<string, Setting> keyboardSettings;
     
 
-    void Start()
+    void Awake()
     {
         defaultKeyboardSettings = new Dictionary<string, Setting>();
         /* leaving these in RTSCamera for now
@@ -50,9 +50,4 @@ public class SettingsManager : MonoBehaviour {
 
         keyboardSettings = defaultKeyboardSettings;
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

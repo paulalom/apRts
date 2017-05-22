@@ -70,7 +70,7 @@ public class Factory : RTSGameObject
         }
     }
     
-    void CheckActivate()
+    void CheckActivate(Dictionary<Type, int> items)
     {
         if (producer.IsActive == false && producer.productionQueue.Count > 0)
         {

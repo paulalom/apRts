@@ -72,6 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\AIManagers\AIManager.cs" />
+    <Compile Include="Assets\Scripts\AIManagers\AIStrategyManager.cs" />
+    <Compile Include="Assets\Scripts\AIManagers\AITacticsManager.cs" />
     <Compile Include="Assets\Scripts\CombatAbilities\Ability.cs" />
     <Compile Include="Assets\Scripts\CombatAbilities\Explode.cs" />
     <Compile Include="Assets\Scripts\CombatAbilities\Explosion.cs" />
@@ -119,7 +122,6 @@
     <Compile Include="Assets\Scripts\Logistics\StationNotInUse.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
-    <Compile Include="Assets\Scripts\Managers\AIManager.cs" />
     <Compile Include="Assets\Scripts\Managers\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Managers\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\Managers\CombatManager.cs" />

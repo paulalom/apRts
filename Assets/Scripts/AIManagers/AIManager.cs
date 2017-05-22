@@ -6,10 +6,11 @@ using UnityEngine.Events;
 
 public class AIManager : MonoBehaviour
 {
-
     Dictionary<RTSGameObject, Plan> unitPlans = new Dictionary<RTSGameObject, Plan>();
     RTSGameObjectManager rtsGameObjectManager;
     OrderManager orderManager;
+    AITacticsManager tacticsManager;
+    AIStrategyManager strategyManager;
     public float rangeToSearchForResources = 100;
 
     // Use this for initialization
@@ -18,6 +19,8 @@ public class AIManager : MonoBehaviour
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
+        tacticsManager = new AITacticsManager();
+        strategyManager = new AIStrategyManager();
     }
 
     // Update is called once per frame

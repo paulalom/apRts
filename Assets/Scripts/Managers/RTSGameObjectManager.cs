@@ -215,9 +215,16 @@ public class RTSGameObjectManager : MonoBehaviour {
     public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, World world)
     {
         RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
+        Storage storage = newUnit.GetComponent<Storage>();
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
         rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
+
+        if (storage != null)
+        {
+            storage.onStorageAddEvent.AddListener(playerManager.players[ownerId].AddResources);
+            storage.onStorageTakeEvent.AddListener(playerManager.players[ownerId].TakeResources);
+        }
         if (rtsGo.flagRenderer == null)
         {
             rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
@@ -283,7 +290,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             position,
             Quaternion.identity) as GameObject;
         newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
-
+        
         BuildNewRTSGameObject(newUnit, ownerId, world);
         
         return newUnit;

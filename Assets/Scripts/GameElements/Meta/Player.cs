@@ -6,8 +6,42 @@ using UnityEngine.Events;
 [Serializable]
 public class Player {
 
-    public string Name;
+    public string name;
     public UnityEvent onSelectionChange;
     public List<RTSGameObject> selectedUnits;
     public List<RTSGameObject> units;
+    public Dictionary<Type,int> resources;
+    public UnityEvent onResourceChange;
+
+    public void AddResources(Dictionary<Type, int> items)
+    {
+        foreach (KeyValuePair<Type, int> item in items)
+        {
+            if (resources.ContainsKey(item.Key))
+            {
+                resources[item.Key] += item.Value;
+            }
+            else
+            {
+                resources[item.Key] = item.Value;
+            }
+        }
+        onResourceChange.Invoke();
+    }
+
+    public void TakeResources(Dictionary<Type,int> items)
+    {
+        foreach (KeyValuePair<Type, int> item in items)
+        {
+            if (resources.ContainsKey(item.Key))
+            {
+                resources[item.Key] -= item.Value;
+            }
+            else
+            {
+                resources[item.Key] = -item.Value;
+            }
+        }
+        onResourceChange.Invoke();
+    }
 }

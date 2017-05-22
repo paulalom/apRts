@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using System.Collections;
 
 public class MenuManager : MonoBehaviour {
 
@@ -22,9 +23,14 @@ public class MenuManager : MonoBehaviour {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
-        //something is wonky with the height, magic *3 ftw
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
+        StartCoroutine(Setup());
+    }
+
+    IEnumerator Setup()
+    {
+        yield return null; // Delay one frame before doing setup which requires other components
         playerManager.OnPlayerSelectionChange.AddListener(UpdateInventoryMenuDisplay);
     }
 	

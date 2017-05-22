@@ -22,7 +22,7 @@ public class World {
             Debug.LogError("ERROR: WORLD GENERATION WILL LIKELY NEVER FINISH. ABORTING");
             return;
         }
-        else if (worldSettings.startLocationSizeRating > 0.6f)
+        else if (worldSettings.startLocationSizeRating > 6)
         {
             Debug.LogWarning("WARNING: WORLD GENERATION MAY TAKE A LONG TIME WITH THESE SETTINGS! (startLocationSizeRating >= 6)");
         }

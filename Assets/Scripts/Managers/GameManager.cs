@@ -59,9 +59,10 @@ public class GameManager : MonoBehaviour {
     IEnumerator SetupWorld()
     {
         LoadingScreenManager.SetLoadingProgress(0.10f);
-        yield return null;
         WorldSettings worldSettings = GetWorldSettings(numWorlds);
+        playerManager.InitPlayers(worldSettings.numStartLocations);
         LoadingScreenManager.GetInstance().ReplaceTextTokens(LoadingScreenManager.GetWorldGenerationTextTokens(worldSettings));
+        yield return null;
         // Loop to make loading bar look like its doing something
         for (int i = 0; i < 30; i++)
         {
@@ -73,7 +74,6 @@ public class GameManager : MonoBehaviour {
         yield return null;
         numWorlds++;
         mainCamera.world = playerManager.activeWorld;
-        playerManager.InitPlayers(worldSettings.numStartLocations);
         for (int i = 1; i <= playerManager.activeWorld.worldSettings.numStartLocations; i++)
         {
             SetUpPlayer(i, playerManager.activeWorld);
@@ -176,113 +176,114 @@ public class GameManager : MonoBehaviour {
             uiManager.mouseDown = Input.mousePosition;
         }
 
-        foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
-        {
-            if (setting.Value.activationType == "KeyUp")
-            {
-                if (Input.GetKeyUp(setting.Value.key))
-                {
-                    bool modifiersActivated = true;
-                    foreach (KeyCode modifier in setting.Value.keyModifiers)
-                    {
-                        if (!Input.GetKey(modifier))
-                        {
-                            modifiersActivated = false;
-                            break;
-                        }
-                    }
-                    if (modifiersActivated)
-                    {
-                        switch (setting.Key) {
-                            case "Guard":
-                                nextOrder = new GuardOrder() { orderRange = 6f };
-                                break;
-                            case "Patrol":
-                                nextOrder = new PatrolOrder() { orderRange = 1f };
-                                break;
-                            case "Stop":
-                                nextOrder = new StopOrder() { orderRange = 1f };
-                                break;
-                            case "Harvest":
-                                nextOrder = new HarvestOrder() { orderRange = 15f };
-                                break;
-                            case "Follow":
-                                nextOrder = new FollowOrder() { orderRange = 6f };
-                                break;
-                            case "UseAbility":
-                                nextOrder = new UseAbilityOrder();
-                                break;
-                            default:
-                                break;
-                        }
-
-                        if (setting.Key.Contains("numeric_"))
-                        {
-                            QueueUnit(UIManager.GetNumericMenuType(setting.Key));
-                        }
-                    }
-                }
-            }
-            else if (setting.Value.activationType == "KeyHold")
-            {
-                if (Input.GetKey(setting.Value.key))
-                {
-                    bool modifiersActivated = true;
-                    foreach (KeyCode modifier in setting.Value.keyModifiers)
-                    {
-                        if (!Input.GetKey(modifier))
-                        {
-                            modifiersActivated = false;
-                            break;
-                        }
-                    }
-                    if (modifiersActivated)
-                    {
-                        float cameraElevationRate = 1f;
-                        switch (setting.Key)
-                        {
-                            case "CamY+":
-                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
-                                break;
-                            case "CamY-":
-                                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
-                                break;
-                            case "SpawnFactory":
-                                if (debug)
-                                {
-                                    rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.activeWorld);
-                                }
-                                break;
-                            case "RaiseTerrain":
-                                if (rayCast)
-                                {
-                                    try
-                                    { //Try catch to swallow exception. FixMe
-                                      // only does raiseTerrain
-                                        terrainManager.ModifyTerrain(hit.point, .003f, 20, playerManager.activeWorld);
-                                    }
-                                    catch (Exception e) { }
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-
-            if (setting.Value.smartCast)
-            {
-                ProcessNextOrderInput(hit);
-                if (nextOrder != null)
-                {
-                    nextOrder = null;
-                }
-            }
-        }
-        
         if (rayCast)
         {
+            foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
+            {
+                if (setting.Value.activationType == "KeyUp")
+                {
+                    if (Input.GetKeyUp(setting.Value.key))
+                    {
+                        bool modifiersActivated = true;
+                        foreach (KeyCode modifier in setting.Value.keyModifiers)
+                        {
+                            if (!Input.GetKey(modifier))
+                            {
+                                modifiersActivated = false;
+                                break;
+                            }
+                        }
+                        if (modifiersActivated)
+                        {
+                            switch (setting.Key)
+                            {
+                                case "Guard":
+                                    nextOrder = new GuardOrder() { orderRange = 6f };
+                                    break;
+                                case "Patrol":
+                                    nextOrder = new PatrolOrder() { orderRange = 1f };
+                                    break;
+                                case "Stop":
+                                    nextOrder = new StopOrder() { orderRange = 1f };
+                                    break;
+                                case "Harvest":
+                                    nextOrder = new HarvestOrder() { orderRange = 15f };
+                                    break;
+                                case "Follow":
+                                    nextOrder = new FollowOrder() { orderRange = 6f };
+                                    break;
+                                case "UseAbility":
+                                    nextOrder = new UseAbilityOrder();
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            if (setting.Key.Contains("numeric_"))
+                            {
+                                QueueUnit(UIManager.GetNumericMenuType(setting.Key));
+                            }
+                        }
+                    }
+                }
+                else if (setting.Value.activationType == "KeyHold")
+                {
+                    if (Input.GetKey(setting.Value.key))
+                    {
+                        bool modifiersActivated = true;
+                        foreach (KeyCode modifier in setting.Value.keyModifiers)
+                        {
+                            if (!Input.GetKey(modifier))
+                            {
+                                modifiersActivated = false;
+                                break;
+                            }
+                        }
+                        if (modifiersActivated)
+                        {
+                            float cameraElevationRate = 1f;
+                            switch (setting.Key)
+                            {
+                                case "CamY+":
+                                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
+                                    break;
+                                case "CamY-":
+                                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
+                                    break;
+                                case "SpawnFactory":
+                                    if (debug)
+                                    {
+                                        rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.activeWorld);
+                                    }
+                                    break;
+                                case "RaiseTerrain":
+                                    if (rayCast)
+                                    {
+                                        try
+                                        { //Try catch to swallow exception. FixMe
+                                          // only does raiseTerrain
+                                            terrainManager.ModifyTerrain(hit.point, .003f, 20, playerManager.activeWorld);
+                                        }
+                                        catch (Exception e) { }
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (setting.Value.smartCast)
+                {
+                    ProcessNextOrderInput(hit);
+                    if (nextOrder != null)
+                    {
+                        nextOrder = null;
+                    }
+                }
+            }
+        
             if (Input.GetKeyUp(KeyCode.Mouse0) && uiManager.mouseDown == Input.mousePosition)
             {
                 ProcessNextOrderInput(hit);
@@ -528,7 +529,7 @@ public class GameManager : MonoBehaviour {
             {
                 aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
             }
-            else
+            else if (producer != null)
             {
                 producer.TryQueueItem(type, quantity);
             }

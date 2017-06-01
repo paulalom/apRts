@@ -13,9 +13,7 @@ public class Tank : RTSGameObject {
 
     void Start()
     {
-        orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
-        mover = GetComponent<Mover>();
-        storage = GetComponent<Storage>();
+        DefaultInit();
         consumer = GetComponent<Consumer>();
         power = GetComponent<FlowSystem>();
         

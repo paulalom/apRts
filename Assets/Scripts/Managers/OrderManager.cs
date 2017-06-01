@@ -24,12 +24,6 @@ public class OrderManager : MonoBehaviour {
 
     public void CarryOutOrders(List<RTSGameObject> units, float dt)
     {
-        /*
-        MoveUnits(units);
-        TakeItems(units);
-        GiveItems(units);
-        etc..
-        */
         foreach (RTSGameObject unit in units)
         {
             if (orders.ContainsKey(unit) && orders[unit].Count > 0)
@@ -64,12 +58,7 @@ public class OrderManager : MonoBehaviour {
             {
                 unitOrders.Add(completedOrder);
             }
-            unitOrders.RemoveAt(0);
-            if (unitOrders.Count == 0)
-            {
-                orders.Remove(completer);
-                completer.Idle = true;
-            }
+            CompleteOrder(completer);
         }
         completedOrders.Clear();
     }
@@ -83,14 +72,7 @@ public class OrderManager : MonoBehaviour {
             unit.Idle = true;
         }
     }
-
     
-    /*
-        bool lazyWithinDist(Vector2 o1, Vector2 o2, float dist)
-        {
-            return Math.Abs(o1.x - o2.x) < dist && Math.Abs(o1.y - o2.y) < dist;
-        }*/
-
     bool ValidateOrder(RTSGameObject unit, Order order)
     {
         string errorMessage = "";
@@ -184,7 +166,15 @@ public class OrderManager : MonoBehaviour {
             {
                 if (order.GetType() == typeof(ConstructOrder))
                 {
-                    producer.CancelProduction();
+                    Worker worker = unit.GetComponent<Worker>();
+                    if (worker != null && worker.unitUnderConstruction != null)
+                    {
+                        ((Structure)worker.unitUnderConstruction).DemolishStructure("Construction cancelled!", gameManager, rtsGameObjectManager);
+                        worker.unitUnderConstruction = null;
+                    }
+                    else {
+                        producer.CancelProduction();
+                    }
                 }
             }
             orders[unit].Clear();

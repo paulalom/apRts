@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour {
     int numWorlds = 0;
     public float enemySpawnRateBase;
     RTSGameObject commander;
-    public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
+    //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
     public Texture2D selectionHighlight;
@@ -37,6 +37,10 @@ public class GameManager : MonoBehaviour {
 
     void Awake()
     {
+        if (LoadingScreenManager.GetInstance() == null)
+        {
+            throw new InvalidOperationException("The game must be started from the start menu scene");
+        }
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
@@ -47,12 +51,15 @@ public class GameManager : MonoBehaviour {
         LoadingScreenManager.SetLoadingProgress(0.05f);
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 120;
+
+        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
+        WorldSettings worldSettings = GetWorldSettings(numWorlds);
+        playerManager.InitPlayers(worldSettings.numStartLocations);
     }
 
     // Use this for initialization
     void Start()
     {
-        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
         StartCoroutine(SetupWorld());
     }
 
@@ -60,7 +67,6 @@ public class GameManager : MonoBehaviour {
     {
         LoadingScreenManager.SetLoadingProgress(0.10f);
         WorldSettings worldSettings = GetWorldSettings(numWorlds);
-        playerManager.InitPlayers(worldSettings.numStartLocations);
         LoadingScreenManager.GetInstance().ReplaceTextTokens(LoadingScreenManager.GetWorldGenerationTextTokens(worldSettings));
         yield return null;
         // Loop to make loading bar look like its doing something
@@ -105,7 +111,7 @@ public class GameManager : MonoBehaviour {
         
         if (Time.time - lastEnemySpawn > nextEnemySpawn)
         {
-            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, playerManager.activeWorld);
+            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, null, playerManager.activeWorld);
             lastEnemySpawn = Time.time;
         }
     }
@@ -117,9 +123,9 @@ public class GameManager : MonoBehaviour {
             randomSeed = 2,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = WorldSettings.starterWorldSizeRating,
-            numStartLocations =  WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = WorldSettings.starterWorldStartLocationSizeRating,
+            sizeRating = 2, // WorldSettings.starterWorldSizeRating,
+            numStartLocations = 2, //WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 1.1f, // WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
         };
@@ -253,7 +259,7 @@ public class GameManager : MonoBehaviour {
                                 case "SpawnFactory":
                                     if (debug)
                                     {
-                                        rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.activeWorld);
+                                        rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, commander.gameObject, playerManager.activeWorld);
                                     }
                                     break;
                                 case "RaiseTerrain":
@@ -294,71 +300,87 @@ public class GameManager : MonoBehaviour {
                     nextOrder = null;
                 }
             }
-
             // Right click to move/attack
-            if (Input.GetKeyUp(KeyCode.Mouse1))
+            else if (Input.GetKeyUp(KeyCode.Mouse1))
             {
                 nextOrder = new MoveOrder() { targetPosition = hit.point, orderRange = .3f };
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
                     foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
-                        orderManager.QueueOrder(unit, nextOrder);
+                        if (unit.ownerId == playerManager.ActivePlayerId)
+                        {
+                            orderManager.QueueOrder(unit, nextOrder);
+                        }
                     }
                 }
                 else
                 {
                     foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
-                        orderManager.SetOrder(unit, nextOrder);
+                        if (unit.ownerId == playerManager.ActivePlayerId)
+                        {
+                            orderManager.SetOrder(unit, nextOrder);
+                        }
                     }
                 }
                 nextOrder = null;
             }
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
         }
-        CheckBoxSelectionEvent();
+        // Needs to be outside of raycast so we still check selection if the mouseUp event is off of the terrain
+        if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            CheckBoxSelectionEvent();
+        }
+        resizeSelectionBox();
     }
 
-    void ProcessNextOrderInput(RaycastHit hit)
+    void ProcessNextOrderInput(RaycastHit screenClickLocation)
     {
         if (nextOrder == null)
         {
             return;
         }
 
-        // objectClicked May be null
-        RTSGameObject objectClicked = hit.collider != null ? hit.collider.GetComponentInParent<RTSGameObject>() : null;
-
-        nextOrder.target = objectClicked;
-        nextOrder.targetPosition = hit.point;
         if (Input.GetKey(KeyCode.LeftShift))
         {
             foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
-                if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
-                {
-                    nextOrder.ability = unit.defaultAbility;
-                    nextOrder.ability.target = objectClicked;
-                    nextOrder.ability.targetPosition = hit.point;
-                    nextOrder.orderRange = unit.defaultAbility.range;
-                    nextOrder.remainingChannelTime = unit.defaultAbility.cooldown;
-                }
-                orderManager.QueueOrder(unit, nextOrder);
+                AddNextOrder(nextOrder, unit, screenClickLocation, false);
             }
         }
         else
         {
             foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
             {
-                if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
-                {
-                    nextOrder.ability = unit.defaultAbility;
-                    nextOrder.ability.target = objectClicked;
-                    nextOrder.ability.targetPosition = hit.point;
-                    nextOrder.orderRange = unit.defaultAbility.range;
-                }
+                AddNextOrder(nextOrder, unit, screenClickLocation, true);
+            }
+        }
+    }
+
+    void AddNextOrder(Order nextOrder, RTSGameObject unit, RaycastHit screenClickLocation, bool clearOrderQueueBeforeSetting)
+    {
+        // objectClicked May be null
+        RTSGameObject objectClicked = screenClickLocation.collider != null ? screenClickLocation.collider.GetComponentInParent<RTSGameObject>() : null;
+        nextOrder.target = objectClicked;
+        nextOrder.targetPosition = screenClickLocation.point;
+        if (unit.ownerId == playerManager.ActivePlayerId)
+        {
+            if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
+            {
+                nextOrder.ability = unit.defaultAbility;
+                nextOrder.ability.target = objectClicked;
+                nextOrder.ability.targetPosition = screenClickLocation.point;
+                nextOrder.orderRange = unit.defaultAbility.range;
+            }
+            if (clearOrderQueueBeforeSetting)
+            {
                 orderManager.SetOrder(unit, nextOrder);
+            }
+            else
+            {
+                orderManager.QueueOrder(unit, nextOrder);
             }
         }
     }
@@ -370,43 +392,27 @@ public class GameManager : MonoBehaviour {
             // objectClicked May be null
             RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
             // Select one
-            if (objectClicked != null && selectableTypes.Contains(objectClicked.GetType()) && objectClicked.ownerId == myPlayerId)
+            if (objectClicked != null)// && selectableTypes.Contains(objectClicked.GetType()))
             {
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
                     foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
                     {
                         unit.selected = false;
-                        unit.flagRenderer.material.color = Color.white;
+                        unit.selectionCircle.enabled = false;
                     }
                     playerManager.PlayerSelectedUnits.Clear();
                 }
-
-                playerManager.PlayerSelectedUnits.Add(objectClicked);
-                objectClicked.selected = true;
-                objectClicked.flagRenderer.material.color = Color.red;
+                Select(objectClicked, true);
             }
         }
+
+        resizeSelectionBox();
         uiManager.menuClicked = false;
     }
 
     // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
     void CheckBoxSelectionEvent()
-    {
-        resizeSelectionBox();
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!uiManager.menuClicked && (Input.mousePosition - uiManager.mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
-            {
-                CheckSelected(playerManager.PlayerUnits);
-            }
-            uiManager.mouseDown = vectorSentinel;
-        }
-    }
-
-    void resizeSelectionBox()
     {
         if (Input.GetMouseButtonUp(0))
         {
@@ -421,8 +427,17 @@ public class GameManager : MonoBehaviour {
                 selectionBox.height = -selectionBox.height;
             }
 
+            // Only do box selection / selection clearing if we drag a box or we click empty space
+            if (!uiManager.menuClicked && (Input.mousePosition - uiManager.mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            {
+                CheckSelected(playerManager.GetAllUnits());
+            }
+            uiManager.mouseDown = vectorSentinel;
         }
+    }
 
+    void resizeSelectionBox()
+    {
         if (Input.GetMouseButton(0))
         {
             selectionBox = new Rect(uiManager.mouseDown.x,
@@ -431,35 +446,57 @@ public class GameManager : MonoBehaviour {
                                     RTSCamera.InvertMouseY(Input.mousePosition.y) - RTSCamera.InvertMouseY(uiManager.mouseDown.y));
         }
     }
-
-    void CheckSelected(List<RTSGameObject> units)
+    
+    void CheckSelected(HashSet<RTSGameObject> units)
     {
+        HashSet<RTSGameObject> unitsInSelectionBox = new HashSet<RTSGameObject>();
+        
         foreach (RTSGameObject unit in units)
-        { 
-            if (!selectableTypes.Contains(unit.GetType()) || unit.ownerId != myPlayerId)
-            {
-                continue;
-            }
-            if (unit.flagRenderer.isVisible)
+        {
+            if (unit.flagRenderer.isVisible)// && selectableTypes.Contains(unit.GetType()))
             {
                 Vector3 camPos = mainCamera.GetComponent<Camera>().WorldToScreenPoint(unit.transform.position);
                 camPos.y = RTSCamera.InvertMouseY(camPos.y);
-                unit.selected = selectionBox.Contains(camPos);
-            }
-            if (unit.selected)
-            {
-                unit.flagRenderer.material.color = Color.red;
-                if (!playerManager.PlayerSelectedUnits.Contains(unit))
+                if (selectionBox.Contains(camPos))
                 {
-                    Select(unit, true);
+                    unitsInSelectionBox.Add(unit);
                 }
+            }
+        }
+
+        bool selectingFriendlyUnitsOnly = DoesUnitListContainFriendlies(unitsInSelectionBox);
+        
+        foreach (RTSGameObject unit in units)
+        {
+            bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
+            bool previouslySelected = playerManager.PlayerSelectedUnits.Contains(unit);
+
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                selected = selected || previouslySelected;
+            }
+
+            if (selected)
+            {
+                Select(unit, true);
             }
             else
             {
-                unit.flagRenderer.material.color = Color.white;
                 Select(unit, false);
             }
         }
+    }
+
+    bool DoesUnitListContainFriendlies(HashSet<RTSGameObject> units)
+    {
+        foreach (RTSGameObject unit in units)
+        {
+            if (unit.ownerId == playerManager.ActivePlayerId)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void Select(RTSGameObject obj, bool select)
@@ -472,27 +509,16 @@ public class GameManager : MonoBehaviour {
         {
             playerManager.PlayerSelectedUnits.Remove(obj);
         }
+        obj.selected = select;
+        obj.selectionCircle.enabled = select;
         playerManager.OnPlayerSelectionChange.Invoke();
     }
-
-    /* selection to be refactored ends here */
-
-    /*
-    void SelectOne(RaycastHit clickLocation)
-    {
-        selectedUnits.Clear();
-        RTSGameObject selectedUnit = clickLocation.collider.gameObject.GetComponent<RTSGameObject>();
-        if (selectedUnit != null) {
-            selectedUnits.Add(selectedUnit.type, selectedUnit);
-        }
-    }*/
-
+    
     void SetUpPlayer(int playerId, World world)
     {
         Vector2 startLocation = world.startLocations[playerId-1];
-
-        // Our start location is a factory! hooray
-        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), playerId, world).GetComponent<RTSGameObject>();
+        
+        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), playerId, null, world).GetComponent<RTSGameObject>();
         
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
@@ -517,22 +543,34 @@ public class GameManager : MonoBehaviour {
     {
         QueueUnit(type, 1);
     }
-
-
+    
     public void QueueUnit(Type type, int quantity)
     {
         foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
         {
-            Producer producer = unit.GetComponent<Producer>();
-            Mover mover = unit.GetComponent<Mover>();
-            if (producer != null && mover != null)
+            if (unit.ownerId == playerManager.ActivePlayerId)
             {
-                aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
-            }
-            else if (producer != null)
-            {
-                producer.TryQueueItem(type, quantity);
+                Producer producer = unit.GetComponent<Producer>();
+                Mover mover = unit.GetComponent<Mover>();
+                if (producer != null && mover != null)
+                {
+                    aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
+                }
+                else if (producer != null)
+                {
+                    producer.TryQueueItem(type, quantity);
+                }
             }
         }
+    }
+
+    public void CreateText(string text, Vector3 position, Color color, float scale = 1)
+    {
+        uiManager.CreateText(text, position, color, scale);
+    }
+
+    public void CreateText(string text, Vector3 position, float scale = 1)
+    {
+        uiManager.CreateText(text, position, scale);
     }
 }

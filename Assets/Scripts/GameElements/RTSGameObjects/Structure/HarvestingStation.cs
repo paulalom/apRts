@@ -5,12 +5,11 @@ using System.Collections;
 [RequireComponent(typeof(Consumer))]
 [RequireComponent(typeof(Harvester))]
 [RequireComponent(typeof(Storage))]
-public class HarvestingStation : RTSGameObject {
+public class HarvestingStation : Structure {
 
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone) };
     Consumer consumer;
     Harvester harvester;
-    bool isActive = false;
 
     void Awake()
     {
@@ -18,26 +17,23 @@ public class HarvestingStation : RTSGameObject {
         consumer = GetComponent<Consumer>();
         harvester = GetComponent<Harvester>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
-        unitType = UnitType.Structure;
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
 
         foreach (Type t in defaultCanContain)
         {
             storage.canContain.Add(t);
         }
+        harvester.IsActive = false;
     }
 
     void Start()
     {
+        DefaultInit();
         int layerMask = LayerMask.NameToLayer("Resource");
         harvester.harvestTarget = (ResourceDeposit)(rtsGameObjectManager.GetNearestComponentInRange(GetComponent<Collider>(), transform.position, harvester.harvestingRange, 1 << layerMask));
-        if (harvester.harvestTarget != null)
+        if (harvester.harvestTarget == null)
         {
-            harvester.IsActive = true;
-            idle = false;
-        }
-        else
-        {
-            idle = true; // AI Manager needs to find the harvester something to do
+            DemolishStructure("Invalid Construction Location: No Resource within " + harvester.harvestingRange + " units", gameManager, rtsGameObjectManager);
         }
     }
 
@@ -52,9 +48,12 @@ public class HarvestingStation : RTSGameObject {
                 idle = true;
             }
         }
-        else // REMOVE ME (and figure out why harvesters are deactivating randomly)
+        else
         {
-            harvester.IsActive = true;
+            if (!underConstruction)
+            {
+                harvester.IsActive = true;
+            }
         }
     }
 }

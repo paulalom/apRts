@@ -8,8 +8,8 @@ public class Player {
 
     public string name;
     public UnityEvent onSelectionChange;
-    public List<RTSGameObject> selectedUnits;
-    public List<RTSGameObject> units;
+    public HashSet<RTSGameObject> selectedUnits;
+    public HashSet<RTSGameObject> units;
     public Dictionary<Type,int> resources;
     public UnityEvent onResourceChange;
 

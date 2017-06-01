@@ -1,27 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
-using System.Collections.Generic;
-using System;
-
-public enum UnitType
-{
-    Unit,
-    Structure,
-    Resource
-}
 
 [System.Serializable]
 public class RTSGameObject : MonoBehaviour
 {
     public bool selected = false;
-    public Renderer flagRenderer; // the part of the object which contains the flag
+    public Renderer flagRenderer;
+    public SpriteRenderer selectionCircle;
     protected GameManager gameManager;
     protected OrderManager orderManager;
     protected RTSGameObjectManager rtsGameObjectManager;
-    public GameObject graphicObject; // should this be a thing?
-    public Storage storage; // SHOULD ONLY BE ACCESSED THROUGH rtsGameObjectManager.GetStorage?
+    public GameObject graphicObject;
+    public Storage storage;
     public Mover mover = null;
-    public UnitType unitType;
     public Ability defaultAbility;
     public RTSGameObject target = null;
     public World world;
@@ -36,29 +27,28 @@ public class RTSGameObject : MonoBehaviour
         {
             if (value != idle)
             {
-                onIdle.Invoke(this, value);
                 idle = value;
+                onIdle.Invoke(this, value);
             }
         }
     }
     
     public class OnIdleEvent : UnityEvent<RTSGameObject, bool> { }
     public OnIdleEvent onIdle = new OnIdleEvent();
-
-    void Awake()
-    {
-        storage = GetComponent<Storage>();
-        flagRenderer = GetComponent<Renderer>(); // just get any part of the object
-        unitType = UnitType.Unit;
-        prevPositionForHeightMapCheck = transform.position;
-    }
+    
     void Start()
     {
+        DefaultInit();
+    }
+
+    protected void DefaultInit()
+    {
+        prevPositionForHeightMapCheck = transform.position;
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         mover = GetComponent<Mover>();
-        
+        storage = GetComponent<Storage>();
     }
 
     void Update()

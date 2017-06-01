@@ -4,10 +4,10 @@ using UnityEngine;
 
 [RequireComponent(typeof(Consumer))]
 [RequireComponent(typeof(Producer))]
-public class Factory : RTSGameObject
+public class Factory : Structure
 {
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
-    static Type[] defaultCanProduce = new Type[] { typeof(Worker), typeof(Tank), typeof(Paper), typeof(Tool), typeof(Car) };
+    static Type[] defaultCanProduce = new Type[] { typeof(ConstructionSphere), typeof(Tank), typeof(Paper), typeof(Tool), typeof(Car) };
     Producer producer;
     Consumer consumer;
 
@@ -16,8 +16,7 @@ public class Factory : RTSGameObject
         storage = GetComponent<Storage>();
         producer = GetComponent<Producer>();
         consumer = GetComponent<Consumer>();
-
-        unitType = UnitType.Structure;
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
 
         foreach (Type t in defaultCanContain)
         {
@@ -27,14 +26,14 @@ public class Factory : RTSGameObject
         {
             producer.canProduce.Add(t);
         }
-        producer.productionCost.Add(typeof(Worker), new Dictionary<Type, int>());
+        producer.productionCost.Add(typeof(ConstructionSphere), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Paper), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Tool), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Car), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Tank), new Dictionary<Type, int>());
 
-        producer.productionCost[typeof(Worker)].Add(typeof(Tool), 5);
-        producer.productionCost[typeof(Worker)].Add(typeof(Paper), 5);
+        producer.productionCost[typeof(ConstructionSphere)].Add(typeof(Tool), 5);
+        producer.productionCost[typeof(ConstructionSphere)].Add(typeof(Paper), 5);
         producer.productionCost[typeof(Tank)].Add(typeof(Iron), 50);
         producer.productionCost[typeof(Tank)].Add(typeof(Tool), 50);
         producer.productionCost[typeof(Tank)].Add(typeof(Coal), 50);
@@ -45,7 +44,7 @@ public class Factory : RTSGameObject
         producer.productionCost[typeof(Car)].Add(typeof(Iron), 5);
         producer.productionCost[typeof(Car)].Add(typeof(Coal), 5);
 
-        producer.productionTime[typeof(Worker)] = 2;
+        producer.productionTime[typeof(ConstructionSphere)] = 2;
         producer.productionTime[typeof(Tank)] = 2;
         producer.productionTime[typeof(Paper)] = 2;
         producer.productionTime[typeof(Tool)] = 2;
@@ -55,6 +54,7 @@ public class Factory : RTSGameObject
 
         consumer.operationCosts[typeof(Coal)] = 3;
         consumer.operationInterval = .3f;
+        producer.IsActive = false;
     }
 
     void Start()
@@ -64,7 +64,7 @@ public class Factory : RTSGameObject
 
     void Update()
     {
-        if (producer.IsActive)
+        if (!underConstruction && producer.IsActive)
         {
             producer.IsActive = consumer.Operate();
         }
@@ -72,7 +72,7 @@ public class Factory : RTSGameObject
     
     void CheckActivate(Dictionary<Type, int> items)
     {
-        if (producer.IsActive == false && producer.productionQueue.Count > 0)
+        if (!underConstruction && producer.IsActive == false && producer.productionQueue.Count > 0)
         {
             if (storage.HasItems(consumer.operationCosts))
             {

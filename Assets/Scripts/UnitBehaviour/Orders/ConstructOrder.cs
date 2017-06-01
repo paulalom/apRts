@@ -8,6 +8,7 @@ public class ConstructOrder : Order {
         Producer producer = performingUnit.GetComponent<Producer>();
         if (producer.TryQueueItem(items[0].Key, items[0].Value))
         {
+            remainingChannelTime = producer.productionTime[items[0].Key];
             return true;
         }
         else
@@ -21,6 +22,14 @@ public class ConstructOrder : Order {
     {
         updateChannelDuration(dt);
         return IsFinishedChanneling();
+    }
+
+    public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    {
+        Worker worker = performingUnit.GetComponent<Worker>();
+        ((Structure)worker.unitUnderConstruction).CompleteConstruction(rtsGameObjectManager);
+        worker.unitUnderConstruction = null;
+        return true;
     }
 
     public override OrderValidationResult Validate(RTSGameObject performingUnit)

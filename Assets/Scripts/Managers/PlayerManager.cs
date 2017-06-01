@@ -11,9 +11,24 @@ public class PlayerManager : MonoBehaviour {
     public World activeWorld;
     
     // Neutral is player 0
-    public List<RTSGameObject> PlayerUnits { get { return players[1].units; } }
-    public List<RTSGameObject> PlayerSelectedUnits { get { return players[1].selectedUnits; } }
-    public UnityEvent OnPlayerSelectionChange { get { return players[1].onSelectionChange; } set { players[1].onSelectionChange = value; } }
+    public HashSet<RTSGameObject> PlayerUnits { get { return ActivePlayer.units; } }
+    public HashSet<RTSGameObject> PlayerSelectedUnits { get { return ActivePlayer.selectedUnits; } }
+    public UnityEvent OnPlayerSelectionChange { get { return ActivePlayer.onSelectionChange; } set { ActivePlayer.onSelectionChange = value; } }
+    private Player _activePlayer;
+    private int _activePlayerId;
+    public Player ActivePlayer
+    {
+        get { return _activePlayer; }
+    }
+    public int ActivePlayerId
+    {
+        get { return _activePlayerId; }
+        set
+        {
+            _activePlayerId = value;
+            _activePlayer = players[_activePlayerId];
+        }
+    }
 
     // Temp UI display of resource totals
     public Text resourceCountTextDisplay;
@@ -24,23 +39,24 @@ public class PlayerManager : MonoBehaviour {
         {
             Player player = new Player();
             player.name = (i == 0) ? "Neutral" : "Player " + i;
-            player.selectedUnits = new List<RTSGameObject>();
-            player.units = new List<RTSGameObject>();
+            player.selectedUnits = new HashSet<RTSGameObject>();
+            player.units = new HashSet<RTSGameObject>();
             player.resources = new Dictionary<Type,int>();
             player.onSelectionChange = new UnityEvent();
             player.onResourceChange = new UnityEvent();
+            players.Add(player);
             if (i == 1)
             {
-                player.onResourceChange.AddListener(UpdateResourceDisplay);
+                ActivePlayerId = i;
+                ActivePlayer.onResourceChange.AddListener(UpdateResourceDisplay);
             }
-            players.Add(player);
         }
     }
     
     private void UpdateResourceDisplay()
     {
         string resourceString = "";
-        foreach (KeyValuePair<Type, int> resource in players[1].resources)
+        foreach (KeyValuePair<Type, int> resource in ActivePlayer.resources)
         {
             resourceString += resource.Key + ": " + resource.Value + ", ";
         }
@@ -51,6 +67,11 @@ public class PlayerManager : MonoBehaviour {
     public int GetNumUnits(Type type, int playerId)
     {
         return players[playerId].units.Count(i => i.GetType() == type);
+    }
+
+    public int GetNumUnits(string type, int playerId)
+    {
+        return players[playerId].units.Count(i => i.GetType().ToString() == type);
     }
 
     public int GetNumUnits(int playerId)
@@ -76,21 +97,38 @@ public class PlayerManager : MonoBehaviour {
         }
         return units;
     }
-    
-    public List<RTSGameObject> GetEnemyUnits(RTSGameObject unit)
+
+
+    public HashSet<RTSGameObject> GetAllUnits()
     {
-        List<RTSGameObject> units = new List<RTSGameObject>();
+        HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
         foreach (Player player in players)
         {
-            if (player.name != "Neutral" && players[unit.ownerId] != player)
+            foreach (RTSGameObject unit in player.units)
             {
-                units.AddRange(player.units);
+                units.Add(unit);
             }
         }
         return units;
     }
 
-    public List<RTSGameObject> GetNeutralUnits()
+    public HashSet<RTSGameObject> GetEnemyUnits(RTSGameObject unitToSearch)
+    {
+        HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
+        foreach (Player player in players)
+        {
+            if (player.name != "Neutral" && players[unitToSearch.ownerId] != player)
+            {
+                foreach (RTSGameObject unit in player.units)
+                {
+                    units.Add(unit);
+                }
+            }
+        }
+        return units;
+    }
+
+    public HashSet<RTSGameObject> GetNeutralUnits()
     {
         return players[0].units;
     }

@@ -20,6 +20,9 @@ public class Producer : MonoBehaviour {
     public Dictionary<Type, Dictionary<Type, int>> productionCost = new Dictionary<Type, Dictionary<Type, int>>();
     RTSGameObjectManager rtsGameObjectManager;
 
+    public class OnProductionBeginEvent : UnityEvent<RTSGameObject> { }
+    public OnProductionBeginEvent onProductionBeginEvent = new OnProductionBeginEvent();
+
     public float timeLeftToProduce = 0;
     private bool _isActive = false;
     // If we turn on, start counting production duration from the correct time
@@ -121,7 +124,15 @@ public class Producer : MonoBehaviour {
 
     bool ProduceToWorld(Type typeToProduce, int qtyToProduce)
     {
-        if(rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject)){
+        bool success;
+        if (typeToProduce.IsSubclassOf(typeof(Structure))) {
+            success = rtsGameObjectManager.StartNewStructure(typeToProduce, qtyToProduce, gameObject);
+        }
+        else
+        {
+            success = rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject);
+        }
+        if (success){
             PopProductionQueue();
             return true;
         }
@@ -156,6 +167,17 @@ public class Producer : MonoBehaviour {
             productionQueue.RemoveAt(0);
         }
     }
+    
+    void StartProduction(Type type, int quantity)
+    {
+        if (type.IsSubclassOf(typeof(Structure)))
+        {
+            timeLeftToProduce = 0;
+        }
+        else {
+            timeLeftToProduce = productionTime[productionQueue[0].Key];
+        }
+    }
 
     void StartNextProduction()
     {
@@ -166,7 +188,7 @@ public class Producer : MonoBehaviour {
         }
         try
         {
-            timeLeftToProduce = productionTime[productionQueue[0].Key];
+            StartProduction(productionQueue[0].Key, productionQueue[0].Value);
         }
         catch (Exception e)
         {

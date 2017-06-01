@@ -102,9 +102,10 @@
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\Factory.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\HarvestingStation.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\PowerPlant.cs" />
+    <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Structure\Structure.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Commander.cs" />
+    <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\ConstructionSphere.cs" />
     <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Tank.cs" />
-    <Compile Include="Assets\Scripts\GameElements\RTSGameObjects\Unit\Worker.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\AbilitySubsystem.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\Electronics\Battery.cs" />
     <Compile Include="Assets\Scripts\GameElements\Subsystems\Electronics\Capacitor.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Assets\Scripts\Logistics\StationNotInUse.cs" />
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
+    <Compile Include="Assets\Scripts\Logistics\Worker.cs" />
     <Compile Include="Assets\Scripts\Managers\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Managers\ButtonManager.cs" />
     <Compile Include="Assets\Scripts\Managers\CombatManager.cs" />

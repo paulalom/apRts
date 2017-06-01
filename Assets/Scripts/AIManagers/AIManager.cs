@@ -51,7 +51,7 @@ public class AIManager : MonoBehaviour
 
     public bool SetNewPlanForUnit(RTSGameObject unit)
     {
-        if (unit.GetType() == typeof(Worker))
+        if (unit.GetType() == typeof(ConstructionSphere))
         {
             if (orderManager.orders.ContainsKey(unit))
             {

@@ -5,22 +5,23 @@ using UnityEngine;
 [RequireComponent(typeof(Transporter))]
 [RequireComponent(typeof(Mover))]
 [RequireComponent(typeof(Producer))]
-public class Worker : RTSGameObject
+[RequireComponent(typeof(Storage))]
+public class Worker : MonoBehaviour
 {
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
     static Type[] defaultCanProduce = new Type[] { typeof(Factory), typeof(HarvestingStation), typeof(PowerPlant) };
-    Producer producer;
-    void Awake()
+    public RTSGameObject unitUnderConstruction;
+    
+    public void SetDefaultStorageSettings(Storage storage)
     {
-        storage = GetComponent<Storage>();
-        producer = GetComponent<Producer>();
-        producer.canProduce.Add(typeof(Factory));
-        producer.canProduce.Add(typeof(HarvestingStation));
-
         foreach (Type t in defaultCanContain)
         {
             storage.canContain.Add(t);
         }
+    }
+
+    public void SetDefaultProductionSettings(Producer producer)
+    {
         foreach (Type t in defaultCanProduce)
         {
             producer.canProduce.Add(t);
@@ -33,7 +34,7 @@ public class Worker : RTSGameObject
         producer.productionCost.Add(typeof(HarvestingStation), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(PowerPlant), new Dictionary<Type, int>());
 
-        
+
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Wood), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Stone), 100);
         producer.productionCost[typeof(HarvestingStation)].Add(typeof(Iron), 50);

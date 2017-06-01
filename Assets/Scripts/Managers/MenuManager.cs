@@ -95,7 +95,9 @@ public class MenuManager : MonoBehaviour {
             if (GUI.Button(menu, "", container))
             {
                 Debug.Log("Menu button!");
-                if (gameManager.itemTransferSource != null)
+                if (gameManager.itemTransferSource != null && 
+                    gameManager.itemTransferSource.Key.ownerId == playerManager.ActivePlayerId &&
+                    unit.ownerId == playerManager.ActivePlayerId)
                 {
                     RTSGameObject sourceUnit = gameManager.itemTransferSource.Key;
                     // May need to rework the transporter/harvester relationship

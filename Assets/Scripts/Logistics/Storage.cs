@@ -9,7 +9,7 @@ public class Storage : MonoBehaviour {
 
     public int size;
     public int usedSpace;
-    public int freeSpace; //todo
+    public int freeSpace;
     //public int maxItemQtyPerSlot; todo
     Dictionary<Type, int> items = new Dictionary<Type, int>();
     public HashSet<Type> canContain = new HashSet<Type>();
@@ -118,7 +118,7 @@ public class Storage : MonoBehaviour {
             {
                 numItemsToTake = items[kvp.Key];
             }
-            int qtyTaken = TakeItemInternal(kvp.Key, numItemsToTake, false);
+            int qtyTaken = TakeItemInternal(kvp.Key, numItemsToTake, true);
             if (qtyTaken == numItemsToTake)
             {
                 itemsTaken.Add(kvp.Key, numItemsToTake);

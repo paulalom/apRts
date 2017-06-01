@@ -104,12 +104,10 @@ public class ButtonManager : MonoBehaviour {
             {
                 if (unit != newSelectedUnit)
                 {
-                    unit.selected = false;
-                    unit.flagRenderer.material.color = Color.white;
+                    gameManager.Select(unit, false);
                 }
             }
-            playerManager.PlayerSelectedUnits.Clear();
-            playerManager.PlayerSelectedUnits.Add(newSelectedUnit);
+            gameManager.Select(newSelectedUnit, true);
         }
     }
 }

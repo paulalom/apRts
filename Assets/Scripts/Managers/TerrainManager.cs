@@ -254,7 +254,6 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     GameObject GenerateChunk(Vector2 worldSpaceChunkIndex, World world, Dictionary<Vector2, GameObject> terrainChunks, string chunkName = null)
     {
-        Debug.Log("Generating Chunk world index (" + worldSpaceChunkIndex.x + "," + worldSpaceChunkIndex.y + "))");
         GameObject terrainGO = new GameObject();
         Terrain terrain;
         terrainGO.name = (chunkName == null ? "Chunk_" + terrainChunks.Count : chunkName);
@@ -598,6 +597,8 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     public float GetHeightFromGlobalCoords(float xPos, float zPos, World world)
     {
         try {
+            xPos = (int)xPos;
+            zPos = (int)zPos;
             Vector2 chunkCoords = GetChunkIndexFromGlobalCoords(xPos, zPos);
             Terrain terrain = world.terrainChunks[chunkCoords].GetComponent<Terrain>();
             Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);

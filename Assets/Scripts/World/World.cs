@@ -164,7 +164,6 @@ public class World {
         int[] currentPosition = new int[] { (int)start.x, (int)start.y };
         safeZoneBitMap[(int)start.x, (int)start.y] = true;
         safeZoneCoordinates.Add(currentPosition);
-        Debug.Log("Start Location:" + start);
         return GenerateRandomShapeOfArea(shapeArea, startSafeZoneArea, maxIterations, maxDifferenceBetweenActualAndDesiredArea, currentPositionIndex, safeZoneCoordinates, safeZoneBitMap, worldMapWithExcludedAreasTrue);
     }
 
@@ -221,7 +220,6 @@ public class World {
 
         if (currentShapeArea >= desiredShapeArea - maxDifferenceBetweenActualAndDesiredArea)
         {
-            Debug.Log("shapeCoords 0 (should be start location): " + shapeCoords[0][0] + ", " + shapeCoords[0][1]);
             return shapeBitMap;
         }
         else

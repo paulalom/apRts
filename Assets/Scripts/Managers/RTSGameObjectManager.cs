@@ -49,7 +49,6 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
         for (int i = 0; i < InspectorPrefabTypes.Length; i++)
         {
-            Debug.Log(InspectorPrefabNames[i] + ", " + InspectorPrefabTypes[i].ToString());
             prefabs.Add(InspectorPrefabNames[i], InspectorPrefabTypes[i]);
         }
         if (InspectorPrefabNames.Length != prefabs.Count)
@@ -73,7 +72,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in unitDestructionQueue)
             {
-                playerManager.players[unit.ownerId].units.Remove(unit);
+                playerManager.players[unit.ownerId].selectedUnits.Remove(unit);
                 playerManager.players[unit.ownerId].units.Remove(unit);
 
                 try {
@@ -88,7 +87,7 @@ public class RTSGameObjectManager : MonoBehaviour {
                         Destroy(go, go.GetComponent<ParticleSystem>().duration);
                     }
 
-                    Destroy(unit.gameObject, .2f); // .2s delay is hack to ensure this loop finishes before objects are destroyed
+                    Destroy(unit.gameObject, .05f); // delay is hack to ensure this loop finishes before objects are destroyed
                 }
                 catch (Exception e)
                 {
@@ -163,7 +162,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
-        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, world);
+        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, null, world);
         ResourceDeposit deposit = go.GetComponent<ResourceDeposit>();
         deposit.type = type;
         go.name = name;
@@ -193,7 +192,21 @@ public class RTSGameObjectManager : MonoBehaviour {
 
         return go;
     }
-
+    
+    public bool StartNewStructure(Type type, int quantity, GameObject producer)
+    {
+        RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
+        if (!prefabs.ContainsKey(type.ToString()))
+        {
+            throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
+        }
+        for (int i = 0; i < quantity; i++)
+        {
+            Vector3 positionToSpawn = GetPositionToSpawn(producer, type);
+            StartNewStructure(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world);
+        }
+        return true;
+    }
 
     //The "around" bit is todo
     public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
@@ -205,17 +218,48 @@ public class RTSGameObjectManager : MonoBehaviour {
         }
         for (int i = 0; i < quantity; i++)
         {
-            
-            SpawnUnit(type, new Vector3(producer.transform.position.x + producer.transform.localScale.x/2 + prefabs[type.ToString()].transform.localScale.x/2 + 1, 
-                producer.transform.position.y, producer.transform.position.z), rtsGo.ownerId, rtsGo.world);
+            Vector3 positionToSpawn = GetPositionToSpawn(producer, type);
+            SpawnUnit(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world);
         }
         return true;
     }
 
-    public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, World world)
+    public GameObject StartNewStructure(Type type, Vector3 position, int ownerId, GameObject producer, World world)
+    {
+        string unitPrefabType = type.ToString() + "UnderConstruction";
+        return SpawnUnit(unitPrefabType, position, ownerId, producer, world);
+    }
+
+    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId, GameObject producer, World world)
+    {
+        return SpawnUnit(type.ToString(), position, ownerId, producer, world);
+    }
+    
+    public GameObject SpawnUnit(string type, Vector3 position, int ownerId, GameObject producer, World world)
+    {
+        GameObject newUnit = Instantiate(prefabs[type],
+            position,
+            Quaternion.identity) as GameObject;
+        newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
+
+        BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
+
+        return newUnit;
+    }
+
+    public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, string requestedType, int ownerId, GameObject producer, World world)
     {
         RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
         Storage storage = newUnit.GetComponent<Storage>();
+
+        if (requestedType.Contains("UnderConstruction"))
+        {
+            producer.GetComponent<Worker>().unitUnderConstruction = rtsGo;
+        }
+        else if(rtsGo is Structure){
+            ((Structure)rtsGo).underConstruction = false;
+        }
+
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
         rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
@@ -229,7 +273,11 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
         }
-        switch (ownerId) {
+        switch (ownerId)
+        {
+            case 1:
+                rtsGo.flagRenderer.material.color = Color.red;
+                break;
             case 2:
                 rtsGo.flagRenderer.material.color = Color.blue;
                 break;
@@ -254,8 +302,8 @@ public class RTSGameObjectManager : MonoBehaviour {
             default:
                 break;
         }
-        
-        
+
+
         if (gameManager.debug && rtsGo.GetType() == typeof(Factory))
         {
             Dictionary<Type, int> items = new Dictionary<Type, int>();
@@ -273,7 +321,7 @@ public class RTSGameObjectManager : MonoBehaviour {
 
     public void InsertRTSGameObjectIntoGame(RTSGameObject unit)
     {
-        if (unit.unitType == UnitType.Structure)
+        if (unit.GetType().IsSubclassOf(typeof(Structure)))
         {
             terrainManager.FlattenTerrainUnderObject(unit, unit.world);
         }
@@ -282,20 +330,6 @@ public class RTSGameObjectManager : MonoBehaviour {
         unitCreationQueue.Add(unit);
     }
 
-    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId, World world)
-    {
-        Debug.Log("Spawning " + type.ToString());
-
-        GameObject newUnit = Instantiate(prefabs[type.ToString()],
-            position,
-            Quaternion.identity) as GameObject;
-        newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
-        
-        BuildNewRTSGameObject(newUnit, ownerId, world);
-        
-        return newUnit;
-    }
-    
     public bool Harvest(RTSGameObject taker, ResourceDeposit target)
     {
         Harvester harvester = taker.GetComponent<Harvester>();
@@ -369,7 +403,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         if (ability.GetType() == typeof(Shoot))
         {
             // still need to refine the damage system of course
-            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.world).GetComponent<BasicCannonProjectile>();
+            BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.gameObject, unit.world).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
             projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
             orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explosion>()});
@@ -479,5 +513,11 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             return null;
         }
+    }
+
+    Vector3 GetPositionToSpawn(GameObject producer, Type typeToSpawn)
+    {
+        return new Vector3(producer.transform.position.x + producer.transform.localScale.x / 2 + prefabs[typeToSpawn.ToString()].transform.localScale.x / 2 + 1,
+                producer.transform.position.y, producer.transform.position.z);
     }
 }

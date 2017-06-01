@@ -26,8 +26,7 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("camZ+", new Setting() { actionName = "camZ+", key = KeyCode.W });
         defaultKeyboardSettings.Add("camZ-", new Setting() { actionName = "camZ-", key = KeyCode.S });
         */
-
-
+        
         defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.E, smartCast = true });
         defaultKeyboardSettings.Add("Stop", new Setting() { key = KeyCode.S });
         defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });

@@ -20,4 +20,9 @@ public class ResourceDeposit : RTSGameObject
         harvestItems = new Dictionary<Type, int>();
         storage.requiredAccessComponents.Add(typeof(Harvester));
     }
+
+    void Update()
+    {
+        // override defaultUpdate because resources dont need to onIdle
+    }
 }

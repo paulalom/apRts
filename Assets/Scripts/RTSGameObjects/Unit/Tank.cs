@@ -38,5 +38,6 @@ public class Tank : RTSGameObject {
                 mover.isActive = true;
             }
         }
+        DefaultUpdate();
     }
 }

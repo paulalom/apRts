@@ -8,6 +8,7 @@ public class AIManager : MonoBehaviour
 {
     Dictionary<RTSGameObject, Plan> unitPlans = new Dictionary<RTSGameObject, Plan>();
     RTSGameObjectManager rtsGameObjectManager;
+    PlayerManager playerManager;
     OrderManager orderManager;
     AITacticsManager tacticsManager;
     AIStrategyManager strategyManager;
@@ -17,6 +18,7 @@ public class AIManager : MonoBehaviour
     void Start()
     {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
         tacticsManager = new AITacticsManager();
@@ -35,7 +37,7 @@ public class AIManager : MonoBehaviour
 
     void OnIdleChangeEvent(RTSGameObject unit, bool idleStatus)
     {
-        if (idleStatus)
+        if (idleStatus && !playerManager.PlayerSelectedUnits.Contains(unit))
         {
             if (!SetNewPlanForUnit(unit))
             {

@@ -17,23 +17,19 @@ public class GameManager : MonoBehaviour {
     PlayerManager playerManager;
     SettingsManager settingsManager;
     AIManager aiManager;
-    public static Vector3 vectorSentinel = new Vector3(-99999, -99999, -99999);
+    SelectionManager selectionManager;
+    WorldManager worldManager;
     float prevTime, lastEnemySpawn;
     Order nextOrder;
     public bool debug = true;
-    string gameMode = "NOT Survival";
     public static string mainSceneName = "Main Scene";
-    public float dt = .001f;
-    float mouseSlipTolerance = 4; // The square of the distance you are allowed to move your mouse before a drag select is detected
-    public int myPlayerId = 1, enemyPlayerId = 2;
-    int numWorlds = 0;
+    string gameMode = "NOT Survival";
     public float enemySpawnRateBase;
+    public float dt = .001f;
     RTSGameObject commander;
     //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
-    public Texture2D selectionHighlight;
-    public static Rect selectionBox = new Rect(0, 0, 0, 0);
 
     void Awake()
     {
@@ -45,47 +41,24 @@ public class GameManager : MonoBehaviour {
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         aiManager = GameObject.FindGameObjectWithTag("AIManager").GetComponent<AIManager>();
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        selectionManager = GameObject.FindGameObjectWithTag("SelectionManager").GetComponent<SelectionManager>();
+        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
+        worldManager = GameObject.FindGameObjectWithTag("WorldManager").GetComponent<WorldManager>();
         LoadingScreenManager.SetLoadingProgress(0.05f);
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 120;
 
-        settingsManager = GameObject.FindGameObjectWithTag("SettingsManager").GetComponent<SettingsManager>();
-        WorldSettings worldSettings = GetWorldSettings(numWorlds);
+        WorldSettings worldSettings = worldManager.GetWorldSettings(worldManager.numWorlds);
         playerManager.InitPlayers(worldSettings.numStartLocations);
     }
 
     // Use this for initialization
     void Start()
     {
-        StartCoroutine(SetupWorld());
-    }
-
-    IEnumerator SetupWorld()
-    {
-        LoadingScreenManager.SetLoadingProgress(0.10f);
-        WorldSettings worldSettings = GetWorldSettings(numWorlds);
-        LoadingScreenManager.GetInstance().ReplaceTextTokens(LoadingScreenManager.GetWorldGenerationTextTokens(worldSettings));
-        yield return null;
-        // Loop to make loading bar look like its doing something
-        for (int i = 0; i < 30; i++)
-        {
-            LoadingScreenManager.SetLoadingProgress(.15f + 0.02f * i);
-            yield return null;
-        }
-        playerManager.activeWorld = GenerateWorld(worldSettings);
-        LoadingScreenManager.SetLoadingProgress(0.85f);
-        yield return null;
-        numWorlds++;
-        mainCamera.world = playerManager.activeWorld;
-        for (int i = 1; i <= playerManager.activeWorld.worldSettings.numStartLocations; i++)
-        {
-            SetUpPlayer(i, playerManager.activeWorld);
-        }
-        LoadingScreenManager.SetLoadingProgress(0.99f);
-        LoadingScreenManager.CompleteLoadingScreen();
+        StartCoroutine(worldManager.SetupWorld(terrainManager, mainCamera));
     }
 
     // Update is called once per frame
@@ -108,36 +81,12 @@ public class GameManager : MonoBehaviour {
     void SpawnEnemies()
     {
         float nextEnemySpawn = enemySpawnRateBase / (1 + (.05f * (Time.time / 30)));
-        
+
         if (Time.time - lastEnemySpawn > nextEnemySpawn)
         {
-            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), enemyPlayerId, null, playerManager.activeWorld);
+            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), playerManager.enemyPlayerId, null, playerManager.activeWorld);
             lastEnemySpawn = Time.time;
         }
-    }
-    
-    WorldSettings GetWorldSettings(int randomSeed)
-    {
-        return new WorldSettings()
-        {
-            randomSeed = 2,
-            resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
-            resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = 2, // WorldSettings.starterWorldSizeRating,
-            numStartLocations = 2, //WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 1.1f, // WorldSettings.starterWorldStartLocationSizeRating,
-            aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
-            aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
-        };
-    }
-
-    World GenerateWorld(WorldSettings worldSettings)
-    {
-        World world = new World() { worldSettings = worldSettings };
-
-        world.BuildWorld(terrainManager);
-
-        return world;
     }
 
     Vector3 GetEnemySpawnPosition()
@@ -155,15 +104,6 @@ public class GameManager : MonoBehaviour {
         return pos;
     }
 
-    void OnGUI()
-    {
-        if (uiManager.mouseDown != vectorSentinel)
-        {
-            GUI.color = new Color(1, 1, 1, 0.5f);
-            GUI.DrawTexture(selectionBox, selectionHighlight);
-        }
-    }
-
     void HandleInput()
     {
         mainCamera.CheckCameraUpdate(); // Improve this eventually
@@ -179,7 +119,7 @@ public class GameManager : MonoBehaviour {
         //Left click. Assume mouseDown must preceed mouseUp
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            uiManager.mouseDown = Input.mousePosition;
+            selectionManager.mouseDown = Input.mousePosition;
         }
 
         if (rayCast)
@@ -282,48 +222,33 @@ public class GameManager : MonoBehaviour {
 
                 if (setting.Value.smartCast)
                 {
-                    ProcessNextOrderInput(hit);
                     if (nextOrder != null)
                     {
+                        ProcessNextOrderInput(hit);
                         nextOrder = null;
                     }
                 }
             }
         
-            if (Input.GetKeyUp(KeyCode.Mouse0) && uiManager.mouseDown == Input.mousePosition)
+            if (Input.GetKeyUp(KeyCode.Mouse0) && selectionManager.mouseDown == Input.mousePosition)
             {
-                ProcessNextOrderInput(hit);
-                CheckSingleSelectionEvent(rayCast, hit);
-
                 if (nextOrder != null)
                 {
+                    ProcessNextOrderInput(hit);
                     nextOrder = null;
                 }
+                else
+                {
+                    selectionManager.CheckSingleSelectionEvent(hit);
+                }
+                
+                uiManager.menuClicked = false;
             }
             // Right click to move/attack
             else if (Input.GetKeyUp(KeyCode.Mouse1))
             {
                 nextOrder = new MoveOrder() { targetPosition = hit.point, orderRange = .3f };
-                if (Input.GetKey(KeyCode.LeftShift))
-                {
-                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-                    {
-                        if (unit.ownerId == playerManager.ActivePlayerId)
-                        {
-                            orderManager.QueueOrder(unit, nextOrder);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-                    {
-                        if (unit.ownerId == playerManager.ActivePlayerId)
-                        {
-                            orderManager.SetOrder(unit, nextOrder);
-                        }
-                    }
-                }
+                ProcessNextOrderInput(hit);
                 nextOrder = null;
             }
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
@@ -331,18 +256,13 @@ public class GameManager : MonoBehaviour {
         // Needs to be outside of raycast so we still check selection if the mouseUp event is off of the terrain
         if (Input.GetKeyUp(KeyCode.Mouse0))
         {
-            CheckBoxSelectionEvent();
+            selectionManager.CheckBoxSelectionEvent(mainCamera.GetComponent<Camera>());
         }
-        resizeSelectionBox();
+        selectionManager.resizeSelectionBox();
     }
 
     void ProcessNextOrderInput(RaycastHit screenClickLocation)
     {
-        if (nextOrder == null)
-        {
-            return;
-        }
-
         if (Input.GetKey(KeyCode.LeftShift))
         {
             foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
@@ -384,137 +304,8 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
-
-    void CheckSingleSelectionEvent(bool rayCast, RaycastHit hit)
-    {
-        if (nextOrder == null)
-        {
-            // objectClicked May be null
-            RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
-            // Select one
-            if (objectClicked != null)// && selectableTypes.Contains(objectClicked.GetType()))
-            {
-                if (!Input.GetKey(KeyCode.LeftShift))
-                {
-                    foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-                    {
-                        unit.selected = false;
-                        unit.selectionCircle.enabled = false;
-                    }
-                    playerManager.PlayerSelectedUnits.Clear();
-                }
-                Select(objectClicked, true);
-            }
-        }
-
-        resizeSelectionBox();
-        uiManager.menuClicked = false;
-    }
-
-    // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
-    void CheckBoxSelectionEvent()
-    {
-        if (Input.GetMouseButtonUp(0))
-        {
-            if (selectionBox.width < 0)
-            {
-                selectionBox.x += selectionBox.width;
-                selectionBox.width = -selectionBox.width;
-            }
-            if (selectionBox.height < 0)
-            {
-                selectionBox.y += selectionBox.height;
-                selectionBox.height = -selectionBox.height;
-            }
-
-            // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!uiManager.menuClicked && (Input.mousePosition - uiManager.mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
-            {
-                CheckSelected(playerManager.GetAllUnits());
-            }
-            uiManager.mouseDown = vectorSentinel;
-        }
-    }
-
-    void resizeSelectionBox()
-    {
-        if (Input.GetMouseButton(0))
-        {
-            selectionBox = new Rect(uiManager.mouseDown.x,
-                                    RTSCamera.InvertMouseY(uiManager.mouseDown.y),
-                                    Input.mousePosition.x - uiManager.mouseDown.x,
-                                    RTSCamera.InvertMouseY(Input.mousePosition.y) - RTSCamera.InvertMouseY(uiManager.mouseDown.y));
-        }
-    }
     
-    void CheckSelected(HashSet<RTSGameObject> units)
-    {
-        HashSet<RTSGameObject> unitsInSelectionBox = new HashSet<RTSGameObject>();
-        
-        foreach (RTSGameObject unit in units)
-        {
-            if (unit.flagRenderer.isVisible)// && selectableTypes.Contains(unit.GetType()))
-            {
-                Vector3 camPos = mainCamera.GetComponent<Camera>().WorldToScreenPoint(unit.transform.position);
-                camPos.y = RTSCamera.InvertMouseY(camPos.y);
-                if (selectionBox.Contains(camPos))
-                {
-                    unitsInSelectionBox.Add(unit);
-                }
-            }
-        }
-
-        bool selectingFriendlyUnitsOnly = DoesUnitListContainFriendlies(unitsInSelectionBox);
-        
-        foreach (RTSGameObject unit in units)
-        {
-            bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
-            bool previouslySelected = playerManager.PlayerSelectedUnits.Contains(unit);
-
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                selected = selected || previouslySelected;
-            }
-
-            if (selected)
-            {
-                Select(unit, true);
-            }
-            else
-            {
-                Select(unit, false);
-            }
-        }
-    }
-
-    bool DoesUnitListContainFriendlies(HashSet<RTSGameObject> units)
-    {
-        foreach (RTSGameObject unit in units)
-        {
-            if (unit.ownerId == playerManager.ActivePlayerId)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void Select(RTSGameObject obj, bool select)
-    {
-        if (select)
-        {
-            playerManager.PlayerSelectedUnits.Add(obj);
-        }
-        else
-        {
-            playerManager.PlayerSelectedUnits.Remove(obj);
-        }
-        obj.selected = select;
-        obj.selectionCircle.enabled = select;
-        playerManager.OnPlayerSelectionChange.Invoke();
-    }
-    
-    void SetUpPlayer(int playerId, World world)
+    public void SetUpPlayer(int playerId, World world)
     {
         Vector2 startLocation = world.startLocations[playerId-1];
         

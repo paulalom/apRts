@@ -33,9 +33,4 @@ public class Commander : RTSGameObject {
         worker.SetDefaultProductionSettings(producer);
         worker.SetDefaultStorageSettings(storage);
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

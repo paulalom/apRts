@@ -21,10 +21,4 @@ public class ConstructionSphere : RTSGameObject {
         worker.SetDefaultProductionSettings(producer);
         worker.SetDefaultStorageSettings(storage);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }

@@ -44,6 +44,7 @@ public class RTSGameObject : MonoBehaviour
     protected void DefaultInit()
     {
         prevPositionForHeightMapCheck = transform.position;
+        lastIdleTime = Time.time;
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
@@ -52,6 +53,11 @@ public class RTSGameObject : MonoBehaviour
     }
 
     void Update()
+    {
+        DefaultUpdate();
+    }
+
+    protected void DefaultUpdate()
     {
         if (idle && lastIdleTime + updateIdleInterval < Time.time)
         {

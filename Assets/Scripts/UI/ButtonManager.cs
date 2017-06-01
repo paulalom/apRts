@@ -7,6 +7,7 @@ public class ButtonManager : MonoBehaviour {
 
     GameManager gameManager;
     PlayerManager playerManager;
+    SelectionManager selectionManager;
     UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
 
@@ -14,6 +15,7 @@ public class ButtonManager : MonoBehaviour {
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        selectionManager = GameObject.FindGameObjectWithTag("SelectionManager").GetComponent<SelectionManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
     }
 	
@@ -104,10 +106,10 @@ public class ButtonManager : MonoBehaviour {
             {
                 if (unit != newSelectedUnit)
                 {
-                    gameManager.Select(unit, false);
+                    selectionManager.Select(unit, false);
                 }
             }
-            gameManager.Select(newSelectedUnit, true);
+            selectionManager.Select(newSelectedUnit, true);
         }
     }
 }

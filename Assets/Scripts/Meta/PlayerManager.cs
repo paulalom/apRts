@@ -9,7 +9,8 @@ public class PlayerManager : MonoBehaviour {
 
     public List<Player> players;
     public World activeWorld;
-    
+    public int myPlayerId = 1, enemyPlayerId = 2;
+
     // Neutral is player 0
     public HashSet<RTSGameObject> PlayerUnits { get { return ActivePlayer.units; } }
     public HashSet<RTSGameObject> PlayerSelectedUnits { get { return ActivePlayer.selectedUnits; } }

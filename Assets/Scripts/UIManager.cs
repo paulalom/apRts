@@ -14,8 +14,6 @@ public class UIManager : MonoBehaviour {
     GameManager gameManager;
 
     public List<FloatingText> floatingText;
-    //public List<StatusGraphic> unitStatus;
-    public Vector3 mouseDown;
     public bool menuClicked = false;
 
     void Awake()
@@ -24,7 +22,6 @@ public class UIManager : MonoBehaviour {
         menuIcon = new Dictionary<Type, Texture2D>();
         numericMenuTypes = new Dictionary<string, Type>();
         floatingText = new List<FloatingText>();
-        mouseDown = GameManager.vectorSentinel;
         
         // Get menu icons
         foreach (Type type in typesWithMenuIcons)

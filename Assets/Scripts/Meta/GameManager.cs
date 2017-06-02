@@ -293,6 +293,7 @@ public class GameManager : MonoBehaviour {
                 nextOrder.ability.target = objectClicked;
                 nextOrder.ability.targetPosition = screenClickLocation.point;
                 nextOrder.orderRange = unit.defaultAbility.range;
+                nextOrder.remainingChannelTime = unit.defaultAbility.cooldown;
             }
             if (clearOrderQueueBeforeSetting)
             {

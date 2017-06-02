@@ -3,6 +3,15 @@ using System.Collections;
 
 public class ConstructOrder : Order {
 
+    public override bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    {
+        if (targetPosition == Vector3.zero)
+        {
+            targetPosition = performingUnit.transform.position;
+        }
+        return base.GetInRange(performingUnit, rtsGameObjectManager, dt);
+    }
+
     public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
         Producer producer = performingUnit.GetComponent<Producer>();

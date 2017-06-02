@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public enum OrderPhase
 {
+    GetInRange,
     Activate,
     Channel,
     FinishChannel,
@@ -32,7 +33,7 @@ public abstract class Order {
     public bool repeatOnComplete = false;
     public float remainingChannelTime;
 
-    public Order() { }
+    public Order() {}
 
     public Order(Order o)
     {
@@ -49,6 +50,21 @@ public abstract class Order {
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {
         return OrderValidationResult.Success;
+    }
+
+    public virtual bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    {
+        Vector3 targetPos = target == null ? targetPosition : target.transform.position;
+
+        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPos, orderRange))
+        {
+            return true;
+        }
+        else
+        {
+            rtsGameObjectManager.MoveUnit(performingUnit, new Vector2(targetPos.x, targetPos.z), dt);
+            return false;
+        }
     }
 
     public virtual bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)

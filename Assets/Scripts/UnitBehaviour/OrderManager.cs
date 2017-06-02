@@ -32,6 +32,9 @@ public class OrderManager : MonoBehaviour {
 
                 switch (order.phase)
                 {
+                    case OrderPhase.GetInRange:
+                        order.phase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        break;
                     case OrderPhase.Activate:
                         order.phase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
                         break;

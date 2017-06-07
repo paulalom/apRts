@@ -167,6 +167,10 @@ public class Storage : MonoBehaviour {
 
     private int TakeItemInternal(Type type, int count, bool allOrNone)
     {
+        if (!items.ContainsKey(type))
+        {
+            return 0;
+        }
         if (items[type] == count)
         {
             items.Remove(type);

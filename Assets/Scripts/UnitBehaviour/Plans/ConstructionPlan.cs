@@ -164,7 +164,7 @@ public class ConstructionPlan : Plan {
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(new ConstructOrder() { items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, remainingChannelTime = producer.productionTime[thingToBuild.Key] });
+                constructionOrders.Add(new ConstructionOrder() { items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, remainingChannelTime = producer.productionTime[thingToBuild.Key] });
             }
         }
         return constructionOrders;

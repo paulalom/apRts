@@ -28,7 +28,7 @@ public class SettingsManager : MonoBehaviour {
         */
         
         defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.E, smartCast = true });
-        defaultKeyboardSettings.Add("Stop", new Setting() { key = KeyCode.S });
+        defaultKeyboardSettings.Add("Cancel", new Setting() { key = KeyCode.C });
         defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });
         defaultKeyboardSettings.Add("Patrol", new Setting() {  key = KeyCode.P });
         defaultKeyboardSettings.Add("Guard", new Setting() { key = KeyCode.G });

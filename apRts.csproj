@@ -72,6 +72,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\AIManagers\AIEconomicManager.cs" />
     <Compile Include="Assets\Scripts\AIManagers\AIManager.cs" />
     <Compile Include="Assets\Scripts\AIManagers\AIStrategyManager.cs" />
     <Compile Include="Assets\Scripts\AIManagers\AITacticsManager.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Assets\Scripts\NonPersistentResources\Energy.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Magic.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Power.cs" />
+    <Compile Include="Assets\Scripts\ObjectFactories\MyKVPFactory.cs" />
     <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
     <Compile Include="Assets\Scripts\Projectile\BasicCannonProjectile.cs" />
     <Compile Include="Assets\Scripts\Projectile\Projectile.cs" />

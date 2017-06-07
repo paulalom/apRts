@@ -102,14 +102,7 @@ public class ButtonManager : MonoBehaviour {
         //Temporary selection code, a unit's inventory summary button was clicked so we select them
         if (newSelectedUnit != null)
         {
-            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-            {
-                if (unit != newSelectedUnit)
-                {
-                    selectionManager.Select(unit, false);
-                }
-            }
-            selectionManager.Select(newSelectedUnit, true);
+            selectionManager.SetSelectionToUnit(newSelectedUnit);
         }
     }
 }

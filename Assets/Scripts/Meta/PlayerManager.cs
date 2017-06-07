@@ -30,39 +30,31 @@ public class PlayerManager : MonoBehaviour {
             _activePlayer = players[_activePlayerId];
         }
     }
-
+    
     // Temp UI display of resource totals
-    public Text resourceCountTextDisplay;
+    public Text statusBarText;
 
     public void InitPlayers(int numPlayers)
     {
         for (int i = 0; i < numPlayers + 1; i++)
         {
-            Player player = new Player();
+            Player player = new Player(this);
             player.name = (i == 0) ? "Neutral" : "Player " + i;
-            player.selectedUnits = new HashSet<RTSGameObject>();
-            player.units = new HashSet<RTSGameObject>();
-            player.resources = new Dictionary<Type,int>();
-            player.onSelectionChange = new UnityEvent();
-            player.onResourceChange = new UnityEvent();
             players.Add(player);
             if (i == 1)
             {
+                player.isHuman = true;
                 ActivePlayerId = i;
-                ActivePlayer.onResourceChange.AddListener(UpdateResourceDisplay);
             }
         }
     }
-    
-    private void UpdateResourceDisplay()
+
+    public void UpdatePlayers()
     {
-        string resourceString = "";
-        foreach (KeyValuePair<Type, int> resource in ActivePlayer.resources)
+        foreach (Player player in players)
         {
-            resourceString += resource.Key + ": " + resource.Value + ", ";
+            player.UpdatePlayer();
         }
-        resourceString.TrimEnd(new char[] { ' ', ',' });
-        resourceCountTextDisplay.text = resourceString;
     }
 
     public int GetNumUnits(Type type, int playerId)

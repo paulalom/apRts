@@ -159,6 +159,17 @@ public class OrderManager : MonoBehaviour {
         }
     }
 
+    public void QueueOrders(Dictionary<RTSGameObject, List<Order>> orders)
+    {
+        foreach (KeyValuePair<RTSGameObject, List<Order>> unitOrderListPair in orders)
+        {
+            foreach (Order order in unitOrderListPair.Value)
+            {
+                QueueOrder(unitOrderListPair.Key, order);
+            }
+        }
+    }
+
     public void CancelOrders(RTSGameObject unit)
     {
         if (orders.ContainsKey(unit) && orders[unit].Count > 0)
@@ -167,7 +178,7 @@ public class OrderManager : MonoBehaviour {
             Producer producer = unit.GetComponent<Producer>();
             foreach (Order order in orders[unit])
             {
-                if (order.GetType() == typeof(ConstructOrder))
+                if (order.GetType() == typeof(ConstructionOrder))
                 {
                     Worker worker = unit.GetComponent<Worker>();
                     if (worker != null && worker.unitUnderConstruction != null)

@@ -151,4 +151,19 @@ public class SelectionManager : MonoBehaviour {
         obj.selectionCircle.enabled = select;
         playerManager.OnPlayerSelectionChange.Invoke();
     }
+
+    public void SetSelectionToUnit(RTSGameObject newlySelectedUnit)
+    {
+        foreach(RTSGameObject previouslySelectedUnit in playerManager.PlayerSelectedUnits)
+        {
+            previouslySelectedUnit.selected = false;
+            previouslySelectedUnit.selectionCircle.enabled = false;
+        }
+        playerManager.PlayerSelectedUnits.Clear();
+
+        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit);
+        newlySelectedUnit.selected = true;
+        newlySelectedUnit.selectionCircle.enabled = true;
+        playerManager.OnPlayerSelectionChange.Invoke();
+    }
 }

@@ -6,12 +6,12 @@ using UnityEngine.Events;
 
 public class AIManager : MonoBehaviour
 {
-    Dictionary<RTSGameObject, Plan> unitPlans = new Dictionary<RTSGameObject, Plan>();
     RTSGameObjectManager rtsGameObjectManager;
     PlayerManager playerManager;
     OrderManager orderManager;
-    AITacticsManager tacticsManager;
-    AIStrategyManager strategyManager;
+    List<AITacticsManager> tacticsManagers;
+    List<AIStrategyManager> strategyManagers;
+    List<AIEconomicManager> economicManagers;
     public float rangeToSearchForResources = 100;
 
     // Use this for initialization
@@ -21,13 +21,28 @@ public class AIManager : MonoBehaviour
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
-        tacticsManager = new AITacticsManager();
-        strategyManager = new AIStrategyManager();
+
+        tacticsManagers = new List<AITacticsManager>();
+        strategyManagers = new List<AIStrategyManager>();
+        economicManagers = new List<AIEconomicManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
+    }
+
+    public void SetUpPlayerAIManagers(Player player)
+    {
+        if (!player.isHuman)
+        {
+            AIStrategyManager stratMan = new AIStrategyManager(player, rtsGameObjectManager);
+            strategyManagers.Add(stratMan);
+            tacticsManagers.Add(new AITacticsManager(player));
+            economicManagers.Add(new AIEconomicManager(player));
+
+            orderManager.QueueOrders(stratMan.GetStartOrders());
+        }
     }
 
     void SubscribeToIdleEvents(RTSGameObject idleUnit)

@@ -23,10 +23,10 @@ public enum OrderValidationResult
 // Orders probably need to be rewritten into many classes (one per type?)
 public abstract class Order {
     
-    public OrderPhase phase;
+    public OrderPhase phase = OrderPhase.GetInRange;
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
-    public float orderRange;
+    public float orderRange = 1f;
     public List<MyKVP<Type, int>> items;
     public RTSGameObject target;
     public Ability ability;

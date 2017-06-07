@@ -72,8 +72,12 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             foreach (RTSGameObject unit in unitDestructionQueue)
             {
-                playerManager.players[unit.ownerId].selectedUnits.Remove(unit);
+                playerManager.ActivePlayer.selectedUnits.Remove(unit);
                 playerManager.players[unit.ownerId].units.Remove(unit);
+                if (!(unit is Projectile))
+                {
+                    playerManager.players[unit.ownerId].onUnitCountDecrease.Invoke(unit);
+                }
 
                 try {
                     // I don't think this is the right way to handle death animations, but it should be good enough for now.
@@ -316,6 +320,10 @@ public class RTSGameObjectManager : MonoBehaviour {
             rtsGo.storage.AddItems(items);
         }
         InsertRTSGameObjectIntoGame(rtsGo);
+        if (!(rtsGo is Projectile))
+        {
+            playerManager.players[ownerId].onUnitCountIncrease.Invoke(rtsGo);
+        }
         return rtsGo;
     }
 

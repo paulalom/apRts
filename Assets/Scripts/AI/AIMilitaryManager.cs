@@ -1,14 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AITacticsManager {
+public class AIMilitaryManager {
 
     Player playerToManage;
 
-    public AITacticsManager(Player playerToManage)
+    public AIMilitaryManager(Player playerToManage)
     {
         this.playerToManage = playerToManage;
     }
 
+    public void UpdateMilitarySettings()
+    {
 
+    }
 }

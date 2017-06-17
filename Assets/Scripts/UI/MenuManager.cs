@@ -71,7 +71,7 @@ public class MenuManager : MonoBehaviour {
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
             if (GUI.Button(button, (x+1).ToString(), icon))
             {
-                gameManager.QueueUnit(UIManager.GetNumericMenuType("numeric_" + (x + 1)));
+                gameManager.QueueUnit(UIManager.GetNumericMenuType("Alpha" + (x + 1)));
                 uiManager.menuClicked = true;
             }
         }
@@ -109,7 +109,7 @@ public class MenuManager : MonoBehaviour {
                         {
                             target = unit,
                             orderRange = 3f,
-                            items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }
+                            items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }
                         });
                     }
                     // Destination is a transporter
@@ -119,7 +119,7 @@ public class MenuManager : MonoBehaviour {
                         {
                             target = sourceUnit,
                             orderRange = 3f,
-                            items = new List<MyKVP<Type, int>>() { gameManager.itemTransferSource.Value }
+                            items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }
                         });
                     }
                     else

@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ConstructionPlan : Plan {
 
-    public List<MyKVP<Type,int>> thingsToBuild;
+    public List<MyPair<Type,int>> thingsToBuild;
     RTSGameObjectManager rtsGameObjectManager;
     AIManager aiManager;
 
@@ -24,8 +24,8 @@ public class ConstructionPlan : Plan {
     public List<Order> GetPlanSteps(RTSGameObject unit)
     {
         List<Order> planSteps = new List<Order>();
-        List<MyKVP<Type, int>> missingResources;
-        List<MyKVP<Type, int>> costs;
+        List<MyPair<Type, int>> missingResources;
+        List<MyPair<Type, int>> costs;
         Producer producer = unit.GetComponent<Producer>();
         if (producer == null)
         {
@@ -45,13 +45,12 @@ public class ConstructionPlan : Plan {
         {
             planSteps.AddRange(ConstructThings(unit, producer));
         }
-        else if (missingResources.Count != costs.Count) // we have some resources, so try to get more otherwise build
-        {
-            planSteps.AddRange(GetResources(unit, missingResources));
-            planSteps.AddRange(ConstructThings(unit, producer));
-        }
         else
         {
+            if (missingResources.Count != costs.Count)
+            {
+                planSteps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, unit.transform.position, rtsGameObjectManager));
+            }
             planSteps.AddRange(GetResources(unit, missingResources));
             if (planSteps.Count == 0)
             {
@@ -66,24 +65,24 @@ public class ConstructionPlan : Plan {
         return planSteps;
     }
 
-    List<MyKVP<Type, int>> GetConstructionCosts(Producer producer)
+    List<MyPair<Type, int>> GetConstructionCosts(Producer producer)
     {
-        List<MyKVP<Type, int>> costs = new List<MyKVP<Type, int>>();
-        foreach (MyKVP<Type, int> item in thingsToBuild)
+        List<MyPair<Type, int>> costs = new List<MyPair<Type, int>>();
+        foreach (MyPair<Type, int> item in thingsToBuild)
         {
             foreach (KeyValuePair<Type, int> cost in producer.productionCost[item.Key])
             {
-                costs.Add(new MyKVP<Type, int>(cost.Key, item.Value * cost.Value));
+                costs.Add(new MyPair<Type, int>(cost.Key, item.Value * cost.Value));
             }
         }
         return costs;
     }
 
-    List<MyKVP<Type, int>> ValidateConstructions(RTSGameObject unit, Producer producer)
+    List<MyPair<Type, int>> ValidateConstructions(RTSGameObject unit, Producer producer)
     {
-        List<MyKVP<Type, int>> validatedThingsToBuild = new List<MyKVP<Type, int>>();
+        List<MyPair<Type, int>> validatedThingsToBuild = new List<MyPair<Type, int>>();
         
-        foreach (MyKVP<Type,int> thingToBuild in thingsToBuild)
+        foreach (MyPair<Type,int> thingToBuild in thingsToBuild)
         {
             if (producer.ValidateNewProductionRequest(thingToBuild.Key, thingToBuild.Value))
             {
@@ -94,7 +93,7 @@ public class ConstructionPlan : Plan {
         return validatedThingsToBuild;
     }
 
-    List<MyKVP<Type, int>> CheckForMissingResources(RTSGameObject unit, List<MyKVP<Type, int>> costs)
+    List<MyPair<Type, int>> CheckForMissingResources(RTSGameObject unit, List<MyPair<Type, int>> costs)
     {
         foreach (var item in unit.storage.GetItemsInInventoryInOrder(costs))
         {
@@ -104,23 +103,18 @@ public class ConstructionPlan : Plan {
         return costs;
     }
 
-    private Factory GetTargetDepot(RTSGameObject unit, Vector3 searchPosition, List<MyKVP<Type, int>> missingItems)
+    private Factory GetTargetDepot(RTSGameObject unit, Vector3 searchPosition, List<MyPair<Type, int>> missingItems)
     {
-        List<Factory> factories = rtsGameObjectManager.GetAllComponentsInRangeOfType<Factory>(searchPosition,
-                                                                            aiManager.rangeToSearchForResources,
+        List<Factory> factories = rtsGameObjectManager.GetAllComponentsInRangeOfTypeOwnedByPlayerInOrder<Factory>(searchPosition,
+                                                                            AITacticsManager.rangeToSearchForResources,
+                                                                            unit.ownerId,
                                                                             rtsGameObjectManager.rtsGameObjectLayerMask);
         if (factories == null || factories.Count == 0)
         {
             return null;
         }
 
-        List<Factory> sortedFactories = factories
-                .OrderBy(
-                      x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
-                        .ToList();
-
-
-        foreach (Factory factory in sortedFactories)
+        foreach (Factory factory in factories)
         {
             Storage storage = factory.GetComponent<Storage>();
             if (storage != null && storage.HasItems(missingItems))
@@ -131,7 +125,7 @@ public class ConstructionPlan : Plan {
         return null;
     }
 
-    List<Order> GetResources(RTSGameObject unit, List<MyKVP<Type, int>> missingResources)
+    List<Order> GetResources(RTSGameObject unit, List<MyPair<Type, int>> missingResources)
     {
         Factory depot = null;
         List<Order> collectionOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
@@ -160,11 +154,11 @@ public class ConstructionPlan : Plan {
     {
         List<Order> constructionOrders = new List<Order>();
 
-        foreach (MyKVP<Type, int> thingToBuild in thingsToBuild)
+        foreach (MyPair<Type, int> thingToBuild in thingsToBuild)
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(new ConstructionOrder() { items = new List<MyKVP<Type, int>>() { thingToBuild }, orderRange = 3f, remainingChannelTime = producer.productionTime[thingToBuild.Key] });
+                constructionOrders.Add(new ConstructionOrder() { items = new List<MyPair<Type, int>>() { thingToBuild }, orderRange = 3f, remainingChannelTime = producer.productionTime[thingToBuild.Key] });
             }
         }
         return constructionOrders;

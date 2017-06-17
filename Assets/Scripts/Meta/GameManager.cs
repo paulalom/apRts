@@ -23,13 +23,11 @@ public class GameManager : MonoBehaviour {
     Order nextOrder;
     public bool debug = true;
     public static string mainSceneName = "Main Scene";
-    string gameMode = "NOT Survival";
     public float enemySpawnRateBase;
     public float dt = .001f;
-    RTSGameObject commander;
     //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
-    public MyKVP<RTSGameObject, MyKVP<Type, int>> itemTransferSource = null;
+    public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
 
     void Awake()
     {
@@ -70,46 +68,18 @@ public class GameManager : MonoBehaviour {
         HandleInput();
         orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
         rtsGameObjectManager.SnapToTerrain(playerManager.GetNonNeutralUnits(), playerManager.activeWorld);
-        if (gameMode == "Survival")
-        {
-            SpawnEnemies();
-        }
+        playerManager.UpdatePlayers();
 
         prevTime = now;
     }
-
-    void SpawnEnemies()
-    {
-        float nextEnemySpawn = enemySpawnRateBase / (1 + (.05f * (Time.time / 30)));
-
-        if (Time.time - lastEnemySpawn > nextEnemySpawn)
-        {
-            rtsGameObjectManager.SpawnUnit(typeof(Tank), GetEnemySpawnPosition(), playerManager.enemyPlayerId, null, playerManager.activeWorld);
-            lastEnemySpawn = Time.time;
-        }
-    }
-
-    Vector3 GetEnemySpawnPosition()
-    {
-        return RandomCircle(commander.transform.position, 200);
-    }
-
-    Vector3 RandomCircle(Vector3 center, float radius)
-    {
-        float ang = UnityEngine.Random.value * 360;
-        Vector3 pos;
-        pos.x = center.x + radius * Mathf.Sin(ang * Mathf.Deg2Rad);
-        pos.y = center.y;
-        pos.z = center.z + radius * Mathf.Cos(ang * Mathf.Deg2Rad);
-        return pos;
-    }
-
+    
     void HandleInput()
     {
         mainCamera.CheckCameraUpdate(); // Improve this eventually
         CheckKeyPress();
     }
 
+    
     void CheckKeyPress()
     {
         RaycastHit hit;
@@ -124,112 +94,8 @@ public class GameManager : MonoBehaviour {
 
         if (rayCast)
         {
-            foreach (KeyValuePair<string, Setting> setting in settingsManager.defaultKeyboardSettings)
-            {
-                if (setting.Value.activationType == "KeyUp")
-                {
-                    if (Input.GetKeyUp(setting.Value.key))
-                    {
-                        bool modifiersActivated = true;
-                        foreach (KeyCode modifier in setting.Value.keyModifiers)
-                        {
-                            if (!Input.GetKey(modifier))
-                            {
-                                modifiersActivated = false;
-                                break;
-                            }
-                        }
-                        if (modifiersActivated)
-                        {
-                            switch (setting.Key)
-                            {
-                                case "Guard":
-                                    nextOrder = new GuardOrder() { orderRange = 6f };
-                                    break;
-                                case "Patrol":
-                                    nextOrder = new PatrolOrder() { orderRange = 1f };
-                                    break;
-                                case "Stop":
-                                    nextOrder = new StopOrder() { orderRange = 1f };
-                                    break;
-                                case "Harvest":
-                                    nextOrder = new HarvestOrder() { orderRange = 15f };
-                                    break;
-                                case "Follow":
-                                    nextOrder = new FollowOrder() { orderRange = 6f };
-                                    break;
-                                case "UseAbility":
-                                    nextOrder = new UseAbilityOrder();
-                                    break;
-                                default:
-                                    break;
-                            }
+            CheckInputSettings(hit);
 
-                            if (setting.Key.Contains("numeric_"))
-                            {
-                                QueueUnit(UIManager.GetNumericMenuType(setting.Key));
-                            }
-                        }
-                    }
-                }
-                else if (setting.Value.activationType == "KeyHold")
-                {
-                    if (Input.GetKey(setting.Value.key))
-                    {
-                        bool modifiersActivated = true;
-                        foreach (KeyCode modifier in setting.Value.keyModifiers)
-                        {
-                            if (!Input.GetKey(modifier))
-                            {
-                                modifiersActivated = false;
-                                break;
-                            }
-                        }
-                        if (modifiersActivated)
-                        {
-                            float cameraElevationRate = 1f;
-                            switch (setting.Key)
-                            {
-                                case "CamY+":
-                                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y + cameraElevationRate, mainCamera.transform.position.z);
-                                    break;
-                                case "CamY-":
-                                    mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - cameraElevationRate, mainCamera.transform.position.z);
-                                    break;
-                                case "SpawnFactory":
-                                    if (debug)
-                                    {
-                                        rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, commander.gameObject, playerManager.activeWorld);
-                                    }
-                                    break;
-                                case "RaiseTerrain":
-                                    if (rayCast)
-                                    {
-                                        try
-                                        { //Try catch to swallow exception. FixMe
-                                          // only does raiseTerrain
-                                            terrainManager.ModifyTerrain(hit.point, .003f, 20, playerManager.activeWorld);
-                                        }
-                                        catch (Exception e) { }
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                if (setting.Value.smartCast)
-                {
-                    if (nextOrder != null)
-                    {
-                        ProcessNextOrderInput(hit);
-                        nextOrder = null;
-                    }
-                }
-            }
-        
             if (Input.GetKeyUp(KeyCode.Mouse0) && selectionManager.mouseDown == Input.mousePosition)
             {
                 if (nextOrder != null)
@@ -259,6 +125,41 @@ public class GameManager : MonoBehaviour {
             selectionManager.CheckBoxSelectionEvent(mainCamera.GetComponent<Camera>());
         }
         selectionManager.resizeSelectionBox();
+    }
+
+    void CheckInputSettings(RaycastHit hit)
+    {
+        foreach (Setting setting in settingsManager.defaultKeyboardSettings)
+        {
+            if (setting.checkActivationFunction(setting.key) && AreModifiersActive(setting))
+            {
+                nextOrder = setting.order;
+                setting.action.Invoke();
+                setting.raycastHitAction.Invoke(hit);
+                if (setting.isNumeric)
+                {
+                    QueueUnit(UIManager.GetNumericMenuType(setting.key));
+                }
+            }
+
+            if (setting.smartCast && nextOrder != null)
+            {
+                ProcessNextOrderInput(hit);
+                nextOrder = null;
+            }
+        }
+    }
+
+    bool AreModifiersActive(Setting setting)
+    {
+        foreach (KeyCode modifier in setting.keyModifiers)
+        {
+            if (!Input.GetKey(modifier))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void ProcessNextOrderInput(RaycastHit screenClickLocation)
@@ -309,9 +210,17 @@ public class GameManager : MonoBehaviour {
     public void SetUpPlayer(int playerId, World world)
     {
         Vector2 startLocation = world.startLocations[playerId-1];
-        
-        commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), playerId, null, world).GetComponent<RTSGameObject>();
-        
+        Player player = playerManager.players[playerId];
+        RTSGameObject commander = rtsGameObjectManager.SpawnUnit(typeof(Commander), new Vector3(startLocation.x, 0, startLocation.y), playerId, null, world).GetComponent<RTSGameObject>();
+        player.commander = commander;
+
+        AddStartingItems(player, commander);
+        SetStartingCamera(player, startLocation, world);
+        aiManager.SetUpPlayerAIManagers(player);
+    }
+
+    void AddStartingItems(Player player, RTSGameObject commander)
+    {
         Dictionary<Type, int> startingItems = new Dictionary<Type, int>();
 
         startingItems.Add(typeof(Iron), 1000);
@@ -321,13 +230,17 @@ public class GameManager : MonoBehaviour {
         startingItems.Add(typeof(Coal), 2000);
 
         commander.GetComponent<Storage>().AddItems(startingItems);
+    }
 
-        if (playerId == 1)
+    void SetStartingCamera(Player player, Vector2 startLocation, World world)
+    {
+        if (player.isHuman)
         {
-            mainCamera.transform.position = new Vector3(startLocation.x + 50,
-                terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, world) + 200,
-                startLocation.y - 50);
-            mainCamera.transform.LookAt(commander.transform);
+            float startLocationHeight = terrainManager.GetHeightFromGlobalCoords(startLocation.x, startLocation.y, world);
+            mainCamera.transform.position = new Vector3(startLocation.x + 30,
+                startLocationHeight + 150,
+                startLocation.y);
+            mainCamera.transform.LookAt(new Vector3(startLocation.x, startLocationHeight, startLocation.y));
         }
     }
 
@@ -346,7 +259,7 @@ public class GameManager : MonoBehaviour {
                 Mover mover = unit.GetComponent<Mover>();
                 if (producer != null && mover != null)
                 {
-                    aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyKVP<Type, int>>() { new MyKVP<Type, int>(type, quantity) } });
+                    aiManager.SetNewPlanForUnit(unit, new ConstructionPlan() { thingsToBuild = new List<MyPair<Type, int>>() { new MyPair<Type, int>(type, quantity) } });
                 }
                 else if (producer != null)
                 {
@@ -364,5 +277,20 @@ public class GameManager : MonoBehaviour {
     public void CreateText(string text, Vector3 position, float scale = 1)
     {
         uiManager.CreateText(text, position, scale);
+    }
+
+    public void RaiseTerrain(RaycastHit hit)
+    {
+        try
+        { //Try catch to swallow exception. FixMe
+          // only does raiseTerrain
+            terrainManager.ModifyTerrain(hit.point, .003f, 20, playerManager.activeWorld);
+        }
+        catch (Exception e) { }
+    }
+
+    public void SpawnFactory(RaycastHit hit)
+    {
+        rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.ActivePlayer.units.FirstOrDefault().gameObject, playerManager.activeWorld);
     }
 }

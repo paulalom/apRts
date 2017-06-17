@@ -162,8 +162,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         name += playerManager.GetNumUnits(0);
         return NewDeposit(name, color, type, items, position, world);
     }
-
-
+    
     public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
         GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, null, world);
@@ -316,7 +315,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             items.Add(typeof(Wood), 2000);
             items.Add(typeof(Stone), 2000);
             items.Add(typeof(Paper), 200);
-            items.Add(typeof(Tool), 100);
+            items.Add(typeof(Tool), 10);
             rtsGo.storage.AddItems(items);
         }
         InsertRTSGameObjectIntoGame(rtsGo);
@@ -352,23 +351,23 @@ public class RTSGameObjectManager : MonoBehaviour {
         return true;
     }
 
-    public void TakeItems(RTSGameObject taker, RTSGameObject target, List<MyKVP<Type, int>> items)
+    public void TakeItems(RTSGameObject taker, RTSGameObject target, List<MyPair<Type, int>> items)
     {
-        foreach (MyKVP<Type, int> item in items)
+        foreach (MyPair<Type, int> item in items)
         {
             TakeItem(taker, target, item);
         }
     }
 
-    public void GiveItems(RTSGameObject giver, RTSGameObject target, List<MyKVP<Type, int>> items)
+    public void GiveItems(RTSGameObject giver, RTSGameObject target, List<MyPair<Type, int>> items)
     {
-        foreach (MyKVP<Type, int> item in items)
+        foreach (MyPair<Type, int> item in items)
         {
             GiveItem(giver, target, item);
         }
     }
 
-    public void TakeItem(RTSGameObject taker, RTSGameObject target, MyKVP<Type, int> item)
+    public void TakeItem(RTSGameObject taker, RTSGameObject target, MyPair<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage takerStorage = taker.GetComponent<Storage>();
@@ -379,7 +378,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             targetStorage.AddItem(item.Key, taken - acquired, false);
         }
     }
-    public void GiveItem(RTSGameObject giver, RTSGameObject target, MyKVP<Type, int> item)
+    public void GiveItem(RTSGameObject giver, RTSGameObject target, MyPair<Type, int> item)
     {
         Storage targetStorage = target.GetComponent<Storage>();
         Storage giverStorage = giver.GetComponent<Storage>();
@@ -471,25 +470,58 @@ public class RTSGameObjectManager : MonoBehaviour {
             terrainManager.GenerateChunkAtPositionIfMissing(unit.transform.position, unit.world);
         }
     }
+    public List<componentType> GetAllComponentsInRangeOfTypeOwnedByPlayerInOrder<componentType>(Vector3 source, float range, int ownerId, LayerMask mask)
+    {
+        List<componentType> components = GetAllComponentsInRangeOfTypeOwnedByPlayer<componentType>(source, range, ownerId, mask);
+        components.Reverse(); // nearest to farthest
+        return components;
+    }
+
+    public List<componentType> GetAllComponentsInRangeOfTypeOwnedByPlayer<componentType>(Vector3 source, float range, int ownerId, LayerMask mask)
+    {
+        List<Collider> colliders = GetAllCollidersInRangeOfType<componentType>(source, range, mask);
+        List<componentType> componentsOwnedByPlayer = new List<componentType>();
+        foreach (Collider collider in colliders)
+        {
+            if (collider.GetComponent<RTSGameObject>().ownerId == ownerId)
+            {
+                componentsOwnedByPlayer.Add(collider.GetComponent<componentType>());
+            }
+        }
+        return componentsOwnedByPlayer;
+    }
+
+    public List<componentType> GetAllComponentsInRangeOfTypeInOrder<componentType>(Vector3 source, float range, LayerMask mask)
+    {
+        List<componentType> components = GetAllComponentsInRangeOfType<componentType>(source, range, mask);
+        components.Reverse(); // nearest to farthest
+        return components;
+    }
 
     public List<componentType> GetAllComponentsInRangeOfType<componentType>(Vector3 source, float range, LayerMask mask)
     {
-        Collider[] objectsInRange = GetAllCollidersInRangeOfType(source, range, mask);
-        List<componentType> componentsInRange = new List<componentType>();
-        foreach (Collider collider in objectsInRange)
+        List<Collider> collidersInRangeOfType = GetAllCollidersInRangeOfType<componentType>(source, range, mask);
+        List<componentType> componentsInRangeOfType = new List<componentType>();
+        foreach (Collider collider in collidersInRangeOfType)
+        {
+            componentsInRangeOfType.Add(collider.GetComponent<componentType>());
+        }
+        return componentsInRangeOfType;
+    }
+
+    private List<Collider> GetAllCollidersInRangeOfType<componentType>(Vector3 source, float range, LayerMask mask)
+    {
+        Collider[] collidersInRange = Physics.OverlapSphere(source, range, mask);
+        List<Collider> collidersInRangeOfType = new List<Collider>();
+        foreach (Collider collider in collidersInRange)
         {
             componentType component = collider.GetComponent<componentType>();
             if (component != null)
             {
-                componentsInRange.Add(component);
+                collidersInRangeOfType.Add(collider);
             }
         }
-        return componentsInRange;
-    }
-
-    private Collider[] GetAllCollidersInRangeOfType(Vector3 source, float range, LayerMask mask)
-    {
-        return Physics.OverlapSphere(source, range, mask);
+        return collidersInRangeOfType;
     }
     
     // O(n) search + whatever sphereCast is (couldnt find it, but im assuming with octTree implementation it should be O(log(n))
@@ -497,7 +529,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     {
         Collider closest = null;
         float closestDistanceSqr = Mathf.Infinity;
-        Collider[] objectsInRange = GetAllCollidersInRangeOfType(searchPosition, range, mask);
+        Collider[] objectsInRange = Physics.OverlapSphere(searchPosition, range, mask);
 
         foreach (Collider c in objectsInRange)
         {

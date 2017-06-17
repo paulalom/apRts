@@ -7,7 +7,6 @@ public class CollectResourcesPlan : Plan {
 
     int shouldDumpCargoThreshold = 50;
     int shouldGetFromHarvestingStationThreshold = 50;
-    int shouldDepositAtFactoryThreshold = 50;
     RTSGameObjectManager rtsGameObjectManager;
     AIManager aiManager;
 
@@ -23,13 +22,13 @@ public class CollectResourcesPlan : Plan {
 
         if (ShouldReturnResourcesToDepot(unit))
         {
-            steps.AddRange(DumpCargoAtNearestDepot(unit, unit.transform.position));
+            steps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, unit.transform.position, rtsGameObjectManager));
             steps.AddRange(TakeFromNearestHarvestingStation(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
         }
         else
         {
             steps.AddRange(TakeFromNearestHarvestingStation(unit, unit.transform.position));
-            steps.AddRange(DumpCargoAtNearestDepot(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
+            steps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position, rtsGameObjectManager));
         }
         
         return steps;
@@ -40,51 +39,19 @@ public class CollectResourcesPlan : Plan {
     {
         return unit.storage.freeSpace < shouldDumpCargoThreshold;
     }
-
-    // should merge the get target functions but ill do that later
-    private Factory GetTargetDepot(RTSGameObject unit, Vector3 searchPosition)
-    {
-        List<Factory> factories = rtsGameObjectManager.GetAllComponentsInRangeOfType<Factory>(searchPosition,
-                                                                            aiManager.rangeToSearchForResources,
-                                                                            rtsGameObjectManager.rtsGameObjectLayerMask);
-        if (factories == null || factories.Count == 0)
-        {
-            return null;
-        }
-
-        List<Factory> sortedFactories = factories
-                .OrderBy(
-                      x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
-                        .ToList();
-
-
-        foreach (Factory factory in sortedFactories)
-        {
-            Storage storage = factory.GetComponent<Storage>();
-            if (storage != null && storage.freeSpace >= shouldDepositAtFactoryThreshold)
-            {
-                return factory.GetComponent<Factory>();
-            }
-        }
-        return null;
-    }
-
+    
     private HarvestingStation GetTargetHarvester(RTSGameObject unit, Vector3 searchPosition)
     {
-        List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfType<Harvester>(searchPosition,
-                                                                            aiManager.rangeToSearchForResources,
+        List<Harvester> harvesters = rtsGameObjectManager.GetAllComponentsInRangeOfTypeOwnedByPlayerInOrder<Harvester>(searchPosition,
+                                                                            AITacticsManager.rangeToSearchForResources,
+                                                                            unit.ownerId,
                                                                             rtsGameObjectManager.rtsGameObjectLayerMask);
         if (harvesters == null || harvesters.Count == 0)
         {
             return null;
         }
 
-        List<Harvester> sortedHarvesters = harvesters
-                                                .OrderBy(
-                                                x => Vector3.SqrMagnitude(searchPosition - x.transform.position))
-                                                    .ToList();
-
-        foreach (Harvester harvester in sortedHarvesters)
+        foreach (Harvester harvester in harvesters)
         {
             Storage storage = harvester.GetComponent<Storage>();
             if (storage != null && storage.usedSpace >= shouldGetFromHarvestingStationThreshold)
@@ -93,28 +60,6 @@ public class CollectResourcesPlan : Plan {
             }
         }
         return null;
-    }
-
-    private List<Order> DumpCargoAtNearestDepot(RTSGameObject unit, Vector3 searchPosition)
-    {
-        List<Order> dropOffOrders = new List<Order>(); // This should be a single order, but order does not yet support take of multiple items.
-
-        Factory depot = GetTargetDepot(unit, searchPosition);
-        
-        // No station meets criteria, unit should remain idle
-        if (depot == null)
-        {
-            return dropOffOrders;
-        }
-        else
-        {
-            List<MyKVP<Type, int>> items = unit.storage.GetItemsMyKVP(-1);
-            if (items.Count != 0)
-            {
-                dropOffOrders.Add(new GiveOrder() { target = depot, items = items });
-            }
-            return dropOffOrders;
-        }
     }
 
     private List<Order> TakeFromNearestHarvestingStation(RTSGameObject unit, Vector3 searchPosition)
@@ -135,7 +80,7 @@ public class CollectResourcesPlan : Plan {
         }
         else
         {
-            List<MyKVP<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
+            List<MyPair<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
             if (items.Count != 0) {
                 collectionOrders.Add(new TakeOrder() { target = harvestingStation, items = items });
             }

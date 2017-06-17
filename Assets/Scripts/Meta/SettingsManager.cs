@@ -6,20 +6,25 @@ public class Setting
 {
     //public Action action;
     public KeyCode key;
-    public bool smartCast = false;
+    public bool smartCast = false, isNumeric = false;
     public string activationType = "KeyUp";
     public List<KeyCode> keyModifiers = new List<KeyCode>();
+    public Order order;
+    public Func<KeyCode, bool> checkActivationFunction = Input.GetKeyDown;
+    public Action action = delegate { };
+    public Action<RaycastHit> raycastHitAction = delegate { };
 }
 
 public class SettingsManager : MonoBehaviour {
 
-    public Dictionary<string, Setting> defaultKeyboardSettings;
-    public Dictionary<string, Setting> keyboardSettings;
-    
+    public List<Setting> defaultKeyboardSettings;
+    public List<Setting> keyboardSettings;
 
     void Awake()
     {
-        defaultKeyboardSettings = new Dictionary<string, Setting>();
+        GameManager gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        RTSCamera camera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
+        defaultKeyboardSettings = new List<Setting>();
         /* leaving these in RTSCamera for now
         defaultKeyboardSettings.Add("camX+", new Setting() { actionName = "camX+", key = KeyCode.D });
         defaultKeyboardSettings.Add("camX-", new Setting() { actionName = "camX-", key = KeyCode.A });
@@ -27,24 +32,24 @@ public class SettingsManager : MonoBehaviour {
         defaultKeyboardSettings.Add("camZ-", new Setting() { actionName = "camZ-", key = KeyCode.S });
         */
         
-        defaultKeyboardSettings.Add("UseAbility", new Setting() { key = KeyCode.E, smartCast = true });
-        defaultKeyboardSettings.Add("Cancel", new Setting() { key = KeyCode.C });
-        defaultKeyboardSettings.Add("Harvest", new Setting() { key = KeyCode.H });
-        defaultKeyboardSettings.Add("Patrol", new Setting() {  key = KeyCode.P });
-        defaultKeyboardSettings.Add("Guard", new Setting() { key = KeyCode.G });
-        defaultKeyboardSettings.Add("Follow", new Setting() { key = KeyCode.F });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.E, order = OrderFactory.GetDefaultUseAbilityOrder(), smartCast = true });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.C, order = OrderFactory.GetDefaultCancelOrder() });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.H, order = OrderFactory.GetDefaultHarvestOrder() });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.P, order = OrderFactory.GetDefaultPatrolOrder() });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.G, order = OrderFactory.GetDefaultGuardOrder() });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.F, order = OrderFactory.GetDefaultFollowOrder() });
 
-        defaultKeyboardSettings.Add("camY+", new Setting() { key = KeyCode.C, activationType = "KeyHold" });
-        defaultKeyboardSettings.Add("camY-", new Setting() { key = KeyCode.C, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift }, activationType = "KeyHold" });
-        defaultKeyboardSettings.Add("RaiseTerrain", new Setting() { key = KeyCode.T, activationType = "KeyHold" });
-        defaultKeyboardSettings.Add("SpawnFactory", new Setting() { key = KeyCode.Q, activationType = "KeyHold" });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, action = camera.RaiseCamera });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, action = camera.LowerCamera, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.T, checkActivationFunction = Input.GetKey, raycastHitAction = gameManager.RaiseTerrain });
+        defaultKeyboardSettings.Add(new Setting() { key = KeyCode.Q, checkActivationFunction = Input.GetKey, raycastHitAction = gameManager.SpawnFactory });
 
         for (int i = 0; i < 10; i++)
         {
-            defaultKeyboardSettings.Add("numeric_" + i, new Setting() { key = KeyCode.Alpha0 + i });
-            defaultKeyboardSettings.Add("ALTnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftAlt } });
-            defaultKeyboardSettings.Add("SHIFTnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
-            defaultKeyboardSettings.Add("CTRLnumeric_" + i, new Setting() { key = KeyCode.Alpha0 + i, keyModifiers = new List<KeyCode>() { KeyCode.LeftControl } });
+            defaultKeyboardSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true });
+            defaultKeyboardSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftAlt } });
+            defaultKeyboardSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
+            defaultKeyboardSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftControl } });
         }
 
         keyboardSettings = defaultKeyboardSettings;

@@ -1,5 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Linq;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class SelectionManager : MonoBehaviour {
 
@@ -34,7 +35,7 @@ public class SelectionManager : MonoBehaviour {
         RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
         
         // Select one
-        if (objectClicked != null)// && selectableTypes.Contains(objectClicked.GetType()))
+        if (objectClicked != null && !(objectClicked is Projectile))// && selectableTypes.Contains(objectClicked.GetType()))
         {
             if (!Input.GetKey(KeyCode.LeftShift))
             {
@@ -88,10 +89,9 @@ public class SelectionManager : MonoBehaviour {
     public void CheckSelected(HashSet<RTSGameObject> units, Camera mainCamera)
     {
         HashSet<RTSGameObject> unitsInSelectionBox = new HashSet<RTSGameObject>();
-
         foreach (RTSGameObject unit in units)
         {
-            if (unit.flagRenderer.isVisible)// && selectableTypes.Contains(unit.GetType()))
+            if (unit.flagRenderer.isVisible && !(unit is Projectile))// && selectableTypes.Contains(unit.GetType()))
             {
                 Vector3 camPos = mainCamera.WorldToScreenPoint(unit.transform.position);
                 camPos.y = RTSCamera.InvertMouseY(camPos.y);
@@ -106,6 +106,10 @@ public class SelectionManager : MonoBehaviour {
 
         foreach (RTSGameObject unit in units)
         {
+            if (unit is Projectile)
+            {
+                continue;
+            }
             bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
             bool previouslySelected = playerManager.PlayerSelectedUnits.Contains(unit);
 

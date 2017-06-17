@@ -72,10 +72,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\AIManagers\AIEconomicManager.cs" />
-    <Compile Include="Assets\Scripts\AIManagers\AIManager.cs" />
-    <Compile Include="Assets\Scripts\AIManagers\AIStrategyManager.cs" />
-    <Compile Include="Assets\Scripts\AIManagers\AITacticsManager.cs" />
+    <Compile Include="Assets\Scripts\AI\AIEconomyManager.cs" />
+    <Compile Include="Assets\Scripts\AI\AIManager.cs" />
+    <Compile Include="Assets\Scripts\AI\AIMilitaryManager.cs" />
+    <Compile Include="Assets\Scripts\AI\AIStrategyManager.cs" />
+    <Compile Include="Assets\Scripts\AI\AITacticsManager.cs" />
+    <Compile Include="Assets\Scripts\AI\MetaClasses\ProductionFacilityMeta.cs" />
     <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
     <Compile Include="Assets\Scripts\Abilities\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Abilities\Explode.cs" />
@@ -95,7 +97,7 @@
     <Compile Include="Assets\Scripts\Items\CompositeResource\Paper.cs" />
     <Compile Include="Assets\Scripts\Items\CompositeResource\Tool.cs" />
     <Compile Include="Assets\Scripts\JustC%23Things\MyBitMap.cs" />
-    <Compile Include="Assets\Scripts\JustC%23Things\MyKVP.cs" />
+    <Compile Include="Assets\Scripts\JustC%23Things\MyPair.cs" />
     <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
     <Compile Include="Assets\Scripts\Logistics\Mover.cs" />
@@ -111,7 +113,7 @@
     <Compile Include="Assets\Scripts\NonPersistentResources\Energy.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Magic.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Power.cs" />
-    <Compile Include="Assets\Scripts\ObjectFactories\MyKVPFactory.cs" />
+    <Compile Include="Assets\Scripts\ObjectFactories\MyPairFactory.cs" />
     <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
     <Compile Include="Assets\Scripts\Projectile\BasicCannonProjectile.cs" />
     <Compile Include="Assets\Scripts\Projectile\Projectile.cs" />
@@ -142,8 +144,10 @@
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\SelectionManager.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\Interactions\FactoryInteraction.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Order.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\OrderManager.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\CancelOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\ConstructOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\FollowOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\GiveOrder.cs" />
@@ -152,7 +156,6 @@
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\HoldPositionOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\MoveOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\PatrolOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\StopOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\TakeOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\UseAbilityOrder.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Orders\WaitOrder.cs" />

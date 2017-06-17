@@ -48,7 +48,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
     //public Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
     
     //We need to maintain the ability to scale this value
-    public const int chunkSizeX = 258, chunkSizeZ = 258;
+    public const int chunkSizeX = 512, chunkSizeZ = 512;
     public const int resolution = chunkSizeX / 2; // MUST BE POWER OF 2 + 1
     public const float resolutionRatio = resolution / (float)chunkSizeX;
     const int chunkGraphics1dArrayLength = 3; // THIS MUST ALWAYS BE ODD BECAUSE IM LAZY

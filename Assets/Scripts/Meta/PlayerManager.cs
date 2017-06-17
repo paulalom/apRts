@@ -38,15 +38,12 @@ public class PlayerManager : MonoBehaviour {
     {
         for (int i = 0; i < numPlayers + 1; i++)
         {
-            Player player = new Player(this);
+            Player player;
+            player = new Player(this, i == 1);
             player.name = (i == 0) ? "Neutral" : "Player " + i;
             players.Add(player);
-            if (i == 1)
-            {
-                player.isHuman = true;
-                ActivePlayerId = i;
-            }
         }
+        ActivePlayerId = 1;
     }
 
     public void UpdatePlayers()

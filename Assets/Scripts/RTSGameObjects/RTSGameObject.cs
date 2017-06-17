@@ -69,24 +69,29 @@ public class RTSGameObject : MonoBehaviour
     // Temporary solution to prevent units from entering buildings until pathing is set up
     void OnTriggerEnter(Collider other)
     {
-        if (mover != null && rtsGameObjectManager != null)
+        RTSGameObject otherRTSGo = other.GetComponent<RTSGameObject>();
+        if (mover != null && rtsGameObjectManager != null && otherRTSGo != null)
         {
             if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0)
             {
-                // Give and take could potentially be an event driven system like this, 
-                // Move towards could be simplified (it wont need to check if we're in range, this trigger will do that)
                 Order order = orderManager.orders[this][0];
                 
-                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.target.gameObject)
+                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.target.gameObject && ownerId == otherRTSGo.ownerId)
                 {
                     rtsGameObjectManager.GiveItems(this, order.target, order.items);
                     orderManager.CompleteOrder(this);
                 }
-                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.target.gameObject)
+                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.target.gameObject && ownerId == otherRTSGo.ownerId)
                 {
                     rtsGameObjectManager.TakeItems(this, order.target, order.items);
                     orderManager.CompleteOrder(this);
                 }
+                /* fixme?
+                else if (order.GetType() == typeof(UseAbilityOrder) && order.ability.GetType() == typeof(Explode))
+                {
+                    rtsGameObjectManager.UseAbility(this, order.target, order.targetPosition, order.ability);
+                    orderManager.CompleteOrder(this);
+                }*/
             }
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
             rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, gameManager.dt);

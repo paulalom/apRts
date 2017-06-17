@@ -36,7 +36,7 @@ public class ConstructionOrder : Order {
     public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
         Worker worker = performingUnit.GetComponent<Worker>();
-        if (worker.unitUnderConstruction != null)
+        if (worker != null && worker.unitUnderConstruction != null)
         {
             ((Structure)worker.unitUnderConstruction).CompleteConstruction(rtsGameObjectManager);
             worker.unitUnderConstruction = null;

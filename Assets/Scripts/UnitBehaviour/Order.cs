@@ -27,7 +27,7 @@ public abstract class Order {
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
     public float orderRange = 1f;
-    public List<MyKVP<Type, int>> items;
+    public List<MyPair<Type, int>> items;
     public RTSGameObject target;
     public Ability ability;
     public bool repeatOnComplete = false;

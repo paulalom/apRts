@@ -42,11 +42,11 @@ public class WorldManager : MonoBehaviour {
     {
         return new WorldSettings()
         {
-            randomSeed = randomSeed,
+            randomSeed = 1,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
             sizeRating = 2, // WorldSettings.starterWorldSizeRating,
-            numStartLocations = 2, //WorldSettings.starterWorldNumStartLocations,
+            numStartLocations = 3, //WorldSettings.starterWorldNumStartLocations,
             startLocationSizeRating = 1.1f, // WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = WorldSettings.starterWorldAIPresenceRating

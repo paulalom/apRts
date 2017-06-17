@@ -51,7 +51,7 @@ public class ButtonManager : MonoBehaviour {
                 if (GUI.Button(button, item.Value.ToString(), icon))
                 {
                     Debug.Log("Item button!");
-                    gameManager.itemTransferSource = new MyKVP<RTSGameObject, MyKVP<Type, int>>(unit, new MyKVP<Type, int>(item));
+                    gameManager.itemTransferSource = new MyPair<RTSGameObject, MyPair<Type, int>>(unit, new MyPair<Type, int>(item));
                     uiManager.menuClicked = true;
                 }
                 j++;
@@ -70,7 +70,7 @@ public class ButtonManager : MonoBehaviour {
             Producer producer = unit.GetComponent<Producer>();
             if (producer != null && producer.productionQueue.Count >= 1)
             {
-                MyKVP<Type, int> nextInQueue = producer.productionQueue[0];
+                MyPair<Type, int> nextInQueue = producer.productionQueue[0];
                 icon = new GUIStyle();
                 icon.normal.background = UIManager.menuIcon[nextInQueue.Key];
                 icon.normal.textColor = Color.red;

@@ -33,12 +33,12 @@ public class UIManager : MonoBehaviour {
             }
         }
 
-        numericMenuTypes["numeric_1"] = typeof(ConstructionSphere);
-        numericMenuTypes["numeric_2"] = typeof(HarvestingStation);
-        numericMenuTypes["numeric_3"] = typeof(Factory);
-        numericMenuTypes["numeric_4"] = typeof(Tank);
-        numericMenuTypes["numeric_5"] = typeof(Tool);
-        numericMenuTypes["numeric_6"] = typeof(Paper);
+        numericMenuTypes[KeyCode.Alpha1.ToString()] = typeof(ConstructionSphere);
+        numericMenuTypes[KeyCode.Alpha2.ToString()] = typeof(HarvestingStation);
+        numericMenuTypes[KeyCode.Alpha3.ToString()] = typeof(Factory);
+        numericMenuTypes[KeyCode.Alpha4.ToString()] = typeof(Tank);
+        numericMenuTypes[KeyCode.Alpha5.ToString()] = typeof(Tool);
+        numericMenuTypes[KeyCode.Alpha6.ToString()] = typeof(Paper);
     }
 
     void Start()
@@ -47,17 +47,14 @@ public class UIManager : MonoBehaviour {
         floatingTextPrefab = rtsGameObjectManager.prefabs["FloatingText"];
     }
 
+    public static Type GetNumericMenuType(KeyCode key)
+    {
+        return numericMenuTypes[key.ToString()];
+    }
+
     public static Type GetNumericMenuType(string key)
     {
-
-        if (numericMenuTypes.ContainsKey(key))
-        {
-            return numericMenuTypes[key];
-        }
-        else
-        {
-            return typeof(RTSGameObject);
-        }
+        return numericMenuTypes[key];
     }
 
     public void CreateText(string text, Vector3 position, Color color, float scale = 1)

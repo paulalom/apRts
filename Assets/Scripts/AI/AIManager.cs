@@ -11,8 +11,8 @@ public class AIManager : MonoBehaviour
     OrderManager orderManager;
     List<AITacticsManager> tacticsManagers;
     List<AIStrategyManager> strategyManagers;
-    List<AIEconomicManager> economicManagers;
-    public float rangeToSearchForResources = 100;
+    List<AIEconomyManager> economicManagers;
+    List<AIMilitaryManager> militaryManagers;
 
     // Use this for initialization
     void Start()
@@ -22,26 +22,68 @@ public class AIManager : MonoBehaviour
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
 
-        tacticsManagers = new List<AITacticsManager>();
         strategyManagers = new List<AIStrategyManager>();
-        economicManagers = new List<AIEconomicManager>();
+        tacticsManagers = new List<AITacticsManager>();
+        economicManagers = new List<AIEconomyManager>();
+        militaryManagers = new List<AIMilitaryManager>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        UpdateStrategySettings();
+        UpdateEconomicSettings();
+        UpdateMilitarySettings();
+        IssueTacticalOrders();
+    }
+
+    void UpdateStrategySettings()
+    {
+        foreach (AIStrategyManager stratMan in strategyManagers)
+        {
+            stratMan.UpdateStrategySettings();
+        }
+    }
+
+    void UpdateEconomicSettings()
+    {
+        foreach (AIEconomyManager econMan in economicManagers)
+        {
+            econMan.UpdateEconomicSettings();
+        }
+    }
+
+    void UpdateMilitarySettings()
+    {
+        foreach (AIMilitaryManager militaryMan in militaryManagers)
+        {
+            militaryMan.UpdateMilitarySettings();
+        }
+    }
+
+    void IssueTacticalOrders()
+    {
+        foreach (AITacticsManager tacMan in tacticsManagers)
+        {
+            tacMan.IssueTacticalOrders(orderManager);
+        }
     }
 
     public void SetUpPlayerAIManagers(Player player)
     {
         if (!player.isHuman)
         {
-            AIStrategyManager stratMan = new AIStrategyManager(player, rtsGameObjectManager);
-            strategyManagers.Add(stratMan);
-            tacticsManagers.Add(new AITacticsManager(player));
-            economicManagers.Add(new AIEconomicManager(player));
+            AIStrategyManager stratManager = new AIStrategyManager(player, rtsGameObjectManager);
+            AIEconomyManager economicManager = new AIEconomyManager(player);
+            AIMilitaryManager militaryManager = new AIMilitaryManager(player);
+            AITacticsManager tacticsManager = new AITacticsManager(player, economicManager, militaryManager);
 
-            orderManager.QueueOrders(stratMan.GetStartOrders());
+            strategyManagers.Add(stratManager);
+            economicManagers.Add(economicManager);
+            militaryManagers.Add(militaryManager);
+            tacticsManagers.Add(tacticsManager);
+
+            orderManager.QueueOrders(stratManager.GetStartOrders());
         }
     }
 

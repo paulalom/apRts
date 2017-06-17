@@ -200,7 +200,7 @@ public class Storage : MonoBehaviour {
     {
         foreach(KeyValuePair<Type, int> item in hasItems)
         {
-            if (!items.ContainsKey(item.Key) || items[item.Key] < item.Value)
+            if (!HasItem(item.Key, item.Value))
             {
                 return false;
             }
@@ -208,11 +208,11 @@ public class Storage : MonoBehaviour {
         return true;
     }
 
-    public bool HasItems(List<MyKVP<Type, int>> hasItems)
+    public bool HasItems(List<MyPair<Type, int>> hasItems)
     {
-        foreach (MyKVP<Type, int> item in hasItems)
+        foreach (MyPair<Type, int> item in hasItems)
         {
-            if (!items.ContainsKey(item.Key) || items[item.Key] < item.Value)
+            if (!HasItem(item.Key, item.Value))
             {
                 return false;
             }
@@ -220,11 +220,16 @@ public class Storage : MonoBehaviour {
         return true;
     }
 
-    public List<MyKVP<Type, int>> GetItemsInInventoryInOrder(List<MyKVP<Type, int>> itemsToGet)
+    public bool HasItem(Type type, int quantity)
     {
-        List<MyKVP<Type, int>> foundItems = new List<MyKVP<Type, int>>();
+        return items.ContainsKey(type) && items[type] >= quantity;
+    }
+
+    public List<MyPair<Type, int>> GetItemsInInventoryInOrder(List<MyPair<Type, int>> itemsToGet)
+    {
+        List<MyPair<Type, int>> foundItems = new List<MyPair<Type, int>>();
         Dictionary<Type, int> qtyFoundItems = new Dictionary<Type, int>();
-        foreach (MyKVP<Type, int> item in itemsToGet)
+        foreach (MyPair<Type, int> item in itemsToGet)
         {
             if (items.ContainsKey(item.Key) && items[item.Key] >= item.Value + (qtyFoundItems.ContainsKey(item.Key) ? qtyFoundItems[item.Key] : 0))
             {
@@ -261,20 +266,20 @@ public class Storage : MonoBehaviour {
     {
         return items;
     }
-    public List<MyKVP<Type, int>> GetItemsMyKVP()
+    public List<MyPair<Type, int>> GetItemsMyKVP()
     {
-        List<MyKVP<Type, int>> outItems = new List<MyKVP<Type, int>>();
+        List<MyPair<Type, int>> outItems = new List<MyPair<Type, int>>();
         foreach (KeyValuePair<Type,int> item in items){
-            outItems.Add(new MyKVP<Type, int>(item));
+            outItems.Add(new MyPair<Type, int>(item));
         }
         return outItems;
     }
-    public List<MyKVP<Type, int>> GetItemsMyKVP(int quantity)
+    public List<MyPair<Type, int>> GetItemsMyKVP(int quantity)
     {
-        List<MyKVP<Type, int>> outItems = new List<MyKVP<Type, int>>();
+        List<MyPair<Type, int>> outItems = new List<MyPair<Type, int>>();
         foreach (KeyValuePair<Type, int> item in items)
         {
-            outItems.Add(new MyKVP<Type, int>(item.Key, quantity));
+            outItems.Add(new MyPair<Type, int>(item.Key, quantity));
         }
         return outItems;
     }

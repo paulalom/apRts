@@ -10,6 +10,7 @@ public class RTSCamera : MonoBehaviour {
     public Vector2 RotationSensitivity = new Vector2 (0.5f, 0.5f);
     public Vector2 TranslationSensitivity = new Vector2(1f, 1f);
     public float zoomSensitivity = 15f;
+    public float cameraElevationRate = 1f;
 
     //public Vector3 maxTranslation;
     //public Vector3 minTranslation;
@@ -110,5 +111,14 @@ public class RTSCamera : MonoBehaviour {
         {
             i.OnCameraMove(transform.position, world);
         }
+    }
+    
+    public void RaiseCamera()
+    {
+        transform.position = new Vector3(transform.position.x, transform.position.y + cameraElevationRate, transform.position.z);
+    }
+    public void LowerCamera()
+    {
+        transform.position = new Vector3(transform.position.x, transform.position.y - cameraElevationRate, transform.position.z);
     }
 }

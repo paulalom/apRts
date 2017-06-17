@@ -13,7 +13,7 @@ public class Producer : MonoBehaviour {
     // eg. build unit T1, unit T2, unit T1, unit t3, unit T1
     // We use KVP so that duplications which are next to eacother can be grouped. 
     // Our production queue can be one item with a thousand units queued.
-    public List<MyKVP<Type, int>> productionQueue;
+    public List<MyPair<Type, int>> productionQueue;
     public HashSet<Type> canProduce = new HashSet<Type>();
     public Dictionary<Type, float> productionTime = new Dictionary<Type, float>();
     public Dictionary<Type, int> productionQuantity = new Dictionary<Type, int>();
@@ -43,7 +43,7 @@ public class Producer : MonoBehaviour {
     void Start()
     {
         storage = GetComponent<Storage>();
-        productionQueue = new List<MyKVP<Type, int>>();
+        productionQueue = new List<MyPair<Type, int>>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
 
         foreach (Type type in canProduce)
@@ -159,7 +159,7 @@ public class Producer : MonoBehaviour {
     {
         if (productionQueue[0].Value > 1)
         {
-            productionQueue[0] = new MyKVP<Type, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
+            productionQueue[0] = new MyPair<Type, int>(productionQueue[0].Key, productionQueue[0].Value - 1);
         }
         else
         {
@@ -225,7 +225,7 @@ public class Producer : MonoBehaviour {
     {
         if (productionQueue.Count == 0 || productionQueue[productionQueue.Count - 1].Key != type)
         {
-            productionQueue.Add(new MyKVP<Type, int>(type, quantity));
+            productionQueue.Add(new MyPair<Type, int>(type, quantity));
         }
         else {
             productionQueue[productionQueue.Count - 1].Value += quantity;
@@ -247,5 +247,32 @@ public class Producer : MonoBehaviour {
         else {
             return false;
         }
+    }
+
+    public List<MyPair<Type, int>> GetMissingResourcesForProduction(Type type)
+    {
+        List<MyPair<Type, int>> missingResources = new List<MyPair<Type, int>>();
+        foreach (KeyValuePair<Type, int> cost in productionCost[type])
+        {
+            if (!storage.HasItem(cost.Key, cost.Value))
+            {
+                Dictionary<Type, int> storageItems = storage.GetItems();
+                int missingQty = cost.Value - (storageItems.ContainsKey(cost.Key) ? storageItems[cost.Key] : 0);
+                missingResources.Add(new MyPair<Type, int>(cost.Key, missingQty));
+            }
+        }
+        return missingResources;
+    }
+
+    public Type GetFirstProducableItem(List<Type> items)
+    {
+        foreach (Type item in items)
+        {
+            if (canProduce.Contains(item) && storage.HasItems(productionCost[item]))
+            {
+                return item;
+            }
+        }
+        return null;
     }
 }

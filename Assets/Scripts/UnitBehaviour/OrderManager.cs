@@ -10,7 +10,6 @@ public class OrderManager : MonoBehaviour {
     RTSGameObjectManager rtsGameObjectManager;
     GameManager gameManager;
     UIManager uiManager;
-    OrderFactory orderFactory;
 
     void Awake()
     {
@@ -19,7 +18,6 @@ public class OrderManager : MonoBehaviour {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
-        orderFactory = new OrderFactory();
     }
 
     public void CarryOutOrders(List<RTSGameObject> units, float dt)
@@ -199,5 +197,4 @@ public class OrderManager : MonoBehaviour {
     {
 
     }
-
 }

@@ -75,67 +75,59 @@ public class GameManager : MonoBehaviour {
     
     void HandleInput()
     {
-        mainCamera.CheckCameraUpdate(); // Improve this eventually
-        CheckKeyPress();
-    }
-
-    
-    void CheckKeyPress()
-    {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         bool rayCast = Physics.Raycast(ray, out hit);
-
-        //Left click. Assume mouseDown must preceed mouseUp
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            selectionManager.mouseDown = Input.mousePosition;
-        }
-
+        
         if (rayCast)
         {
             CheckInputSettings(hit);
-
-            if (Input.GetKeyUp(KeyCode.Mouse0) && selectionManager.mouseDown == Input.mousePosition)
-            {
-                if (nextOrder != null)
-                {
-                    ProcessNextOrderInput(hit);
-                    nextOrder = null;
-                }
-                else
-                {
-                    selectionManager.CheckSingleSelectionEvent(hit);
-                }
-                
-                uiManager.menuClicked = false;
-            }
-            // Right click to move/attack
-            else if (Input.GetKeyUp(KeyCode.Mouse1))
-            {
-                nextOrder = new MoveOrder() { targetPosition = hit.point, orderRange = .3f };
-                ProcessNextOrderInput(hit);
-                nextOrder = null;
-            }
             terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
         }
-        // Needs to be outside of raycast so we still check selection if the mouseUp event is off of the terrain
-        if (Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            selectionManager.CheckBoxSelectionEvent(mainCamera.GetComponent<Camera>());
-        }
+
         selectionManager.resizeSelectionBox();
+        mainCamera.CheckCameraUpdate(); // Improve this eventually
+    }
+    
+    public void OnActionButtonPress()
+    {
+        selectionManager.mouseDown = Input.mousePosition;
     }
 
-    void CheckInputSettings(RaycastHit hit)
+    public void OnActionButtonRelease(RaycastHit screenClickLocation)
     {
-        foreach (Setting setting in settingsManager.defaultKeyboardSettings)
+        if (selectionManager.mouseDown == Input.mousePosition)
         {
-            if (setting.checkActivationFunction(setting.key) && AreModifiersActive(setting))
+            if (nextOrder != null)
             {
-                nextOrder = setting.order;
+                ProcessNextOrder(screenClickLocation);
+            }
+            else
+            {
+                selectionManager.CheckSingleSelectionEvent(screenClickLocation);
+            }
+
+            uiManager.menuClicked = false;
+        }
+
+        selectionManager.CheckBoxSelectionEvent(mainCamera.GetComponent<Camera>());
+    }
+
+    public void OnMoveButtonRelease(RaycastHit screenClickLocation)
+    {
+        nextOrder = new MoveOrder() { targetPosition = screenClickLocation.point, orderRange = .3f };
+        ProcessNextOrder(screenClickLocation);
+    }
+
+    void CheckInputSettings(RaycastHit screenClickLocation)
+    {
+        foreach (Setting setting in settingsManager.defaultInputSettings)
+        {
+            if (setting.checkActivationFunction(setting.key) && AreExactModifiersActive(setting))
+            {
+                nextOrder = setting.getOrder.Invoke();
                 setting.action.Invoke();
-                setting.raycastHitAction.Invoke(hit);
+                setting.raycastHitAction.Invoke(screenClickLocation);
                 if (setting.isNumeric)
                 {
                     QueueUnit(UIManager.GetNumericMenuType(setting.key));
@@ -144,13 +136,20 @@ public class GameManager : MonoBehaviour {
 
             if (setting.smartCast && nextOrder != null)
             {
-                ProcessNextOrderInput(hit);
-                nextOrder = null;
+                ProcessNextOrder(screenClickLocation);
             }
         }
     }
 
-    bool AreModifiersActive(Setting setting)
+    void ProcessNextOrder(RaycastHit screenClickLocation)
+    {
+        Dictionary<RTSGameObject, Order> orders = BuildOrdersForUnits(playerManager.GetOrderableSelectedUnits(), screenClickLocation, nextOrder);
+        AddOrdersToUnits(orders, Input.GetKey(KeyCode.LeftShift));
+        nextOrder = null;
+    }
+
+    // Returns true when all key modifiers down and nothing else
+    bool AreExactModifiersActive(Setting setting)
     {
         foreach (KeyCode modifier in setting.keyModifiers)
         {
@@ -159,52 +158,89 @@ public class GameManager : MonoBehaviour {
                 return false;
             }
         }
+
+        if (setting.useExactModifiers)
+        {
+            // Ugh. Unity should maintain a list of all keys currently held down but I couldn't find any reference to it.
+            // It also didn't end up being better to maintain my own list, because I would have to iterate
+            // through the entire list every frame.
+            // If you know a better way to do this please let me know.
+            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+            {
+                if (Input.GetKey(key) && !setting.keyModifiers.Contains(key) && setting.key != key)
+                {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
-    void ProcessNextOrderInput(RaycastHit screenClickLocation)
+    void AddOrdersToUnits(Dictionary<RTSGameObject, Order> orders, bool queueToggleEnabled)
     {
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (queueToggleEnabled)
         {
-            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-            {
-                AddNextOrder(nextOrder, unit, screenClickLocation, false);
-            }
+            orderManager.QueueOrders(orders);
         }
         else
         {
-            foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
-            {
-                AddNextOrder(nextOrder, unit, screenClickLocation, true);
-            }
+            orderManager.SetOrders(orders);
         }
     }
 
-    void AddNextOrder(Order nextOrder, RTSGameObject unit, RaycastHit screenClickLocation, bool clearOrderQueueBeforeSetting)
+    void AddOrderToUnit(Order order, RTSGameObject unit, bool queueToggleEnabled)
     {
-        // objectClicked May be null
-        RTSGameObject objectClicked = screenClickLocation.collider != null ? screenClickLocation.collider.GetComponentInParent<RTSGameObject>() : null;
-        nextOrder.target = objectClicked;
-        nextOrder.targetPosition = screenClickLocation.point;
-        if (unit.ownerId == playerManager.ActivePlayerId)
+        if (queueToggleEnabled)
         {
-            if (nextOrder.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
-            {
-                nextOrder.ability = unit.defaultAbility;
-                nextOrder.ability.target = objectClicked;
-                nextOrder.ability.targetPosition = screenClickLocation.point;
-                nextOrder.orderRange = unit.defaultAbility.range;
-                nextOrder.remainingChannelTime = unit.defaultAbility.cooldown;
-            }
-            if (clearOrderQueueBeforeSetting)
-            {
-                orderManager.SetOrder(unit, nextOrder);
-            }
-            else
-            {
-                orderManager.QueueOrder(unit, nextOrder);
-            }
+            orderManager.QueueOrder(unit, order);
         }
+        else
+        {
+            orderManager.SetOrder(unit, order);
+        }
+    }
+
+    Dictionary<RTSGameObject, Order> BuildOrdersForUnits(HashSet<RTSGameObject> units, RaycastHit screenClickLocation, Order order)
+    {
+        Dictionary<RTSGameObject, Order> orders = new Dictionary<RTSGameObject, Order>();
+        foreach (RTSGameObject unit in units)
+        {
+            RTSGameObject objectClicked = GetObjectClicked(screenClickLocation);
+            order = AddOrderTargets(order, objectClicked, screenClickLocation);
+            order = AddOrderDefaultAbility(order, unit);
+            orders.Add(unit, order);
+        }
+        return orders;
+    }
+
+    RTSGameObject GetObjectClicked(RaycastHit screenClickLocation)
+    {
+        if(screenClickLocation.collider != null)
+        {
+            return screenClickLocation.collider.GetComponentInParent<RTSGameObject>();
+        }
+        return null;
+    }
+
+    Order AddOrderDefaultAbility(Order order, RTSGameObject unit)
+    {
+        if (order.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
+        {
+            order.ability = unit.defaultAbility;
+            order.ability.target = order.target;
+            order.ability.targetPosition = order.targetPosition;
+            order.orderRange = unit.defaultAbility.range;
+            order.remainingChannelTime = unit.defaultAbility.cooldown;
+        }
+        return order;
+    }
+
+    Order AddOrderTargets(Order order, RTSGameObject objectClicked, RaycastHit screenClickLocation)
+    {
+        order.target = objectClicked;
+        order.targetPosition = screenClickLocation.point;
+        
+        return nextOrder;
     }
     
     public void SetUpPlayer(int playerId, World world)

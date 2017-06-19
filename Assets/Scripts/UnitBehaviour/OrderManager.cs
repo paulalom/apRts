@@ -157,6 +157,22 @@ public class OrderManager : MonoBehaviour {
         }
     }
 
+    public void QueueOrders(Dictionary<RTSGameObject, Order> orders)
+    {
+        foreach (KeyValuePair<RTSGameObject, Order> unitOrderPair in orders)
+        {
+            QueueOrder(unitOrderPair.Key, unitOrderPair.Value);
+        }
+    }
+
+    public void SetOrders(Dictionary<RTSGameObject, Order> orders)
+    {
+        foreach (KeyValuePair<RTSGameObject, Order> unitOrderPair in orders)
+        {
+            SetOrder(unitOrderPair.Key, unitOrderPair.Value);
+        }
+    }
+
     public void QueueOrders(Dictionary<RTSGameObject, List<Order>> orders)
     {
         foreach (KeyValuePair<RTSGameObject, List<Order>> unitOrderListPair in orders)

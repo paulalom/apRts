@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour {
         menuIcon = new Dictionary<Type, Texture2D>();
         numericMenuTypes = new Dictionary<string, Type>();
         floatingText = new List<FloatingText>();
-        
+
         // Get menu icons
         foreach (Type type in typesWithMenuIcons)
         {

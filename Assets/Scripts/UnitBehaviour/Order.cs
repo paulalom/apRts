@@ -46,7 +46,7 @@ public abstract class Order {
         ability = o.ability;
         remainingChannelTime = o.remainingChannelTime;
     }
-
+    
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {
         return OrderValidationResult.Success;

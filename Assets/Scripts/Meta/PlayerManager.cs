@@ -102,6 +102,18 @@ public class PlayerManager : MonoBehaviour {
         return units;
     }
 
+    public HashSet<RTSGameObject> GetOrderableSelectedUnits()
+    {
+        HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
+
+        foreach (RTSGameObject unit in ActivePlayer.units.Where(x => x.ownerId == ActivePlayerId))
+        {
+            units.Add(unit);
+        }
+        
+        return units;
+    }
+
     public HashSet<RTSGameObject> GetEnemyUnits(RTSGameObject unitToSearch)
     {
         HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();

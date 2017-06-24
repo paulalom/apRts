@@ -16,12 +16,13 @@ public class GameManager : MonoBehaviour {
     UIManager uiManager;
     PlayerManager playerManager;
     SettingsManager settingsManager;
+    public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     AIManager aiManager;
     SelectionManager selectionManager;
     WorldManager worldManager;
     float prevTime, lastEnemySpawn;
     Order nextOrder;
-    public bool debug = true;
+    public bool debug;
     public static string mainSceneName = "Main Scene";
     public float enemySpawnRateBase;
     public float dt = .001f;
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour {
 
     void Awake()
     {
+        debug = true;
         if (LoadingScreenManager.GetInstance() == null)
         {
             throw new InvalidOperationException("The game must be started from the start menu scene");
@@ -57,19 +59,37 @@ public class GameManager : MonoBehaviour {
     void Start()
     {
         StartCoroutine(worldManager.SetupWorld(terrainManager, mainCamera));
+        collisionAvoidanceManager.Start();
     }
 
     // Update is called once per frame
     void Update() {
         float now = Time.time;
-        debug = true;
         dt = now - prevTime;
 
+        HashSet<RTSGameObject> units = playerManager.GetAllUnits();
+        foreach (RTSGameObject obj in units)
+        {
+            Mover mover = obj.GetComponent<Mover>();
+            if (mover != null)
+            {
+                mover.velocity = new Vector3();
+            }
+        }
         HandleInput();
         orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
+        
+        foreach (RTSGameObject obj in units)
+        {
+            collisionAvoidanceManager.SyncObjectState(obj, dt);
+        }
+        collisionAvoidanceManager.Update();
+        foreach (RTSGameObject obj in units)
+        {
+            rtsGameObjectManager.MoveUnit(obj);
+        }
         rtsGameObjectManager.SnapToTerrain(playerManager.GetNonNeutralUnits(), playerManager.activeWorld);
         playerManager.UpdatePlayers();
-
         prevTime = now;
     }
     
@@ -121,7 +141,7 @@ public class GameManager : MonoBehaviour {
 
     void CheckInputSettings(RaycastHit screenClickLocation)
     {
-        foreach (Setting setting in settingsManager.defaultInputSettings)
+        foreach (Setting setting in settingsManager.inputSettings)
         {
             if (setting.checkActivationFunction(setting.key) && AreExactModifiersActive(setting))
             {

@@ -40,6 +40,13 @@ public class RTSGameObject : MonoBehaviour
     {
         DefaultInit();
     }
+    public Vector2 Position2D
+    {
+        get {
+            var pos3d = transform.position;
+            return new Vector2(pos3d.x, pos3d.z);
+        }
+    }
 
     protected void DefaultInit()
     {
@@ -52,8 +59,15 @@ public class RTSGameObject : MonoBehaviour
         storage = GetComponent<Storage>();
     }
 
+    void Destroy()
+    {
+
+    }
+
     void Update()
     {
+        var collisionAvoidance = gameManager.collisionAvoidanceManager;
+        collisionAvoidance.Update();
         DefaultUpdate();
     }
 
@@ -93,14 +107,14 @@ public class RTSGameObject : MonoBehaviour
                     orderManager.CompleteOrder(this);
                 }*/
             }
-            Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, gameManager.dt);
+            //Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
+            //rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed / 4, gameManager.dt);
         }
     }
 
     void OnTriggerStay(Collider other)
     {
-        if (mover != null && rtsGameObjectManager != null)
+        if (mover != null && rtsGameObjectManager != null && other.GetComponent<Mover>() == null)
         {
             Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
             rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, gameManager.dt);

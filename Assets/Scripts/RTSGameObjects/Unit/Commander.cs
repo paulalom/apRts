@@ -7,7 +7,6 @@ using UnityEngine;
 [RequireComponent(typeof(Producer))]
 [RequireComponent(typeof(FlowSystem))]
 [RequireComponent(typeof(Cannon))]
-[RequireComponent(typeof(Shoot))]
 [RequireComponent(typeof(Worker))]
 public class Commander : RTSGameObject {
 

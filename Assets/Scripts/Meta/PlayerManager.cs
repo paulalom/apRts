@@ -106,7 +106,7 @@ public class PlayerManager : MonoBehaviour {
     {
         HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
 
-        foreach (RTSGameObject unit in ActivePlayer.units.Where(x => x.ownerId == ActivePlayerId))
+        foreach (RTSGameObject unit in ActivePlayer.selectedUnits.Where(x => x.ownerId == ActivePlayerId))
         {
             units.Add(unit);
         }

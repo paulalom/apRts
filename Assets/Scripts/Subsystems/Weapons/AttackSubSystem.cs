@@ -11,7 +11,6 @@ public enum DamageType
     explosive
 }
 
-[RequireComponent(typeof(Ability))]
 public class AttackSubsystem : AbilitySubsystem {
     public Ability attack;
     public AttackType attackType;

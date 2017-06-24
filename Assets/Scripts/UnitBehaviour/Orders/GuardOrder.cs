@@ -16,7 +16,7 @@ public class GuardOrder : Order {
                 // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
                 if (performingUnit.GetComponent<Mover>() != null)
                 {
-                    rtsGameObjectManager.MoveUnit(performingUnit, new Vector2(target.transform.position.x, target.transform.position.z), dt);
+                    rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(target.transform.position.x, target.transform.position.z), dt);
                 }
                 else
                 {

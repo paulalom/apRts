@@ -7,7 +7,7 @@ public class GameManagerTests {
     // Dummy test
 	[Test]
 	public void EditorTest()
-	{
+	{   
         //Arrange
         GameObject gameObject = new GameObject();
         GameManager gameManager = gameObject.AddComponent<GameManager>();

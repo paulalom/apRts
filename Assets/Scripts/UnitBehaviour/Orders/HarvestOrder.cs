@@ -14,7 +14,7 @@ public class HarvestOrder : Order {
         {
             if (performingUnit.GetComponent<Mover>() != null)
             {
-                rtsGameObjectManager.MoveUnit(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
+                rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
             }
             else
             {

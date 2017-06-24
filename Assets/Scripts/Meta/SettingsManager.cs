@@ -15,7 +15,8 @@ public class Setting
     public Action<RaycastHit> raycastHitAction = delegate { };
 }
 
-public class SettingsManager : MonoBehaviour {
+public class SettingsManager : MonoBehaviour
+{
 
     public List<Setting> defaultInputSettings;
     public List<Setting> inputSettings;
@@ -33,7 +34,7 @@ public class SettingsManager : MonoBehaviour {
         */
         
         defaultInputSettings.Add(new Setting() { key = KeyCode.E, getOrder = OrderFactory.GetDefaultUseAbilityOrder, smartCast = true });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.C, getOrder = OrderFactory.GetDefaultCancelOrder });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.X, getOrder = OrderFactory.GetDefaultCancelOrder });
         defaultInputSettings.Add(new Setting() { key = KeyCode.H, getOrder = OrderFactory.GetDefaultHarvestOrder });
         defaultInputSettings.Add(new Setting() { key = KeyCode.P, getOrder = OrderFactory.GetDefaultPatrolOrder });
         defaultInputSettings.Add(new Setting() { key = KeyCode.G, getOrder = OrderFactory.GetDefaultGuardOrder });

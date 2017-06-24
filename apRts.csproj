@@ -81,14 +81,16 @@
     <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
     <Compile Include="Assets\Scripts\Abilities\AbilityManager.cs" />
     <Compile Include="Assets\Scripts\Abilities\Explode.cs" />
-    <Compile Include="Assets\Scripts\Abilities\Explosion.cs" />
-    <Compile Include="Assets\Scripts\Abilities\OnDeath.cs" />
     <Compile Include="Assets\Scripts\Abilities\Shoot.cs" />
-    <Compile Include="Assets\Scripts\Combat\CombatManager.cs" />
-    <Compile Include="Assets\Scripts\Combat\Components\Armor.cs" />
-    <Compile Include="Assets\Scripts\Combat\Components\Defense.cs" />
-    <Compile Include="Assets\Scripts\Combat\Components\Hull.cs" />
-    <Compile Include="Assets\Scripts\Combat\Components\Shield.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Agent.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Blocks.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Circle.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\KdTree.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Line.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Obstacle.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\RVOMath.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Simulator.cs" />
+    <Compile Include="Assets\Scripts\Dependencies\RVO2\Vector2.cs" />
     <Compile Include="Assets\Scripts\Items\BasicResource\Coal.cs" />
     <Compile Include="Assets\Scripts\Items\BasicResource\Iron.cs" />
     <Compile Include="Assets\Scripts\Items\BasicResource\Stone.cs" />
@@ -106,6 +108,7 @@
     <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
     <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
     <Compile Include="Assets\Scripts\Logistics\Worker.cs" />
+    <Compile Include="Assets\Scripts\Meta\CollisionAvoidanceManager.cs" />
     <Compile Include="Assets\Scripts\Meta\GameManager.cs" />
     <Compile Include="Assets\Scripts\Meta\Player.cs" />
     <Compile Include="Assets\Scripts\Meta\PlayerManager.cs" />
@@ -117,6 +120,7 @@
     <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
     <Compile Include="Assets\Scripts\Projectile\BasicCannonProjectile.cs" />
     <Compile Include="Assets\Scripts\Projectile\Projectile.cs" />
+    <Compile Include="Assets\Scripts\RTSGameObjects\Neutral\EnergyShield.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjects\Neutral\ResourceDeposit.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjects\RTSGameObject.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjects\RTSGameObjectManager.cs" />
@@ -128,6 +132,9 @@
     <Compile Include="Assets\Scripts\RTSGameObjects\Unit\ConstructionSphere.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjects\Unit\Tank.cs" />
     <Compile Include="Assets\Scripts\Subsystems\AbilitySubsystem.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Armor.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Defense.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Hull.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\Battery.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\Capacitor.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\FlowSystem.cs" />
@@ -173,6 +180,7 @@
     <Compile Include="Assets\Scripts\World\WorldSettings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Legal\contributions.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />

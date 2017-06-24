@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Explode : OnDeath {
+public class Explode : Ability {
 
     public ParticleSystem explosionAnimation;
     public float radius;

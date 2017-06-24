@@ -121,6 +121,7 @@
     <Compile Include="Assets\Editor\Tests\GameManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Legal\contributions.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />

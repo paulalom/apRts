@@ -263,12 +263,12 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
         terrain.terrainData.treePrototypes = terrainTrees;
         terrain.transform.position = new Vector3(chunkSizeX * worldSpaceChunkIndex.x, 0, chunkSizeZ * worldSpaceChunkIndex.y);
 
-        /* Water commented out because it lags older machines. Need to find a replacement.
+        /* Water commented out because it lags older machines. Need to find a replacement. */
         Transform waterPlane = GameObject.Instantiate(waterPlanePrefab, terrainGO.transform.position, Quaternion.identity) as Transform;
         waterPlane.transform.position = new Vector3(waterPlane.position.x + chunkSizeX / 2, waterThreshold, waterPlane.position.z + chunkSizeZ / 2);
         waterPlane.localScale = new Vector3(5.1f, 1, 5.1f); // Yay magic
         waterPlane.SetParent(terrainGO.transform);
-        */
+       
 
         SetTerrainHeightMap(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex, terrainChunks);
         SetTerrainTextures(terrainGO.GetComponent<Terrain>(), worldSpaceChunkIndex);
@@ -648,7 +648,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     static float GetRandHeight(int depth)
     {
-        return 0;// UnityEngine.Random.Range(-0.13f, 0.13f) / Mathf.Pow(2, depth);
+        return UnityEngine.Random.Range(-0.13f, 0.13f) / Mathf.Pow(2, depth);
     }
 
     // Only x,z coords are used. This way we can pass in 3d objects without converting

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(Explosion))]
+[RequireComponent(typeof(Explode))]
 public class BasicCannonProjectile : Projectile
 {
     public float baseDamage;

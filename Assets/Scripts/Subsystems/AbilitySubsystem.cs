@@ -9,13 +9,4 @@ public class AbilitySubsystem : Subsystem {
     public float cooldown; // If we have enough power, this is the max rate of fire/use
     public float minPowerDraw; // We can fire/use at a reduced range/area/power depending on the ability if we use less power
 
-    // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 }

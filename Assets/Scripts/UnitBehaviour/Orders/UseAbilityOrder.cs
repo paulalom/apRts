@@ -3,7 +3,7 @@ using System.Collections;
 
 public class UseAbilityOrder : Order {
 
-    public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
         rtsGameObjectManager.UseAbility(performingUnit, target, targetPosition, ability);
         return true;

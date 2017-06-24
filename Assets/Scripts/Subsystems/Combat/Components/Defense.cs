@@ -6,5 +6,4 @@ public class Defense : MonoBehaviour {
 
     public Hull hull;
     public Armor armor;
-    public Shield shield;
 }

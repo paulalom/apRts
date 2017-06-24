@@ -11,7 +11,7 @@ public class MoveOrder : Order {
         }
         else
         {
-            rtsGameObjectManager.MoveUnit(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
             return false;
         }
     }

@@ -68,38 +68,36 @@ public class RTSGameObjectManager : MonoBehaviour {
             }
             unitCreationQueue.Clear();
         }
-        if (unitDestructionQueue.Count > 0)
+        foreach (RTSGameObject unit in unitDestructionQueue)
         {
-            foreach (RTSGameObject unit in unitDestructionQueue)
+            playerManager.ActivePlayer.selectedUnits.Remove(unit);
+            playerManager.players[unit.ownerId].units.Remove(unit);
+            if (!(unit is Projectile))
             {
-                playerManager.ActivePlayer.selectedUnits.Remove(unit);
-                playerManager.players[unit.ownerId].units.Remove(unit);
-                if (!(unit is Projectile))
-                {
-                    playerManager.players[unit.ownerId].onUnitCountDecrease.Invoke(unit);
-                }
-
-                try {
-                    // I don't think this is the right way to handle death animations, but it should be good enough for now.
-                    Explosion explosion = unit.GetComponent<Explosion>();
-                    if (explosion != null)
-                    {
-                        GameObject go = Instantiate(prefabs["Explosion"],
-                                                            unit.transform.position,
-                                                            Quaternion.identity) as GameObject;
-                        go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
-                        Destroy(go, go.GetComponent<ParticleSystem>().duration);
-                    }
-
-                    Destroy(unit.gameObject, .05f); // delay is hack to ensure this loop finishes before objects are destroyed
-                }
-                catch (Exception e)
-                {
-                    Debug.Log("Exception: Trying to destroy an object which no longer exists");
-                }
+                playerManager.players[unit.ownerId].onUnitCountDecrease.Invoke(unit);
             }
-            unitDestructionQueue.Clear();
+
+            gameManager.collisionAvoidanceManager.FreeObject(unit);
+            try {
+                // I don't think this is the right way to handle death animations, but it should be good enough for now.
+                Explode explosion = unit.GetComponent<Explode>();
+                if (explosion != null)
+                {
+                    GameObject go = Instantiate(prefabs["Explosion"],
+                                                        unit.transform.position,
+                                                        Quaternion.identity) as GameObject;
+                    go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
+                    Destroy(go, go.GetComponent<ParticleSystem>().duration);
+                }
+
+                Destroy(unit.gameObject, .05f); // delay is hack to ensure this loop finishes before objects are destroyed
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Exception: Trying to destroy an object which no longer exists " + e.Message);
+            }
         }
+        unitDestructionQueue.Clear();
     }
 
     public void SnapToTerrainHeight(RTSGameObject obj, World world)
@@ -395,14 +393,25 @@ public class RTSGameObjectManager : MonoBehaviour {
         Mover mover = unit.GetComponent<Mover>();
         if (mover.isActive)
         {
-            Vector2 newPos = Vector2.MoveTowards(new Vector2(unit.transform.position.x, unit.transform.position.z), targetPos, moveSpeed * dt);
+            Vector2 newPos = Vector2.MoveTowards(unit.Position2D, targetPos, moveSpeed * dt);
             unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
         }
     }
-
-    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float dt)
+    public void MoveUnit(RTSGameObject unit)
     {
-        MoveUnit(unit, targetPos, unit.GetComponent<Mover>().moveSpeed, dt);
+        Mover mover = unit.GetComponent<Mover>();
+        if (mover != null && mover.isActive)
+        {
+            Vector3 vel = mover.velocity;
+            unit.transform.position += vel;
+        }
+    }
+
+    public void SetUnitMoveTarget(RTSGameObject unit, Vector2 targetPos, float dt)
+    {
+        Mover mover = unit.GetComponent<Mover>();
+        Vector2 velocity = Vector2.MoveTowards(unit.Position2D, targetPos, mover.moveSpeed * dt) - unit.Position2D;
+        mover.SetVelocity2D(velocity);
     }
 
     public void UseAbility(RTSGameObject unit, RTSGameObject target, Vector3 targetPosition, Ability ability)
@@ -412,12 +421,12 @@ public class RTSGameObjectManager : MonoBehaviour {
             // still need to refine the damage system of course
             BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.gameObject, unit.world).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
-            projectile.GetComponent<Explosion>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
-            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explosion>()});
+            projectile.GetComponent<Explode>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
+            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explode>()});
         }
-        else if (ability.GetType() == typeof(Explosion))
+        else if (ability.GetType() == typeof(Explode))
         {
-            Explosion explosion = ((Explosion)(ability));
+            Explode explosion = ((Explode)(ability));
             DamageAllInRadius(unit, explosion.radius, explosion.damage);
             DestroyUnit(unit);
         }

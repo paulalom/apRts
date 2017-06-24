@@ -62,7 +62,7 @@ public abstract class Order {
         }
         else
         {
-            rtsGameObjectManager.MoveUnit(performingUnit, new Vector2(targetPos.x, targetPos.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPos.x, targetPos.z), dt);
             return false;
         }
     }

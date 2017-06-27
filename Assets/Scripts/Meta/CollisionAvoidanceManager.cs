@@ -18,17 +18,19 @@ public class CollisionAvoidanceManager {
          * Specify the default parameters for agents that are subsequently
          * added.
          */
-        Simulator.Instance.setAgentDefaults(105.0f, 10, 10.0f, 10.0f, 1.5f, 2.0f, new RVO.Vector2(0.0f, 0.0f));
+        Simulator.Instance.setAgentDefaults(30.0f, 6, 10.0f, 10.0f, 1.5f, 2.0f, new RVO.Vector2(0.0f, 0.0f));
     }
 	
     private RVO.Vector2 RvoConv(UnityEngine.Vector2 vec)
     {
         return new RVO.Vector2(vec.x, vec.y);
     }
+
     private UnityEngine.Vector2 RvoConv(RVO.Vector2 vec)
     {
         return new UnityEngine.Vector2(vec.x(), vec.y());
     }
+
     // Update is called once per frame
     public void SyncObjectState(RTSGameObject obj, float dt)
     {
@@ -43,12 +45,12 @@ public class CollisionAvoidanceManager {
         int id = gameIds[obj];
         Simulator.Instance.setAgentMaxSpeed(id, m.moveSpeed * dt);
         Simulator.Instance.setAgentPrefVelocity(id, RvoConv(m.Velocity2D));
-        Simulator.Instance.setAgentVelocity(id, RvoConv(m.Velocity2D));
+        //Simulator.Instance.setAgentVelocity(id, RvoConv(m.Velocity2D));
         float objectRadius = obj.transform.localScale.magnitude/2;        
         Simulator.Instance.setAgentRadius(id, objectRadius);
         Simulator.Instance.setAgentPosition(id, RvoConv(obj.Position2D));
     }
-    // Update is called once per frame
+
     private void UpdateObjectVelocity(RTSGameObject obj, int id)
     {
         Mover m = obj.GetComponent<Mover>();
@@ -59,6 +61,7 @@ public class CollisionAvoidanceManager {
         UnityEngine.Vector2 velocity = RvoConv(Simulator.Instance.getAgentVelocity(id));
         m.SetVelocity2D(velocity);
     }
+
     private void StartObject(RTSGameObject obj)
     {
         int id;
@@ -72,6 +75,7 @@ public class CollisionAvoidanceManager {
         }
         gameIds[obj] = id;
     }
+
     public void FreeObject(RTSGameObject obj)
     {
         if (gameIds.ContainsKey(obj))
@@ -81,8 +85,10 @@ public class CollisionAvoidanceManager {
             gameIds.Remove(obj);
         }
     }
+
     public void Update()
     {
+        return;
         // Make sure freed objects are out of sight
 /*        foreach (int idx in freedIds)
         {

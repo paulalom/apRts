@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -421,6 +422,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             // still need to refine the damage system of course
             BasicCannonProjectile projectile = SpawnUnit(unit.GetComponent<Shoot>().projectileType, unit.transform.position, unit.ownerId, unit.gameObject, unit.world).GetComponent<BasicCannonProjectile>();
             projectile.parent = unit;
+            projectile.ownerId = unit.ownerId;
             projectile.GetComponent<Explode>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
             orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explode>()});
         }
@@ -435,13 +437,15 @@ public class RTSGameObjectManager : MonoBehaviour {
     public void DamageAllInRadius(RTSGameObject source, float range, float damage)
     {
         List<Defense> defenses = GetAllComponentsInRangeOfType<Defense>(source.transform.position, range, rtsGameObjectLayerMask);
-        foreach(Defense defense in defenses)
+        HashSet<RTSGameObject> unitsToDamage = new HashSet<RTSGameObject>(); // this set must be unique
+
+        foreach (Defense defense in defenses)
         {
-            defense.hull.hullPoints -= damage; // simplistic for now
-            if (defense.hull.hullPoints <= 0)
-            {
-                DestroyUnit(defense.GetComponent<RTSGameObject>());
-            }
+            unitsToDamage.Add(defense.owner);
+        }
+        foreach(RTSGameObject unit in unitsToDamage)
+        {
+            unit.TakeDamage(damage);
         }
     }
 

@@ -4,9 +4,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 public class GameManager : MonoBehaviour {
 
+    [DllImport ("PluginName")]
+    private static extern float FooPluginFunction ();
     RTSCamera mainCamera;
     [HideInInspector]
     public TerrainManager terrainManager;
@@ -20,12 +23,11 @@ public class GameManager : MonoBehaviour {
     AIManager aiManager;
     SelectionManager selectionManager;
     WorldManager worldManager;
-    float prevTime, lastEnemySpawn;
+    float lastEnemySpawn;
     Order nextOrder;
     public bool debug;
     public static string mainSceneName = "Main Scene";
     public float enemySpawnRateBase;
-    public float dt = .001f;
     //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
@@ -64,8 +66,7 @@ public class GameManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        float now = Time.time;
-        dt = now - prevTime;
+        float dt = StepManager.GetDeltaStep();
 
         HashSet<RTSGameObject> units = playerManager.GetAllUnits();
         foreach (RTSGameObject obj in units)
@@ -90,7 +91,6 @@ public class GameManager : MonoBehaviour {
         }
         rtsGameObjectManager.SnapToTerrain(playerManager.GetNonNeutralUnits(), playerManager.activeWorld);
         playerManager.UpdatePlayers();
-        prevTime = now;
     }
     
     void HandleInput()
@@ -226,6 +226,7 @@ public class GameManager : MonoBehaviour {
         foreach (RTSGameObject unit in units)
         {
             RTSGameObject objectClicked = GetObjectClicked(screenClickLocation);
+            
             order = AddOrderTargets(order, objectClicked, screenClickLocation);
             order = AddOrderDefaultAbility(order, unit);
             orders.Add(unit, order);
@@ -246,13 +247,18 @@ public class GameManager : MonoBehaviour {
     {
         if (order.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
         {
-            order.ability = unit.defaultAbility;
-            order.ability.target = order.target;
-            order.ability.targetPosition = order.targetPosition;
-            order.orderRange = unit.defaultAbility.range;
-            order.remainingChannelTime = unit.defaultAbility.cooldown;
+            UseAbilityOrder abilityOrder = new UseAbilityOrder(order);
+            abilityOrder.ability = unit.defaultAbility;
+            abilityOrder.ability.target = order.target;
+            abilityOrder.ability.targetPosition = order.targetPosition;
+            abilityOrder.orderRange = unit.defaultAbility.range;
+            abilityOrder.remainingChannelTime = unit.defaultAbility.cooldown;
+            return abilityOrder;
         }
-        return order;
+        else
+        {
+            return order;
+        }        
     }
 
     Order AddOrderTargets(Order order, RTSGameObject objectClicked, RaycastHit screenClickLocation)

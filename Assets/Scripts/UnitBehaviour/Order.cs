@@ -34,18 +34,6 @@ public abstract class Order {
     public float remainingChannelTime;
 
     public Order() {}
-
-    public Order(Order o)
-    {
-        phase = o.phase;
-        targetPosition = o.targetPosition;
-        orderIssuedPosition = o.orderIssuedPosition;
-        orderRange = o.orderRange;
-        items = o.items;
-        target = o.target;
-        ability = o.ability;
-        remainingChannelTime = o.remainingChannelTime;
-    }
     
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {

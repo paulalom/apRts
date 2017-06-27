@@ -1,9 +1,24 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
+using System;
 
-[RequireComponent(typeof(Hull))]
-public class Defense : MonoBehaviour {
+public abstract class Defense : MonoBehaviour, IDamagable {
 
-    public Hull hull;
-    public Armor armor;
+    public RTSGameObject owner;
+    public bool isActive = true;
+    public float absorptionRatio = 1;
+    public abstract void TakeDamage(float amount);
+}
+
+public class DefenseOwnerEqualityComparer : IEqualityComparer<Defense>
+{
+    public bool Equals(Defense x, Defense y)
+    {
+        return x.owner = y.owner;
+    }
+
+    public int GetHashCode(Defense obj)
+    {
+        throw new NotImplementedException();
+    }
 }

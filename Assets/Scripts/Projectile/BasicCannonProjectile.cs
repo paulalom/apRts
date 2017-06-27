@@ -6,19 +6,26 @@ public class BasicCannonProjectile : Projectile
 {
     public float baseDamage;
     public DamageType damageType;
-
-    void Start()
+    
+    void CheckExplode(Collider other)
     {
-        orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
-    }
-
-    // Activate on collision
-    void OnTriggerEnter(Collider col)
-    {
-        RTSGameObject rtsGo = GetComponent<RTSGameObject>();
-        if (col != parent.GetComponent<Collider>() && orderManager.orders.ContainsKey(rtsGo))
+        RTSGameObject otherRtsGo = other.GetComponent<RTSGameObject>();
+        if (otherRtsGo == null)
+        {
+            otherRtsGo = other.GetComponentInParent<RTSGameObject>();
+        }
+        if ((otherRtsGo == null || otherRtsGo.ownerId != rtsGo.ownerId) 
+            && orderManager.orders.ContainsKey(rtsGo))
         {
             orderManager.orders[rtsGo][0].targetPosition = transform.position;
         }
     }
+
+    // Activate on collision
+    void OnTriggerEnter(Collider other)
+    {
+        CheckExplode(other);
+    }
+
+    void OnTriggerStay(Collider other) { } // override
 }

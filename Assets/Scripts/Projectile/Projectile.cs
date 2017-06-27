@@ -6,13 +6,14 @@ using System.Collections;
 public class Projectile : RTSGameObject {
     
     public RTSGameObject parent;
-
-	// Use this for initialization
+    public RTSGameObject rtsGo;
+    
 	void Start () {
         mover = GetComponent<Mover>();
-	}
+        orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
+        rtsGo = GetComponent<RTSGameObject>();
+    }
 	
-	// Update is called once per frame
 	void Update () {
 	    
 	}

@@ -113,6 +113,7 @@
     <Compile Include="Assets\Scripts\Meta\Player.cs" />
     <Compile Include="Assets\Scripts\Meta\PlayerManager.cs" />
     <Compile Include="Assets\Scripts\Meta\SettingsManager.cs" />
+    <Compile Include="Assets\Scripts\Meta\StepManager.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Energy.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Magic.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Power.cs" />
@@ -132,13 +133,18 @@
     <Compile Include="Assets\Scripts\RTSGameObjects\Unit\ConstructionSphere.cs" />
     <Compile Include="Assets\Scripts\RTSGameObjects\Unit\Tank.cs" />
     <Compile Include="Assets\Scripts\Subsystems\AbilitySubsystem.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Armor.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\ArmoredHull.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Defense.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Hull.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\IActivatable.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\IDamagable.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Shield.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\ShieldGenerator.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\Battery.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\Capacitor.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\FlowSystem.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Electronics\Generator.cs" />
+    <Compile Include="Assets\Scripts\Subsystems\Electronics\PowerGenerator.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Subsystem.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Weapons\AttackSubSystem.cs" />
     <Compile Include="Assets\Scripts\Subsystems\Weapons\Cannon.cs" />

@@ -9,7 +9,6 @@ public class FloatingText : MonoBehaviour {
     private float distToTop = 10; // distance the text travels in the y direction
     private float startTime;
     private float lastDirectionChange;
-    private float prevTime;
     private bool directionLeft = true;
     public TextMesh textMesh;
     UIManager uiManager;
@@ -23,7 +22,6 @@ public class FloatingText : MonoBehaviour {
         textMesh = GetComponent<TextMesh>();
         startTime = Time.time; // this will need more logic if we implement pause
         lastDirectionChange = Time.time; // this too, and more!
-        prevTime = Time.time;
     }
 
 	// Update is called once per frame
@@ -40,13 +38,11 @@ public class FloatingText : MonoBehaviour {
         }
 
         float speed = distToTop / duration;
-        float dt = Time.time - prevTime;
+        float dt = StepManager.GetDeltaStep();
         float dy = speed * dt;
         // I want text to wave left and right but i would need to do trig and whatnot or use some other method of positioning (eg. GUI.Label), so thats TODO
         //+ (directionLeft ? transform.position.x - leftRightDisplacement : transform.position.x + leftRightDisplacement)
         transform.position = new Vector3(transform.position.x , transform.position.y + dy, transform.position.z);
-
-        prevTime = Time.time;
     }
     public void SetColor(Color color)
     {

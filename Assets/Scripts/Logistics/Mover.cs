@@ -5,7 +5,7 @@ public class Mover : MonoBehaviour {
 
     public bool isActive = true;
     public float moveSpeed = 0.3f;
-    public Vector3 velocity;
+    public Vector3 velocity = Vector3.zero;
 
     public Vector2 Velocity2D
     {

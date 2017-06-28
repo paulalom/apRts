@@ -5,9 +5,9 @@ public class FollowOrder : Order {
     
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPosition, orderRange))
+        if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.targetPosition, orderData.orderRange))
         {
-            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(target.transform.position.x, target.transform.position.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(orderData.target.transform.position.x, orderData.target.transform.position.z), dt);
         }
         return false;
     }
@@ -18,10 +18,10 @@ public class FollowOrder : Order {
         {
             return OrderValidationResult.CantDoThat;
         }
-        if (!CheckTargetExists(target)){
+        if (!CheckTargetExists(orderData.target)){
             return OrderValidationResult.InvalidTarget;
         }
-        if (performingUnit == target)
+        if (performingUnit == orderData.target)
         {
             return OrderValidationResult.NotOnSelf;
         }

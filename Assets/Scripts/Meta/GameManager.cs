@@ -8,8 +8,7 @@ using System.Runtime.InteropServices;
 
 public class GameManager : MonoBehaviour {
 
-    [DllImport ("PluginName")]
-    private static extern float FooPluginFunction ();
+    public static List<MyMonoBehaviour> allObjects = new List<MyMonoBehaviour>(); // except loadingscreen this
     RTSCamera mainCamera;
     [HideInInspector]
     public TerrainManager terrainManager;
@@ -19,11 +18,9 @@ public class GameManager : MonoBehaviour {
     UIManager uiManager;
     PlayerManager playerManager;
     SettingsManager settingsManager;
-    public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     AIManager aiManager;
     SelectionManager selectionManager;
     WorldManager worldManager;
-    float lastEnemySpawn;
     Order nextOrder;
     public bool debug;
     public static string mainSceneName = "Main Scene";
@@ -32,13 +29,14 @@ public class GameManager : MonoBehaviour {
 
     public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
 
-    void Awake()
+    public void Awake()
     {
         debug = true;
         if (LoadingScreenManager.GetInstance() == null)
         {
             throw new InvalidOperationException("The game must be started from the start menu scene");
         }
+
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
@@ -58,39 +56,36 @@ public class GameManager : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start()
+    public void Start()
     {
         StartCoroutine(worldManager.SetupWorld(terrainManager, mainCamera));
-        collisionAvoidanceManager.Start();
     }
 
-    // Update is called once per frame
-    void Update() {
-        float dt = StepManager.GetDeltaStep();
-
-        HashSet<RTSGameObject> units = playerManager.GetAllUnits();
-        foreach (RTSGameObject obj in units)
+    // Everything in the game loop happens here
+    void Update()
+    {
+        foreach (MyMonoBehaviour obj in allObjects)
         {
-            Mover mover = obj.GetComponent<Mover>();
+            obj.MyUpdate();
+        }
+        float dt = StepManager.GetDeltaStep();
+        HashSet<RTSGameObject> units = playerManager.GetAllUnits();
+        List<RTSGameObject> nonNeutralUnits = playerManager.GetNonNeutralUnits();
+        HandleInput();
+        foreach (RTSGameObject unit in units)
+        {
+            Mover mover = unit.GetComponent<Mover>();
             if (mover != null)
             {
                 mover.velocity = new Vector3();
             }
+            rtsGameObjectManager.collisionAvoidanceManager.SyncObjectState(unit, dt);
         }
-        HandleInput();
-        orderManager.CarryOutOrders(playerManager.GetNonNeutralUnits(), dt);
-        
-        foreach (RTSGameObject obj in units)
-        {
-            collisionAvoidanceManager.SyncObjectState(obj, dt);
-        }
-        collisionAvoidanceManager.Update();
-        foreach (RTSGameObject obj in units)
-        {
-            rtsGameObjectManager.MoveUnit(obj);
-        }
-        rtsGameObjectManager.SnapToTerrain(playerManager.GetNonNeutralUnits(), playerManager.activeWorld);
-        playerManager.UpdatePlayers();
+        orderManager.CarryOutOrders(nonNeutralUnits, dt);
+        rtsGameObjectManager.UpdateAll(units, nonNeutralUnits, dt);
+
+        rtsGameObjectManager.HandleUnitCreation();
+        rtsGameObjectManager.HandleUnitDestruction();
     }
     
     void HandleInput()
@@ -135,7 +130,9 @@ public class GameManager : MonoBehaviour {
 
     public void OnMoveButtonRelease(RaycastHit screenClickLocation)
     {
-        nextOrder = new MoveOrder() { targetPosition = screenClickLocation.point, orderRange = .3f };
+        nextOrder = new MoveOrder();
+        nextOrder.orderData.targetPosition = screenClickLocation.point;
+        nextOrder.orderData.orderRange = .3f;
         ProcessNextOrder(screenClickLocation);
     }
 
@@ -248,11 +245,11 @@ public class GameManager : MonoBehaviour {
         if (order.GetType() == typeof(UseAbilityOrder) && unit.defaultAbility != null)
         {
             UseAbilityOrder abilityOrder = new UseAbilityOrder(order);
-            abilityOrder.ability = unit.defaultAbility;
-            abilityOrder.ability.target = order.target;
-            abilityOrder.ability.targetPosition = order.targetPosition;
-            abilityOrder.orderRange = unit.defaultAbility.range;
-            abilityOrder.remainingChannelTime = unit.defaultAbility.cooldown;
+            abilityOrder.orderData.ability = unit.defaultAbility;
+            abilityOrder.orderData.ability.target = order.orderData.target;
+            abilityOrder.orderData.ability.targetPosition = order.orderData.targetPosition;
+            abilityOrder.orderData.orderRange = unit.defaultAbility.range;
+            abilityOrder.orderData.remainingChannelTime = unit.defaultAbility.cooldown;
             return abilityOrder;
         }
         else
@@ -263,8 +260,8 @@ public class GameManager : MonoBehaviour {
 
     Order AddOrderTargets(Order order, RTSGameObject objectClicked, RaycastHit screenClickLocation)
     {
-        order.target = objectClicked;
-        order.targetPosition = screenClickLocation.point;
+        order.orderData.target = objectClicked;
+        order.orderData.targetPosition = screenClickLocation.point;
         
         return nextOrder;
     }
@@ -354,5 +351,21 @@ public class GameManager : MonoBehaviour {
     public void SpawnFactory(RaycastHit hit)
     {
         rtsGameObjectManager.SpawnUnit(typeof(Factory), hit.point, 1, playerManager.ActivePlayer.units.FirstOrDefault().gameObject, playerManager.activeWorld);
+    }
+
+    public static void RegisterObject(MyMonoBehaviour obj)
+    {
+        allObjects.Add(obj);
+    }
+
+    public static void DeregisterObject(MyMonoBehaviour obj)
+    {
+        MyMonoBehaviour[] components = obj.GetComponents<MyMonoBehaviour>();
+        foreach (MyMonoBehaviour component in components)
+        {
+            allObjects.Remove(component);
+        }
+        allObjects.Remove(obj);
+
     }
 }

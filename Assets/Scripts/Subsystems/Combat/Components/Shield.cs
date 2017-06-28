@@ -10,7 +10,7 @@ public class Shield : Defense, IActivatable
     new Renderer renderer;
     float shieldAlpha;
 
-    void Awake()
+    public override void MyAwake()
     {
         collider = GetComponentsInChildren<Collider>().Where(x => x.name == "Shield").FirstOrDefault();
         renderer = GetComponentsInChildren<Renderer>().Where(x => x.name == "Shield").FirstOrDefault();

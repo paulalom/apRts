@@ -14,14 +14,14 @@ public class ResourceDeposit : RTSGameObject
 {
     public DepositType type;
     public Dictionary<Type, int> harvestItems;
-    void Awake()
+    public override void MyAwake()
     {
         storage = GetComponent<Storage>();
         harvestItems = new Dictionary<Type, int>();
         storage.requiredAccessComponents.Add(typeof(Harvester));
     }
 
-    void Update()
+    public override void MyUpdate()
     {
         // override defaultUpdate because resources dont need to onIdle
     }

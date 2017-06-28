@@ -15,7 +15,7 @@ public class Commander : RTSGameObject {
     public FlowSystem power;
     Worker worker;
 
-    void Awake()
+    public override void MyAwake()
     {
         producer = GetComponent<Producer>();
         consumer = GetComponent<Consumer>();
@@ -26,7 +26,7 @@ public class Commander : RTSGameObject {
         ((Shoot)defaultAbility).projectileType = typeof(BasicCannonProjectile);
     }
 
-    void Start()
+    public override void MyStart()
     {
         DefaultInit();
         worker.SetDefaultProductionSettings(producer);

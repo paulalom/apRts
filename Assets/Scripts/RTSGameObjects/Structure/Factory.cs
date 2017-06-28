@@ -11,7 +11,7 @@ public class Factory : Structure
     Producer producer;
     Consumer consumer;
 
-    void Awake()
+    public override void MyAwake()
     {
         storage = GetComponent<Storage>();
         producer = GetComponent<Producer>();
@@ -57,12 +57,12 @@ public class Factory : Structure
         producer.IsActive = false;
     }
 
-    void Start()
+    public override void MyStart()
     {
         storage.onStorageAddEvent.AddListener(CheckActivate);
     }
 
-    void Update()
+    public override void MyUpdate()
     {
         if (!underConstruction && producer.IsActive)
         {

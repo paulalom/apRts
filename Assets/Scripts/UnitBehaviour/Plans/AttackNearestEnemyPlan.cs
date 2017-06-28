@@ -20,7 +20,7 @@ public class AttackNearestEnemyPlan : Plan
 
         if (nearestEnemy != null)
         {
-            planSteps.Add(new UseAbilityOrder() { ability = unit.defaultAbility, target = nearestEnemy, remainingChannelTime = unit.defaultAbility.cooldown, orderRange = unit.defaultAbility.range });
+            planSteps.Add(OrderFactory.BuildAbilityOrder(nearestEnemy, unit.defaultAbility));
         }
 
         return planSteps;

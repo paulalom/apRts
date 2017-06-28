@@ -4,7 +4,7 @@ using System.Collections;
 
 public class PowerPlant : Structure
 {
-    void Awake()
+    public override void MyAwake()
     {
         storage = GetComponent<Storage>();
         storage.canContain.Add(typeof(Coal));

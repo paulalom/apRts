@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class EnergyShield : MonoBehaviour {
+public class EnergyShield : MyMonoBehaviour {
     public RTSGameObject owner;
 }

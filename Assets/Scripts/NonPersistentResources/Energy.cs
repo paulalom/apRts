@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Energy : MonoBehaviour {
+public class Energy : MyMonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

@@ -7,23 +7,23 @@ public class UseAbilityOrder : Order {
 
     public UseAbilityOrder(Order o)
     {
-        phase = o.phase;
-        targetPosition = o.targetPosition;
-        orderIssuedPosition = o.orderIssuedPosition;
-        orderRange = o.orderRange;
-        items = o.items;
-        target = o.target;
-        ability = o.ability;
-        remainingChannelTime = o.remainingChannelTime;
+        orderData.phase = o.orderData.phase;
+        orderData.targetPosition = o.orderData.targetPosition;
+        orderData.orderIssuedPosition = o.orderData.orderIssuedPosition;
+        orderData.orderRange = o.orderData.orderRange;
+        orderData.items = o.orderData.items;
+        orderData.target = o.orderData.target;
+        orderData.ability = o.orderData.ability;
+        orderData.remainingChannelTime = o.orderData.remainingChannelTime;
     }
     public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
-        rtsGameObjectManager.UseAbility(performingUnit, target, targetPosition, ability);
+        rtsGameObjectManager.UseAbility(performingUnit, orderData.target, orderData.targetPosition, orderData.ability);
         return true;
     }
 
     public override OrderValidationResult Validate(RTSGameObject performingUnit)
     {
-        return ValidateAbilityUsage(performingUnit,ability);
+        return ValidateAbilityUsage(performingUnit, orderData.ability);
     }
 }

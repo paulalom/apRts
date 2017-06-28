@@ -15,7 +15,7 @@ public class ShieldGenerator : Generator, IActivatable
         if (shield.isActive)
         {
             capacitor.TakeCharge(amount);
-            float shieldPowerRatio = Math.Min(1, capacitor.CurrentCharge / capacitor.capacity * 4);
+            float shieldPowerRatio = Math.Min(1, capacitor.CurrentCharge * 2 / capacitor.capacity);
             shield.PowerShield(shieldPowerRatio);
             return true;
         }

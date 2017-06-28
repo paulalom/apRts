@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Collections;
 
-public class MenuManager : MonoBehaviour {
+public class MenuManager : MyMonoBehaviour {
 
     public List<Texture2D> constructionIcons;
     [HideInInspector]
@@ -105,22 +105,20 @@ public class MenuManager : MonoBehaviour {
                     // Source is a transporter
                     if (sourceUnit.GetComponent<Transporter>() != null && sourceUnit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(sourceUnit, new GiveOrder()
-                        {
-                            target = unit,
-                            orderRange = 3f,
-                            items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }
-                        });
+                        gameManager.orderManager.SetOrder(
+                            sourceUnit, 
+                            OrderFactory.BuildGiveOrder(unit, 
+                                3f, 
+                                new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }));
                     }
                     // Destination is a transporter
                     else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(unit, new TakeOrder()
-                        {
-                            target = sourceUnit,
-                            orderRange = 3f,
-                            items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }
-                        });
+                        gameManager.orderManager.SetOrder(
+                            unit, 
+                            OrderFactory.BuildTakeOrder(sourceUnit, 
+                                3f, 
+                                new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }));
                     }
                     else
                     {

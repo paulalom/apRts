@@ -15,13 +15,13 @@ public class Setting
     public Action<RaycastHit> raycastHitAction = delegate { };
 }
 
-public class SettingsManager : MonoBehaviour
+public class SettingsManager : MyMonoBehaviour
 {
 
     public List<Setting> defaultInputSettings;
     public List<Setting> inputSettings;
 
-    void Awake()
+    public override void MyAwake()
     {
         GameManager gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         RTSCamera camera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();

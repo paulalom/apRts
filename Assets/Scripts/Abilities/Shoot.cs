@@ -6,7 +6,7 @@ public class Shoot : Ability {
 
     public Type projectileType;
     
-    void Start()
+    public override void MyStart()
     {
     }
 }

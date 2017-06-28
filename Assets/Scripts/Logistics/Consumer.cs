@@ -5,7 +5,7 @@ using System.Collections.Generic;
 // Consumer is a passive consumption required to operate, like power or fuel
 // Active consumptions access the storage directly
 [RequireComponent(typeof(Storage))]
-public class Consumer : MonoBehaviour {
+public class Consumer : MyMonoBehaviour {
 
     private Storage storage;
 

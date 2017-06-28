@@ -2,7 +2,7 @@
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class LoadTargetScene : MonoBehaviour
+public class SceneLoader : MyMonoBehaviour
 {
     public void LoadSceneNum(int num)
     {

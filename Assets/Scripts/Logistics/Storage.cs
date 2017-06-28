@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Storage : MonoBehaviour {
+public class Storage : MyMonoBehaviour {
 
     public int size;
     public int usedSpace;
@@ -21,7 +21,7 @@ public class Storage : MonoBehaviour {
     public class OnStorageTakeEvent : UnityEvent<Dictionary<Type, int>> { }
     public OnStorageTakeEvent onStorageTakeEvent = new OnStorageTakeEvent();
 
-    void Awake()
+    public override void MyAwake()
     {
         requiredAccessComponents.Add(typeof(Transporter));
     }

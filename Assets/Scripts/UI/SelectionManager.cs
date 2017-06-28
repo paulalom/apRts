@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SelectionManager : MonoBehaviour {
+public class SelectionManager : MyMonoBehaviour {
 
     UIManager uiManager;
     PlayerManager playerManager;
@@ -12,7 +12,7 @@ public class SelectionManager : MonoBehaviour {
     float mouseSlipTolerance = 4; // The square of the distance you are allowed to move your mouse before a drag select is detected
     public Vector3 mouseDown;
 
-    void Awake()
+    public override void MyAwake()
     {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();

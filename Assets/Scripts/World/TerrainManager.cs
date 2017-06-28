@@ -8,7 +8,7 @@ using UnityEngine;
 // In the future, I will likely rewrite all of this code, but as this is my first Unity project,
 // his series has been helpful in overcoming the barrier to entry. Thanks Nick!
 // https://www.youtube.com/channel/UC9UZBI9EuXu9o4xMM3CAg2w
-public class TerrainManager : MonoBehaviour, ICameraObserver  {
+public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
 
     [System.Serializable]
     public struct TreeBlueprint
@@ -62,7 +62,7 @@ public class TerrainManager : MonoBehaviour, ICameraObserver  {
 
     // This is called before any other script's "Start" function
     // Do local inits here
-    void Awake()
+    public override void MyAwake()
     {
         projector = GameObject.Find("BrushSizeProjector").transform;
         Camera.main.GetComponent<RTSCamera>().Subscribe(this);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class AIManager : MonoBehaviour
+public class AIManager : MyMonoBehaviour
 {
     RTSGameObjectManager rtsGameObjectManager;
     PlayerManager playerManager;
@@ -15,7 +15,7 @@ public class AIManager : MonoBehaviour
     List<AIMilitaryManager> militaryManagers;
 
     // Use this for initialization
-    void Start()
+    public override void MyStart()
     {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
@@ -29,7 +29,7 @@ public class AIManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public override void MyUpdate()
     {
         UpdateStrategySettings();
         UpdateEconomicSettings();

@@ -5,13 +5,13 @@ public class MoveOrder : Order {
 
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPosition, orderRange))
+        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.targetPosition, orderData.orderRange))
         {
             return true;
         }
         else
         {
-            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(orderData.targetPosition.x, orderData.targetPosition.z), dt);
             return false;
         }
     }

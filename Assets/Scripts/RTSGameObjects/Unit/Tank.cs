@@ -11,7 +11,7 @@ public class Tank : RTSGameObject {
     public Consumer consumer;
     public FlowSystem power;
 
-    void Start()
+    public override void MyStart()
     {
         DefaultInit();
         consumer = GetComponent<Consumer>();
@@ -25,7 +25,7 @@ public class Tank : RTSGameObject {
         storage.AddItem(typeof(Coal), 30);
     }
 
-    void Update()
+    public override void MyUpdate()
     {
         if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0 && orderManager.orders[this][0].GetType() == typeof(MoveOrder))
         {

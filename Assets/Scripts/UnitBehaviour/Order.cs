@@ -22,19 +22,9 @@ public enum OrderValidationResult
 
 // Orders probably need to be rewritten into many classes (one per type?)
 public abstract class Order {
-    
-    public OrderPhase phase = OrderPhase.GetInRange;
-    public Vector3 targetPosition;
-    public Vector3 orderIssuedPosition;
-    public float orderRange = 1f;
-    public List<MyPair<Type, int>> items;
-    public RTSGameObject target;
-    public Ability ability;
-    public bool repeatOnComplete = false;
-    public float remainingChannelTime;
 
-    public Order() {}
-    
+    public OrderData orderData = new OrderData() { phase = OrderPhase.GetInRange, orderRange = 1f, repeatOnComplete = false };
+
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {
         return OrderValidationResult.Success;
@@ -42,9 +32,9 @@ public abstract class Order {
 
     public virtual bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        Vector3 targetPos = target == null ? targetPosition : target.transform.position;
+        Vector3 targetPos = orderData.target == null ? orderData.targetPosition : orderData.target.transform.position;
 
-        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPos, orderRange))
+        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPos, orderData.orderRange))
         {
             return true;
         }
@@ -73,11 +63,11 @@ public abstract class Order {
 
     protected void updateChannelDuration(float dt)
     {
-        remainingChannelTime-= dt;
+        orderData.remainingChannelTime-= dt;
     }
     protected bool IsFinishedChanneling()
     {
-        return remainingChannelTime <= 0;
+        return orderData.remainingChannelTime <= 0;
     }
 
     protected static bool CheckHasComponent<T>(RTSGameObject unit)

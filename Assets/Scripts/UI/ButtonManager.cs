@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 // This class is a hack on the MenuManager (hack) class because overlapping buttons must be in seperate scripts so you can use GUI.Depth
-public class ButtonManager : MonoBehaviour {
+public class ButtonManager : MyMonoBehaviour {
 
     GameManager gameManager;
     PlayerManager playerManager;

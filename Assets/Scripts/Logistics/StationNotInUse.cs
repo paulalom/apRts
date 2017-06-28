@@ -10,14 +10,14 @@ public struct ItemRequests
 }
 
 [RequireComponent(typeof(Storage))]
-public class Station : MonoBehaviour {
+public class Station : MyMonoBehaviour {
     /*
     private Storage storage;
     private List<Storage> watchList;
 
     private List<Route> connectedRoutes;
 
-    void Awake()
+    public override void MyAwake()
     {
         storage = GetComponent<Storage>();
         watchList = new List<Storage>();

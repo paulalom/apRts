@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System;
 
-public abstract class Defense : MonoBehaviour, IDamagable {
+public abstract class Defense : MyMonoBehaviour, IDamagable {
 
     public RTSGameObject owner;
     public bool isActive = true;

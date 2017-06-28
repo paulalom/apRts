@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class DayNightCycle : MonoBehaviour {
+public class DayNightCycle : MyMonoBehaviour {
     public float dayLength;
     public float time = 0;
     public float maxLightIntensity = 1;

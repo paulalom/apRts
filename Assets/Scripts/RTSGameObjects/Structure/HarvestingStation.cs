@@ -11,7 +11,7 @@ public class HarvestingStation : Structure {
     Consumer consumer;
     Harvester harvester;
 
-    void Awake()
+    public override void MyAwake()
     {
         storage = GetComponent<Storage>();
         consumer = GetComponent<Consumer>();
@@ -26,7 +26,7 @@ public class HarvestingStation : Structure {
         harvester.IsActive = false;
     }
 
-    void Start()
+    public override void MyStart()
     {
         DefaultInit();
         int layerMask = LayerMask.NameToLayer("Resource");
@@ -37,7 +37,7 @@ public class HarvestingStation : Structure {
         }
     }
 
-    void Update()
+    public override void MyUpdate()
     {
         if (harvester.IsActive)
         {

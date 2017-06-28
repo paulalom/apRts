@@ -5,9 +5,9 @@ public class ConstructionOrder : Order {
 
     public override bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        if (targetPosition == Vector3.zero)
+        if (orderData.targetPosition == Vector3.zero)
         {
-            targetPosition = performingUnit.transform.position;
+            orderData.targetPosition = performingUnit.transform.position;
         }
         return base.GetInRange(performingUnit, rtsGameObjectManager, dt);
     }
@@ -15,14 +15,14 @@ public class ConstructionOrder : Order {
     public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
         Producer producer = performingUnit.GetComponent<Producer>();
-        if (producer.TryQueueItem(items[0].Key, items[0].Value))
+        if (producer.TryQueueItem(orderData.items[0].Key, orderData.items[0].Value))
         {
-            remainingChannelTime = producer.productionTime[items[0].Key];
+            orderData.remainingChannelTime = producer.productionTime[orderData.items[0].Key];
             return true;
         }
         else
         {
-            remainingChannelTime = 0;
+            orderData.remainingChannelTime = 0;
             return true;
         }
     }

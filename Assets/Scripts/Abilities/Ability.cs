@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Ability : MonoBehaviour {
+public class Ability : MyMonoBehaviour {
 
     public RTSGameObject target;
     public Vector3 targetPosition;

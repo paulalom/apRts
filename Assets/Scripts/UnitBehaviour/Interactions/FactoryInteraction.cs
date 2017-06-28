@@ -22,7 +22,7 @@ public class FactoryInteraction
             List<MyPair<Type, int>> items = unit.storage.GetItemsMyKVP(-1);
             if (items.Count != 0)
             {
-                dropOffOrders.Add(new GiveOrder() { target = depot, items = items });
+                dropOffOrders.Add(OrderFactory.BuildGiveOrder(depot, items));
             }
             return dropOffOrders;
         }

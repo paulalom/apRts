@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class PlayerManager : MonoBehaviour {
+public class PlayerManager : MyMonoBehaviour {
 
     public List<Player> players;
     public World activeWorld;
@@ -46,7 +46,7 @@ public class PlayerManager : MonoBehaviour {
         ActivePlayerId = 1;
     }
 
-    public void UpdatePlayers()
+    public override void MyUpdate()
     {
         foreach (Player player in players)
         {

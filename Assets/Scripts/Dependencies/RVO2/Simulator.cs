@@ -90,7 +90,7 @@ namespace RVO
             {
                 for (int agentNo = start_; agentNo < end_; ++agentNo)
                 {
-                    Simulator.Instance.agents_[agentNo].update();
+                    Simulator.Instance.agents_[agentNo].Update();
                 }
 
                 doneEvent_.Set();
@@ -302,7 +302,7 @@ namespace RVO
            
             for (int agentNo = 0; agentNo < agents_.Count; ++agentNo)
             {
-                agents_[agentNo].update();
+                agents_[agentNo].Update();
             }
             globalTime_ += timeStep_;
 

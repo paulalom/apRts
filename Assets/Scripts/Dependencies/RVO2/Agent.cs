@@ -419,7 +419,7 @@ namespace RVO
                 linearProgram3(orcaLines_, numObstLines, lineFail, maxSpeed_, ref newVelocity_);
             }
         }
-
+        
         /**
          * <summary>Inserts an agent neighbor into the set of neighbors of this
          * agent.</summary>
@@ -491,7 +491,7 @@ namespace RVO
          * <summary>Updates the two-dimensional position and two-dimensional
          * velocity of this agent.</summary>
          */
-        internal void update()
+        internal void Update()
         {
             velocity_ = newVelocity_;
             position_ += velocity_ * Simulator.Instance.timeStep_;

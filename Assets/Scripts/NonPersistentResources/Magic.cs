@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Magic : MonoBehaviour {
+public class Magic : MyMonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

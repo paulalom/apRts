@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class RTSCamera : MonoBehaviour {
+public class RTSCamera : MyMonoBehaviour {
     bool isRotating = false;
     Vector3 mouseStartPostion;
     Vector3 startRotation;
@@ -18,7 +18,7 @@ public class RTSCamera : MonoBehaviour {
 
     List<ICameraObserver> observers = new List<ICameraObserver>();
     // Update is called once per frame
-    void Update()
+    public override void MyUpdate()
     {
         
     }

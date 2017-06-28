@@ -4,43 +4,122 @@ using System.Collections.Generic;
 
 public static class OrderFactory {
   
-    public static Order NewGiveOrder(RTSGameObject target, List<MyPair<Type, int>> items)
+    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items)
     {
-        return new GiveOrder() { target = target, items = items, orderRange = 0 };
+        return BuildConstructionOrder(items, Vector3.zero);
     }
 
-    public static Order NewConstructionOrder(List<MyPair<Type, int>> items)
+    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, float buildTime)
     {
-        return new ConstructionOrder() { items = items, targetPosition = Vector3.zero };
+        return BuildConstructionOrder(items, Vector3.zero, buildTime);
     }
 
-    public static Order NewConstructionOrder(List<MyPair<Type, int>> items, Vector3 targetPosition)
+    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, Vector3 targetPosition)
     {
-        return new ConstructionOrder() { items = items, targetPosition = targetPosition };
+        Order order = new ConstructionOrder();
+        order.orderData.targetPosition = targetPosition;
+        order.orderData.items = items;
+        return order;
+    }
+    
+    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, Vector3 targetPosition, float buildTime)
+    {
+        Order order = new ConstructionOrder();
+        order.orderData.targetPosition = targetPosition;
+        order.orderData.items = items;
+        order.orderData.remainingChannelTime = buildTime;
+        return order;
+    }
+
+    public static Order BuildAbilityOrder(RTSGameObject target, Ability ability)
+    {
+        Order abilityOrder = new UseAbilityOrder();
+        abilityOrder.orderData.target = target;
+        abilityOrder.orderData.orderRange = ability.range;
+        abilityOrder.orderData.ability = ability;
+        abilityOrder.orderData.remainingChannelTime = ability.cooldown;
+        return abilityOrder;
+    }
+
+    public static Order BuildAbilityOrder(RTSGameObject target, Vector3 targetPosition, float range, Ability ability)
+    {
+        Order abilityOrder = new UseAbilityOrder();
+        abilityOrder.orderData.target = target;
+        abilityOrder.orderData.targetPosition = targetPosition;
+        abilityOrder.orderData.orderRange = range;
+        abilityOrder.orderData.ability = ability;
+        return abilityOrder;
+    }
+
+    public static Order BuildGiveOrder(RTSGameObject target, List<MyPair<Type, int>> items)
+    {
+        return BuildGiveOrder(target, 0f, items);
+    }
+
+    public static Order BuildGiveOrder(RTSGameObject target, float range, List<MyPair<Type, int>> items)
+    {
+        Order giveOrder = new GiveOrder();
+        giveOrder.orderData.target = target;
+        giveOrder.orderData.orderRange = range;
+        giveOrder.orderData.items = items;
+        return giveOrder;
+    }
+
+    public static Order BuildMoveOrder(Vector3 targetPosition)
+    {
+        Order moveOrder = new MoveOrder();
+        moveOrder.orderData.targetPosition = targetPosition;
+        moveOrder.orderData.orderRange = 1f;
+        return moveOrder;
+    }
+
+    public static Order BuildTakeOrder(RTSGameObject target, List<MyPair<Type, int>> items)
+    {
+        return BuildTakeOrder(target, 3f, items);
+    }
+
+    public static Order BuildTakeOrder(RTSGameObject target, float range, List<MyPair<Type, int>> items)
+    {
+        Order giveOrder = new GiveOrder();
+        giveOrder.orderData.target = target;
+        giveOrder.orderData.orderRange = range;
+        giveOrder.orderData.items = items;
+        return giveOrder;
     }
 
     public static Order GetDefaultUseAbilityOrder()
     {
         return new UseAbilityOrder();
     }
+    
     public static Order GetDefaultCancelOrder()
     {
-        return new CancelOrder() { orderRange = 1f };
+        Order order = new CancelOrder();
+        order.orderData.orderRange = 1f;
+        return order;
     }
     public static Order GetDefaultHarvestOrder()
     {
-        return new HarvestOrder() { orderRange = 15f };
+        Order order = new HarvestOrder();
+        order.orderData.orderRange = 15f;
+        return order;
     }
     public static Order GetDefaultPatrolOrder()
     {
-        return new PatrolOrder() { orderRange = 1f };
+        Order order = new PatrolOrder();
+        order.orderData.orderRange = 1f;
+        return order;
     }
     public static Order GetDefaultGuardOrder()
     {
-        return new GuardOrder() { orderRange = 6f };
+        Order order = new GuardOrder();
+        order.orderData.orderRange = 6f;
+        return order;
     }
     public static Order GetDefaultFollowOrder()
     {
-        return new FollowOrder() { orderRange = 6f };
+        Order order = new FollowOrder();
+        order.orderData.orderRange = 6f;
+        return order;
     }
 }

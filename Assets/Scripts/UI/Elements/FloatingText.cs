@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Todo: Outline on the text to make it easier to read. This should be good enough for now though
-public class FloatingText : MonoBehaviour {
+public class FloatingText : MyMonoBehaviour {
     
     public float duration = 5; // text on screen for 5s
     private float leftRightinterval = 0.75f; // text moves left to right in this number of seconds
@@ -15,7 +15,7 @@ public class FloatingText : MonoBehaviour {
     RTSCamera mainCamera;
     
     
-    void Awake()
+    public override void MyAwake()
     {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();

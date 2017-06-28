@@ -20,13 +20,13 @@ public class FlowSystem : Subsystem {
     public List<FlowSystem> inlets;
     
 
-    void Awake()
+    public override void MyAwake()
     {
         availableChargeOut = Math.Min(maxPowerOutPerSecond, currentCharge);
         availableChargeIn = Math.Max(maxPowerInPerSecond, capacity - currentCharge);
     }
 
-    void Update()
+    public override void MyUpdate()
     {
         float dt = StepManager.GetDeltaStep();
 

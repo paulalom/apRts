@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class AbilityManager : MonoBehaviour {
+public class AbilityManager : MyMonoBehaviour {
     
 }

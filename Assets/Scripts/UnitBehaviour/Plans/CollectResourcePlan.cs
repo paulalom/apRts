@@ -23,12 +23,12 @@ public class CollectResourcesPlan : Plan {
         if (ShouldReturnResourcesToDepot(unit))
         {
             steps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, unit.transform.position, rtsGameObjectManager));
-            steps.AddRange(TakeFromNearestHarvestingStation(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position));
+            steps.AddRange(TakeFromNearestHarvestingStation(unit, steps.Count > 0 ? steps[0].orderData.target.transform.position : unit.transform.position));
         }
         else
         {
             steps.AddRange(TakeFromNearestHarvestingStation(unit, unit.transform.position));
-            steps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, steps.Count > 0 ? steps[0].target.transform.position : unit.transform.position, rtsGameObjectManager));
+            steps.AddRange(FactoryInteraction.DumpCargoAtNearestDepot(unit, steps.Count > 0 ? steps[0].orderData.target.transform.position : unit.transform.position, rtsGameObjectManager));
         }
         
         return steps;
@@ -82,7 +82,7 @@ public class CollectResourcesPlan : Plan {
         {
             List<MyPair<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
             if (items.Count != 0) {
-                collectionOrders.Add(new TakeOrder() { target = harvestingStation, items = items });
+                collectionOrders.Add(OrderFactory.BuildTakeOrder(harvestingStation, items));
             }
             return collectionOrders;
         }

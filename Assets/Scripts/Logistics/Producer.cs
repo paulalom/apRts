@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 [RequireComponent(typeof(Storage))]
 //[RequireComponent(typeof(RTSGameObject))]
-public class Producer : MonoBehaviour {
+public class Producer : MyMonoBehaviour {
 
     private Storage storage;
     // We dont care about random access (our queue shouldn't be that long), 
@@ -40,7 +40,7 @@ public class Producer : MonoBehaviour {
     float previousTime;
 
     // Use this for initialization
-    void Start()
+    public override void MyStart()
     {
         storage = GetComponent<Storage>();
         productionQueue = new List<MyPair<Type, int>>();
@@ -64,10 +64,10 @@ public class Producer : MonoBehaviour {
     }
 
     // This is called once per frame
-    void Update()
+    public override void MyUpdate()
     {
         if (IsActive) {
-            timeLeftToProduce -= Time.time - previousTime;
+            timeLeftToProduce -= StepManager.GetDeltaStep();
             if (timeLeftToProduce <= 0)
             {
                 if (Produce())
@@ -75,7 +75,6 @@ public class Producer : MonoBehaviour {
                     StartNextProduction();
                 }
             }
-            previousTime = Time.time;
         }
     }
     

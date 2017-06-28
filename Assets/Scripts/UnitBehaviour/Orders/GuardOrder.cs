@@ -11,12 +11,12 @@ public class GuardOrder : Order {
         }
         else // Follow
         {
-            if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPosition, orderRange))
+            if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.targetPosition, orderData.orderRange))
             {
                 // this order isnt invalid for things that cant move. We may want defensive structures to prioritize the defense of a certain unit
                 if (performingUnit.GetComponent<Mover>() != null)
                 {
-                    rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(target.transform.position.x, target.transform.position.z), dt);
+                    rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(orderData.target.transform.position.x, orderData.target.transform.position.z), dt);
                 }
                 else
                 {
@@ -30,11 +30,11 @@ public class GuardOrder : Order {
 
     public override OrderValidationResult Validate(RTSGameObject performingUnit)
     {
-        if (!CheckTargetExists(target))
+        if (!CheckTargetExists(orderData.target))
         {
             return OrderValidationResult.InvalidTarget;
         }
-        if (performingUnit == target)
+        if (performingUnit == orderData.target)
         {
             return OrderValidationResult.NotOnSelf;
         }

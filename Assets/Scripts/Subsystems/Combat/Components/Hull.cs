@@ -7,7 +7,7 @@ public class Hull : Defense, IDamagable
     public float hullPoints;
     RTSGameObjectManager rtsGameObjectManager;
 
-    void Awake()
+    public override void MyAwake()
     {
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
     }

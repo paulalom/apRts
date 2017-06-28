@@ -5,26 +5,26 @@ public class TakeOrder : Order {
 
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, target.transform.position, orderRange))
+        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.target.transform.position, orderData.orderRange))
         {
             return true;
         }
         else
         {
-            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(target.transform.position.x, target.transform.position.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(orderData.target.transform.position.x, orderData.target.transform.position.z), dt);
             return false;
         }
     }
 
     public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
-        rtsGameObjectManager.TakeItems(performingUnit, target, items);
+        rtsGameObjectManager.TakeItems(performingUnit, orderData.target, orderData.items);
         return true;
     }
 
     public override OrderValidationResult Validate(RTSGameObject performingUnit)
     {
-        if (!ValidateStorageAccess(performingUnit, target))
+        if (!ValidateStorageAccess(performingUnit, orderData.target))
         {
             return OrderValidationResult.Failure;
         }

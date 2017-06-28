@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Storage))]
-public class Transporter : MonoBehaviour {
+public class Transporter : MyMonoBehaviour {
 
     protected Storage storage;
     

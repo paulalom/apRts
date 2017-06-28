@@ -8,7 +8,7 @@ public abstract class Generator : Subsystem, IActivatable {
     public float activationCost;
     public bool isActive = true;
 
-    void Update()
+    public override void MyUpdate()
     {
         if (isActive)
         {

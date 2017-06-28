@@ -10,7 +10,7 @@ public class ConstructionSphere : RTSGameObject {
     public Producer producer;
     Worker worker;
 
-    void Awake()
+    public override void MyAwake()
     {
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         mover = GetComponent<Mover>();

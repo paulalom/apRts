@@ -57,7 +57,7 @@ public class AIEconomyManager {
         foreach (KeyValuePair<RTSGameObject, Type> productionTarget in productionFacilities.productionTargets)
         {
             constructionOrders.Add(productionTarget.Key, new List<Order>() {
-                OrderFactory.NewConstructionOrder(new List<MyPair<Type, int>>() {
+                OrderFactory.BuildConstructionOrder(new List<MyPair<Type, int>>() {
                     new MyPair<Type, int>(productionTarget.Value, 1) } )});
         }
 

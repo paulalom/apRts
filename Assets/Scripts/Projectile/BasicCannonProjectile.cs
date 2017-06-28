@@ -17,7 +17,7 @@ public class BasicCannonProjectile : Projectile
         if ((otherRtsGo == null || otherRtsGo.ownerId != rtsGo.ownerId) 
             && orderManager.orders.ContainsKey(rtsGo))
         {
-            orderManager.orders[rtsGo][0].targetPosition = transform.position;
+            orderManager.orders[rtsGo][0].orderData.targetPosition = transform.position;
         }
     }
 

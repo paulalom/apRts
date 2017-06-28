@@ -5,23 +5,23 @@ public class PatrolOrder : Order {
 
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
     {
-        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPosition, orderRange))
+        if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.targetPosition, orderData.orderRange))
         {
             return true;
         }
         else
         {
-            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPosition.x, targetPosition.z), dt);
+            rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(orderData.targetPosition.x, orderData.targetPosition.z), dt);
             return false;
         }
     }
 
     public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
-        Vector3 tempOrderIssuePosition = targetPosition;
-        targetPosition = orderIssuedPosition;
-        orderIssuedPosition = tempOrderIssuePosition;
-        phase = OrderPhase.Activate;
+        Vector3 tempOrderIssuePosition = orderData.targetPosition;
+        orderData.targetPosition = orderData.orderIssuedPosition;
+        orderData.orderIssuedPosition = tempOrderIssuePosition;
+        orderData.phase = OrderPhase.Activate;
         return true;
     }
 
@@ -31,11 +31,11 @@ public class PatrolOrder : Order {
         {
             return OrderValidationResult.CantDoThat;
         }
-        if (!CheckTargetExists(target))
+        if (!CheckTargetExists(orderData.target))
         {
             return OrderValidationResult.InvalidTarget;
         }
-        if (performingUnit == target)
+        if (performingUnit == orderData.target)
         {
             return OrderValidationResult.NotOnSelf;
         }

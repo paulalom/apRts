@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class WorldManager : MonoBehaviour {
+public class WorldManager : MyMonoBehaviour {
 
     PlayerManager playerManager;
     GameManager gameManager;
     public int numWorlds = 0;
 
-    void Awake()
+    public override void MyAwake()
     {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();

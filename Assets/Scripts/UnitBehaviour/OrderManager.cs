@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class OrderManager : MonoBehaviour {
-
+public class OrderManager : MyMonoBehaviour {
+    
     public Dictionary<RTSGameObject, List<Order>> orders;
     public float moveSpeed = 0.3f; // this wont be here later
     List<RTSGameObject> completedOrders;
@@ -11,7 +12,7 @@ public class OrderManager : MonoBehaviour {
     GameManager gameManager;
     UIManager uiManager;
 
-    void Awake()
+    public override void MyAwake()
     {
         orders = new Dictionary<RTSGameObject, List<Order>>();
         completedOrders = new List<RTSGameObject>(); //max one order completion per frame
@@ -28,19 +29,19 @@ public class OrderManager : MonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                switch (order.phase)
+                switch (order.orderData.phase)
                 {
                     case OrderPhase.GetInRange:
-                        order.phase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        order.orderData.phase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Activate:
-                        order.phase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        order.orderData.phase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Channel:
-                        order.phase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        order.orderData.phase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.FinishChannel:
-                        order.phase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        order.orderData.phase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
                         break;
                     default:
                         completedOrders.Add(unit);
@@ -55,7 +56,7 @@ public class OrderManager : MonoBehaviour {
         {
             List<Order> unitOrders = orders[completer];
             Order completedOrder = orders[completer][0];
-            if (completedOrder.repeatOnComplete)
+            if (completedOrder.orderData.repeatOnComplete)
             {
                 unitOrders.Add(completedOrder);
             }

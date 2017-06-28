@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Power : MonoBehaviour {
+public class Power : MyMonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

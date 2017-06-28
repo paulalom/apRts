@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
-public class RTSGameObject : MonoBehaviour, IDamagable
+public class RTSGameObject : MyMonoBehaviour, IDamagable
 {
     public bool selected = false;
     public Renderer flagRenderer;
@@ -39,7 +39,7 @@ public class RTSGameObject : MonoBehaviour, IDamagable
     public class OnIdleEvent : UnityEvent<RTSGameObject, bool> { }
     public OnIdleEvent onIdle = new OnIdleEvent();
     
-    void Start()
+    public override void MyStart()
     {
         DefaultInit();
     }
@@ -67,10 +67,8 @@ public class RTSGameObject : MonoBehaviour, IDamagable
 
     }
 
-    void Update()
+    public virtual void MyUpdate()
     {
-        var collisionAvoidance = gameManager.collisionAvoidanceManager;
-        collisionAvoidance.Update();
         DefaultUpdate();
     }
 
@@ -112,14 +110,14 @@ public class RTSGameObject : MonoBehaviour, IDamagable
             {
                 Order order = orderManager.orders[this][0];
                 
-                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.target.gameObject && ownerId == otherRTSGo.ownerId)
+                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.orderData.target.gameObject && ownerId == otherRTSGo.ownerId)
                 {
-                    rtsGameObjectManager.GiveItems(this, order.target, order.items);
+                    rtsGameObjectManager.GiveItems(this, order.orderData.target, order.orderData.items);
                     orderManager.CompleteOrder(this);
                 }
-                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.target.gameObject && ownerId == otherRTSGo.ownerId)
+                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.orderData.target.gameObject && ownerId == otherRTSGo.ownerId)
                 {
-                    rtsGameObjectManager.TakeItems(this, order.target, order.items);
+                    rtsGameObjectManager.TakeItems(this, order.orderData.target, order.orderData.items);
                     orderManager.CompleteOrder(this);
                 }
                 /* fixme?

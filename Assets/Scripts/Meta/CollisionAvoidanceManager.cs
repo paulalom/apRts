@@ -9,7 +9,7 @@ public class CollisionAvoidanceManager {
     List<int> freedIds = new List<int>();
 
 	// Use this for initialization
-	public void Start () {
+	public void MyStart() {
 
         /* Specify the global time step of the simulation. */
         Simulator.Instance.setTimeStep(0.1f); // TODO set to fixed step size
@@ -88,17 +88,16 @@ public class CollisionAvoidanceManager {
 
     public void Update()
     {
-        return;
         // Make sure freed objects are out of sight
-/*        foreach (int idx in freedIds)
-        {
-            Simulator.Instance.setAgentPosition(idx, new RVO.Vector2(float.MaxValue, float.MaxValue));
-            Simulator.Instance.setAgentMaxSpeed(idx, 0);
-        }*/
-        Simulator.Instance.doStep();
-        foreach (KeyValuePair<RTSGameObject, int> obj in gameIds)
-        {
-            UpdateObjectVelocity(obj.Key, obj.Value);
-        }
+        /*        foreach (int idx in freedIds)
+                {
+                    Simulator.Instance.setAgentPosition(idx, new RVO.Vector2(float.MaxValue, float.MaxValue));
+                    Simulator.Instance.setAgentMaxSpeed(idx, 0);
+                }*//*
+                Simulator.Instance.doStep();
+                foreach (KeyValuePair<RTSGameObject, int> obj in gameIds)
+                {
+                    UpdateObjectVelocity(obj.Key, obj.Value);
+                }*/
     }
 }

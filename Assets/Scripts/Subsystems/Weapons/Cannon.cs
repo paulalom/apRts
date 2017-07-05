@@ -4,7 +4,7 @@ using System.Collections;
 public class Cannon : AttackSubsystem {
 
     // Use this for initialization
-    void Start () {
+    public override void MyStart() {
         attack = GetComponent<Shoot>();
         damageType = DamageType.explosive;
         attackType = AttackType.projectile;

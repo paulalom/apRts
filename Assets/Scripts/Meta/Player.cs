@@ -9,10 +9,11 @@ public class Player {
 
     public string name;
     public bool isHuman = false;
+    public int networkClientId;
     PlayerManager playerManager;
     public UnityEvent onSelectionChange;
-    public HashSet<RTSGameObject> selectedUnits;
-    public HashSet<RTSGameObject> units;
+    public List<long> selectedUnits;
+    public Dictionary<long, RTSGameObject> units;
     public Dictionary<Type,int> resources;
     public List<MyPair<float, MyPair<Type, int>>> incomeEventsLast30Seconds = new List<MyPair<float, MyPair<Type, int>>>(); // this should be linkedList to improve efficiency
     public Dictionary<Type, int> avgResourceIncomesLast30Seconds = new Dictionary<Type, int>(); 
@@ -33,8 +34,8 @@ public class Player {
     {
         this.playerManager = playerManager;
         this.isHuman = isHuman;
-        selectedUnits = new HashSet<RTSGameObject>();
-        units = new HashSet<RTSGameObject>();
+        selectedUnits = new List<long>();
+        units = new Dictionary<long, RTSGameObject>();
         resources = new Dictionary<Type, int>();
         onSelectionChange = new UnityEvent();
         onEconomicChange = new UnityEvent();

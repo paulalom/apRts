@@ -9,9 +9,9 @@ public class MenuManager : MyMonoBehaviour {
     public List<Texture2D> constructionIcons;
     [HideInInspector]
     public List<Texture2D> inventoryIcons;
-    GameManager gameManager;
-    PlayerManager playerManager;
-    UIManager uiManager;
+    public GameManager gameManager;
+    public PlayerManager playerManager;
+    public UIManager uiManager;
     public Texture2D menuGraphic;
     float menuWidth = 400, menuHeight = 50;
     Rect constructionMenuRect;
@@ -19,29 +19,25 @@ public class MenuManager : MyMonoBehaviour {
 
 
     // Use this for initialization
-    void Start () {
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+    public override void MyAwake() {
+        
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
-        StartCoroutine(Setup());
     }
 
-    IEnumerator Setup()
+    public void InjectDependencies(GameManager gm, PlayerManager pm, UIManager uim)
     {
-        yield return null; // Delay one frame before doing setup which requires other components
-        playerManager.OnPlayerSelectionChange.AddListener(UpdateInventoryMenuDisplay);
+        gameManager = gm;
+        playerManager = pm;
+        uiManager = uim;
     }
-	
-	// Update is called once per frame
-	void Update () {
-
-    }
-
-
+    
     void OnGUI()
     {
+        if (playerManager == null || gameManager == null || uiManager == null)
+        {
+            return;
+        }
         GUI.depth = 100; // Smaller is closer. Buttons need < menus
         DrawConstructionMenu();
         drawInventoryMenus();
@@ -77,17 +73,12 @@ public class MenuManager : MyMonoBehaviour {
         }
     }
 
-    void UpdateInventoryMenuDisplay()
-    {
-
-    }
-
     void drawInventoryMenus()
     {
         int i = 0;
         int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
         
-        foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
+        foreach (RTSGameObject unit in playerManager.GetPlayerSelectedUnits())
         {
             GUIStyle container = new GUIStyle();
             container.normal.background = menuGraphic;
@@ -105,20 +96,22 @@ public class MenuManager : MyMonoBehaviour {
                     // Source is a transporter
                     if (sourceUnit.GetComponent<Transporter>() != null && sourceUnit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(
-                            sourceUnit, 
-                            OrderFactory.BuildGiveOrder(unit, 
-                                3f, 
-                                new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }));
+                        List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value };
+                        Order order = OrderFactory.BuildGiveOrder(unit, 3f, items);
+                        Command command = new Command() { orderData = order.orderData };
+                        command.getOrder = CommandGetOrderFunction.GetDefaultGiveOrder;
+                        command.overrideDefaultOrderData = true;
+                        gameManager.AddCommand(command, new List<long>() { sourceUnit.uid });
                     }
                     // Destination is a transporter
                     else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
                     {
-                        gameManager.orderManager.SetOrder(
-                            unit, 
-                            OrderFactory.BuildTakeOrder(sourceUnit, 
-                                3f, 
-                                new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value }));
+                        List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value };
+                        Order order = OrderFactory.BuildTakeOrder(sourceUnit, 3f, items);
+                        Command command = new Command() { orderData = order.orderData };
+                        command.getOrder = CommandGetOrderFunction.GetDefaultTakeOrder;
+                        command.overrideDefaultOrderData = true;
+                        gameManager.AddCommand(command, new List<long>() { unit.uid });
                     }
                     else
                     {

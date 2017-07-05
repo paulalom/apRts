@@ -6,7 +6,6 @@ using UnityEngine.Networking;
 public class OrderManager : MyMonoBehaviour {
     
     public Dictionary<RTSGameObject, List<Order>> orders;
-    public float moveSpeed = 0.3f; // this wont be here later
     List<RTSGameObject> completedOrders;
     RTSGameObjectManager rtsGameObjectManager;
     GameManager gameManager;
@@ -74,7 +73,27 @@ public class OrderManager : MyMonoBehaviour {
             unit.Idle = true;
         }
     }
-    
+
+    // Only give/take need this for now
+    internal void CheckOrderCompletionOnCollision(RTSGameObject unit, RTSGameObject target)
+    {
+        if (orders.ContainsKey(unit) && orders[unit].Count > 0)
+        {
+            Order order = orders[unit][0];
+
+            if (order.GetType() == typeof(GiveOrder) && target.gameObject == order.orderData.target.gameObject && unit.ownerId == target.ownerId)
+            {
+                rtsGameObjectManager.GiveItems(unit, order.orderData.target, order.orderData.items);
+                CompleteOrder(unit);
+            }
+            else if (order.GetType() == typeof(TakeOrder) && target.gameObject == order.orderData.target.gameObject && unit.ownerId == target.ownerId)
+            {
+                rtsGameObjectManager.TakeItems(unit, order.orderData.target, order.orderData.items);
+                CompleteOrder(unit);
+            }
+        }
+    }
+
     bool ValidateOrder(RTSGameObject unit, Order order)
     {
         string errorMessage = "";

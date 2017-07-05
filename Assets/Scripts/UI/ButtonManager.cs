@@ -5,22 +5,26 @@ using System.Collections.Generic;
 // This class is a hack on the MenuManager (hack) class because overlapping buttons must be in seperate scripts so you can use GUI.Depth
 public class ButtonManager : MyMonoBehaviour {
 
-    GameManager gameManager;
-    PlayerManager playerManager;
-    SelectionManager selectionManager;
-    UIManager uiManager;
+    public GameManager gameManager;
+    public PlayerManager playerManager;
+    public SelectionManager selectionManager;
+    public UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
-
-    void Start ()
+    
+    public void InjectDependencies(GameManager gm, PlayerManager pm, SelectionManager sm, UIManager uim)
     {
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
-        selectionManager = GameObject.FindGameObjectWithTag("SelectionManager").GetComponent<SelectionManager>();
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        gameManager = gm;
+        playerManager = pm;
+        selectionManager = sm;
+        uiManager = uim;
     }
-	
+
     void OnGUI()
     {
+        if(playerManager == null || gameManager == null || selectionManager == null || uiManager == null)
+        {
+            return;
+        }
         GUI.depth = 10;
 
         int i = 0;
@@ -32,7 +36,7 @@ public class ButtonManager : MyMonoBehaviour {
         Rect button;
         RTSGameObject newSelectedUnit = null;
 
-        foreach (RTSGameObject unit in playerManager.PlayerSelectedUnits)
+        foreach (RTSGameObject unit in playerManager.GetPlayerSelectedUnits())
         {
             j = 1;
             Rect menu = new Rect(10, 250 + i * 55 - numInvsToDraw * 10, 400, 50);
@@ -87,9 +91,10 @@ public class ButtonManager : MyMonoBehaviour {
                     || GUI.Button(progressBarBack, "", progressBarBackStyle) 
                     || GUI.Button(progressBarFront, "", progressBarFrontStyle))
                 {
-                    producer.CancelProduction();
+                    Command command = new Command();
+                    command.getOrder = CommandGetOrderFunction.GetDefaultCancelOrder;
+                    gameManager.AddCommand(command, new List<long>() { unit.uid });
                 }
-
             }
 
             i++;

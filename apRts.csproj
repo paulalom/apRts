@@ -72,8 +72,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\NetBleh.cs" />
-    <Compile Include="Assets\NetPlayerBleh.cs" />
     <Compile Include="Assets\Scripts\AI\AIEconomyManager.cs" />
     <Compile Include="Assets\Scripts\AI\AIManager.cs" />
     <Compile Include="Assets\Scripts\AI\AIMilitaryManager.cs" />
@@ -103,6 +101,8 @@
     <Compile Include="Assets\Scripts\Items\CompositeResource\Tool.cs" />
     <Compile Include="Assets\Scripts\JustC%23Things\MyBitMap.cs" />
     <Compile Include="Assets\Scripts\JustC%23Things\MyPair.cs" />
+    <Compile Include="Assets\Scripts\JustC%23Things\MyVector3.cs" />
+    <Compile Include="Assets\Scripts\JustC%23Things\Vector3SerializationSurrogate.cs" />
     <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
     <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
     <Compile Include="Assets\Scripts\Logistics\Mover.cs" />
@@ -113,17 +113,19 @@
     <Compile Include="Assets\Scripts\Logistics\Worker.cs" />
     <Compile Include="Assets\Scripts\Meta\CollisionAvoidanceManager.cs" />
     <Compile Include="Assets\Scripts\Meta\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Meta\ManagerManager.cs" />
     <Compile Include="Assets\Scripts\Meta\Player.cs" />
     <Compile Include="Assets\Scripts\Meta\PlayerManager.cs" />
     <Compile Include="Assets\Scripts\Meta\SettingsManager.cs" />
     <Compile Include="Assets\Scripts\Meta\StepManager.cs" />
-    <Compile Include="Assets\Scripts\Network\NetworkDataAdapter.cs" />
     <Compile Include="Assets\Scripts\Network\NetworkLauncher.cs" />
-    <Compile Include="Assets\Scripts\Network\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\Network\NetworkStateManager.cs" />
+    <Compile Include="Assets\Scripts\Network\TransportManager.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Energy.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Magic.cs" />
     <Compile Include="Assets\Scripts\NonPersistentResources\Power.cs" />
+    <Compile Include="Assets\Scripts\ObjectFactories\AbilityFactory.cs" />
+    <Compile Include="Assets\Scripts\ObjectFactories\ItemFactory.cs" />
     <Compile Include="Assets\Scripts\ObjectFactories\MyPairFactory.cs" />
     <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
     <Compile Include="Assets\Scripts\Projectile\BasicCannonProjectile.cs" />
@@ -164,6 +166,7 @@
     <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
     <Compile Include="Assets\Scripts\UI\SelectionManager.cs" />
     <Compile Include="Assets\Scripts\UI\UIManager.cs" />
+    <Compile Include="Assets\Scripts\UnitBehaviour\Command.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Interactions\FactoryInteraction.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\Order.cs" />
     <Compile Include="Assets\Scripts\UnitBehaviour\OrderData.cs" />

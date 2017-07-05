@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 
 //All of the manager classes could probaby be static
-public class RTSGameObjectManager : MonoBehaviour {
+public class RTSGameObjectManager : MyMonoBehaviour {
     
     //Instantiating prefabs with resources.load is slow so here we are
     //Maybe this should be in an assets class or something like that
@@ -15,12 +15,14 @@ public class RTSGameObjectManager : MonoBehaviour {
     public string[] InspectorPrefabNames;
     public GameObject[] InspectorPrefabTypes;
     public Dictionary<string, GameObject> prefabs;
-//    public List<RTSGameObject> units;
+    //    public List<RTSGameObject> units;
+    public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     GameManager gameManager;
     TerrainManager terrainManager;
     PlayerManager playerManager;
     OrderManager orderManager;
 
+    public static Dictionary<long, RTSGameObject> allUnits = new Dictionary<long, RTSGameObject>();
     // lazy method to prevent spawning from breaking foreach loops
     private List<RTSGameObject> unitCreationQueue = new List<RTSGameObject>();
     private HashSet<RTSGameObject> unitDestructionQueue = new HashSet<RTSGameObject>();
@@ -30,7 +32,7 @@ public class RTSGameObjectManager : MonoBehaviour {
     public class OnUnitCreatedEvent : UnityEvent<RTSGameObject> { }
     public OnUnitCreatedEvent onUnitCreated = new OnUnitCreatedEvent();
 
-    void Awake()
+    public override void MyAwake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
@@ -56,30 +58,48 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             throw new System.Exception("No duplicate prefab names in the rts game object manager");
         }
+        collisionAvoidanceManager.MyStart();
+    }
+    
+    public void UpdateAll(HashSet<RTSGameObject> units, List<RTSGameObject> nonNeutralUnits, float dt)
+    {
+        collisionAvoidanceManager.Update();
+        foreach (RTSGameObject unit in nonNeutralUnits)
+        {
+            MoveUnit(unit);
+        }
+        SnapToTerrain(nonNeutralUnits, playerManager.activeWorld);
     }
 
-    void Update()
+    public void HandleUnitCreation()
     {
         if (unitCreationQueue.Count > 0)
         {
             foreach (RTSGameObject unit in unitCreationQueue)
             {
                 playerManager.AddUnit(unit, unit.ownerId);
+                allUnits.Add(unit.uid, unit);
                 SnapToTerrainHeight(unit, unit.world);
             }
             unitCreationQueue.Clear();
         }
+    }
+
+    public void HandleUnitDestruction()
+    {
         foreach (RTSGameObject unit in unitDestructionQueue)
         {
-            playerManager.ActivePlayer.selectedUnits.Remove(unit);
-            playerManager.players[unit.ownerId].units.Remove(unit);
+            playerManager.ActivePlayer.selectedUnits.Remove(unit.uid);
+            playerManager.players[unit.ownerId].units.Remove(unit.uid);
+            allUnits.Remove(unit.uid);
             if (!(unit is Projectile))
             {
                 playerManager.players[unit.ownerId].onUnitCountDecrease.Invoke(unit);
             }
-
-            gameManager.collisionAvoidanceManager.FreeObject(unit);
-            try {
+            GameManager.DeregisterObject(unit);
+            collisionAvoidanceManager.FreeObject(unit);
+            try
+            {
                 // I don't think this is the right way to handle death animations, but it should be good enough for now.
                 Explode explosion = unit.GetComponent<Explode>();
                 if (explosion != null)
@@ -91,11 +111,11 @@ public class RTSGameObjectManager : MonoBehaviour {
                     Destroy(go, go.GetComponent<ParticleSystem>().duration);
                 }
 
-                Destroy(unit.gameObject, .05f); // delay is hack to ensure this loop finishes before objects are destroyed
+                Destroy(unit.gameObject);
             }
             catch (Exception e)
             {
-                Debug.Log("Exception: Trying to destroy an object which no longer exists " + e.Message);
+                Debug.Log("Exception: Trying to destroy an object which no longer exists: " + e.Message);
             }
         }
         unitDestructionQueue.Clear();
@@ -133,12 +153,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             obj.prevPositionForHeightMapCheck = obj.transform.position;
         }
     }
-
-    public void SetTargetLocation(RaycastHit hit)
-    {
-
-    }
-
+    
     public GameObject NewDeposit(DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
         Color color = Color.gray;
@@ -200,7 +215,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
         if (!prefabs.ContainsKey(type.ToString()))
         {
-            throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
+            throw new Exception("Attempting to spawn type: " + type + " which does not exist in prefab list");
         }
         for (int i = 0; i < quantity; i++)
         {
@@ -245,7 +260,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
 
         BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
-
+        
         return newUnit;
     }
 
@@ -265,6 +280,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
         rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
+        rtsGo.uid = gameManager.netStateManager.GetNextUID();
 
         if (storage != null)
         {
@@ -322,6 +338,7 @@ public class RTSGameObjectManager : MonoBehaviour {
         {
             playerManager.players[ownerId].onUnitCountIncrease.Invoke(rtsGo);
         }
+        
         return rtsGo;
     }
 
@@ -424,7 +441,7 @@ public class RTSGameObjectManager : MonoBehaviour {
             projectile.parent = unit;
             projectile.ownerId = unit.ownerId;
             projectile.GetComponent<Explode>().damage = unit.GetComponent<Cannon>().basedamage + projectile.baseDamage;
-            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), new UseAbilityOrder() { target = target, targetPosition = targetPosition, orderRange = 0.3f, ability = projectile.GetComponent<Explode>()});
+            orderManager.SetOrder(projectile.GetComponent<RTSGameObject>(), OrderFactory.BuildAbilityOrder(target, targetPosition, 0.3f, projectile.GetComponent<Explode>()));
         }
         else if (ability.GetType() == typeof(Explode))
         {

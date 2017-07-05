@@ -7,7 +7,7 @@ public class Transporter : MyMonoBehaviour {
 
     protected Storage storage;
     
-	void Awake () {
+	public override void MyAwake() {
         storage = GetComponent<Storage>();
 	}
 

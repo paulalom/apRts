@@ -27,7 +27,7 @@ public class Storage : MyMonoBehaviour {
     }
 
     // Use this for initialization
-    void Start ()
+    public override void MyStart()
     {
         //onStorageChangedEvent.AddListener(DebugStorage);
     }

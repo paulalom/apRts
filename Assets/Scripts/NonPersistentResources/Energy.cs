@@ -4,12 +4,12 @@ using System.Collections;
 public class Energy : MyMonoBehaviour {
 
 	// Use this for initialization
-	void Start () {
+	public override void MyStart() {
 	
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public override void MyUpdate() {
 	
 	}
 }

@@ -231,7 +231,7 @@ public class Producer : MyMonoBehaviour {
         }
 
         //Queueing automatically turns producer on
-        if (productionQueue.Count == 1 && productionQueue[0].Value == 1)
+        if (productionQueue.Count == 1 && productionQueue[0].Value >= 1)
         {
             StartNextProduction();
             IsActive = true;

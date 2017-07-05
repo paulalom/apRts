@@ -14,7 +14,7 @@ public class Consumer : MyMonoBehaviour {
     float lastConsume;
 
     // Use this for initialization
-    void Awake () {
+    public override void MyAwake() {
         storage = GetComponent<Storage>();
         lastConsume = Time.time;
         operationCosts = new Dictionary<Type, int>();

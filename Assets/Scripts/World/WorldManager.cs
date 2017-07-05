@@ -30,7 +30,7 @@ public class WorldManager : MyMonoBehaviour {
         yield return null;
         numWorlds++;
         mainCamera.world = playerManager.activeWorld;
-        for (int i = 1; i <= playerManager.activeWorld.worldSettings.numStartLocations; i++)
+        for (int i = 1; i < playerManager.players.Count; i++)
         {
             gameManager.SetUpPlayer(i, playerManager.activeWorld);
         }
@@ -42,14 +42,14 @@ public class WorldManager : MyMonoBehaviour {
     {
         return new WorldSettings()
         {
-            randomSeed = 3,
+            randomSeed = 4,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
-            sizeRating = 3, // WorldSettings.starterWorldSizeRating,
+            sizeRating = 1, // WorldSettings.starterWorldSizeRating,
             numStartLocations = 4, //WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 1.3f, // WorldSettings.starterWorldStartLocationSizeRating,
+            startLocationSizeRating = 1.5f, // WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
-            aiPresenceRating = WorldSettings.starterWorldAIPresenceRating
+            aiPresenceRating = 0 // WorldSettings.starterWorldAIPresenceRating
         };
     }
 

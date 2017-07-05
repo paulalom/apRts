@@ -11,6 +11,7 @@ public class SelectionManager : MyMonoBehaviour {
     public static Vector3 mouseDownVectorSentinel = new Vector3(-99999, -99999, -99999);
     float mouseSlipTolerance = 4; // The square of the distance you are allowed to move your mouse before a drag select is detected
     public Vector3 mouseDown;
+    public const int maxSelectedUnits = 100;
 
     public override void MyAwake()
     {
@@ -30,7 +31,7 @@ public class SelectionManager : MyMonoBehaviour {
 
     public void CheckSingleSelectionEvent(RaycastHit hit)
     {
-        HashSet<RTSGameObject> selectedUnits = playerManager.ActivePlayer.selectedUnits;
+        List<RTSGameObject> selectedUnits = playerManager.GetPlayerSelectedUnits();
         // objectClicked May be null
         RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
         
@@ -44,9 +45,12 @@ public class SelectionManager : MyMonoBehaviour {
                     unit.selected = false;
                     unit.selectionCircle.enabled = false;
                 }
-                selectedUnits.Clear();
+                playerManager.PlayerSelectedUnits.Clear();
             }
-            Select(objectClicked, true);
+            if (!objectClicked.selected)
+            {
+                Select(objectClicked, true);
+            }
         }
     }
 
@@ -100,6 +104,10 @@ public class SelectionManager : MyMonoBehaviour {
                     unitsInSelectionBox.Add(unit);
                 }
             }
+            if (unitsInSelectionBox.Count >= maxSelectedUnits)
+            {
+                break;
+            }
         }
 
         bool selectingFriendlyUnitsOnly = DoesUnitListContainFriendlies(unitsInSelectionBox);
@@ -111,18 +119,18 @@ public class SelectionManager : MyMonoBehaviour {
                 continue;
             }
             bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
-            bool previouslySelected = playerManager.PlayerSelectedUnits.Contains(unit);
+            bool previouslySelected = playerManager.GetPlayerSelectedUnits().Contains(unit);
 
             if (Input.GetKey(KeyCode.LeftShift))
             {
                 selected = selected || previouslySelected;
             }
 
-            if (selected)
+            if (selected && !previouslySelected)
             {
                 Select(unit, true);
             }
-            else
+            else if (!selected)
             {
                 Select(unit, false);
             }
@@ -145,11 +153,11 @@ public class SelectionManager : MyMonoBehaviour {
     {
         if (select)
         {
-            playerManager.PlayerSelectedUnits.Add(obj);
+            playerManager.PlayerSelectedUnits.Add(obj.uid);
         }
         else
         {
-            playerManager.PlayerSelectedUnits.Remove(obj);
+            playerManager.PlayerSelectedUnits.Remove(obj.uid);
         }
         obj.selected = select;
         obj.selectionCircle.enabled = select;
@@ -158,14 +166,14 @@ public class SelectionManager : MyMonoBehaviour {
 
     public void SetSelectionToUnit(RTSGameObject newlySelectedUnit)
     {
-        foreach(RTSGameObject previouslySelectedUnit in playerManager.PlayerSelectedUnits)
+        foreach(RTSGameObject previouslySelectedUnit in playerManager.GetPlayerSelectedUnits())
         {
             previouslySelectedUnit.selected = false;
             previouslySelectedUnit.selectionCircle.enabled = false;
         }
         playerManager.PlayerSelectedUnits.Clear();
 
-        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit);
+        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit.uid);
         newlySelectedUnit.selected = true;
         newlySelectedUnit.selectionCircle.enabled = true;
         playerManager.OnPlayerSelectionChange.Invoke();

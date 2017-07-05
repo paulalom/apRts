@@ -94,7 +94,7 @@ public class AIManager : MyMonoBehaviour
 
     void OnIdleChangeEvent(RTSGameObject unit, bool idleStatus)
     {
-        if (idleStatus && !playerManager.PlayerSelectedUnits.Contains(unit))
+        if (idleStatus && !playerManager.PlayerSelectedUnits.Contains(unit.uid))
         {
             if (!SetNewPlanForUnit(unit))
             {

@@ -2,40 +2,34 @@
 using System.Collections;
 using UnityEngine.Networking;
 
-public class NetworkLauncher : MyMonoBehaviour {
+public class NetworkLauncher : MonoBehaviour {
 
-    NetworkClient myClient;
+    public TransportManager transportManager;
+    public NetworkStateManager netStateManager;
+    
+    public void Start()
+    {
+        Application.runInBackground = true;
+    }
 
     public void StartServer()
     {
-        NetworkServer.Listen(4444);
-
+        transportManager.StartServer();
+        transportManager.OnClientConnected.AddListener(netStateManager.OnClientConnected);
+        transportManager.OnClientDisconnected.AddListener(netStateManager.OnClientDisconnected);
         new SceneLoader().LoadSceneNum(1);
-        //NetworkServer.SendToAll();
     }
 
     public void StartClient()
     {
-        myClient = new NetworkClient();
-        myClient.RegisterHandler(MsgType.Connect, OnConnected);
-        myClient.Connect("127.0.0.1", 4444);
-
-        new SceneLoader().LoadSceneNum(1);
-
-        //myClient.Send()
-    }
-
-    public void StartLocalClient()
-    {
-        myClient = ClientScene.ConnectLocalServer();
-        myClient.RegisterHandler(MsgType.Connect, OnConnected);
-
+        transportManager.StartClient();
         new SceneLoader().LoadSceneNum(1);
     }
 
-    // client function
-    public void OnConnected(NetworkMessage netMsg)
+    public void StartSinglePlayer()
     {
-        Debug.Log("Connected to server");
+        Destroy(transportManager);
+        Destroy(netStateManager);
+        new SceneLoader().LoadSceneNum(1);
     }
 }

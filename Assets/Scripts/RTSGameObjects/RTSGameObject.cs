@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-[System.Serializable]
 public class RTSGameObject : MyMonoBehaviour, IDamagable
 {
     public bool selected = false;
@@ -20,6 +19,7 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     public World world;
     public Vector3 prevPositionForHeightMapCheck;
     public List<Defense> InOrderDefenses;
+    public long uid;
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
@@ -103,32 +103,10 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     // Temporary solution to prevent units from entering buildings until pathing is set up
     void OnTriggerEnter(Collider other)
     {
-        RTSGameObject otherRTSGo = other.GetComponent<RTSGameObject>();
-        if (mover != null && rtsGameObjectManager != null && otherRTSGo != null)
+        RTSGameObject otherRtsGo = other.GetComponent<RTSGameObject>();
+        if (mover != null && rtsGameObjectManager != null && otherRtsGo != null)
         {
-            if (orderManager.orders.ContainsKey(this) && orderManager.orders[this].Count > 0)
-            {
-                Order order = orderManager.orders[this][0];
-                
-                if (order.GetType() == typeof(GiveOrder) && other.gameObject == order.orderData.target.gameObject && ownerId == otherRTSGo.ownerId)
-                {
-                    rtsGameObjectManager.GiveItems(this, order.orderData.target, order.orderData.items);
-                    orderManager.CompleteOrder(this);
-                }
-                else if (order.GetType() == typeof(TakeOrder) && other.gameObject == order.orderData.target.gameObject && ownerId == otherRTSGo.ownerId)
-                {
-                    rtsGameObjectManager.TakeItems(this, order.orderData.target, order.orderData.items);
-                    orderManager.CompleteOrder(this);
-                }
-                /* fixme?
-                else if (order.GetType() == typeof(UseAbilityOrder) && order.ability.GetType() == typeof(Explode))
-                {
-                    rtsGameObjectManager.UseAbility(this, order.target, order.targetPosition, order.ability);
-                    orderManager.CompleteOrder(this);
-                }*/
-            }
-            //Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            //rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed / 4, gameManager.dt);
+            orderManager.CheckOrderCompletionOnCollision(this, otherRtsGo);
         }
     }
 

@@ -98,6 +98,12 @@ public static class OrderFactory {
         order.orderData.orderRange = 1f;
         return order;
     }
+    public static Order GetDefaultConstructionOrder()
+    {
+        Order order = new CancelOrder();
+        order.orderData.orderRange = 1f;
+        return order;
+    }
     public static Order GetDefaultHarvestOrder()
     {
         Order order = new HarvestOrder();
@@ -121,5 +127,52 @@ public static class OrderFactory {
         Order order = new FollowOrder();
         order.orderData.orderRange = 6f;
         return order;
+    }
+    public static Order GetDefaultMoveOrder()
+    {
+        Order order = new MoveOrder();
+        order.orderData.orderRange = .3f;
+        return order;
+    }
+    public static Order GetDefaultGiveOrder()
+    {
+        Order order = new GiveOrder();
+        order.orderData.orderRange = .3f;
+        return order;
+    }
+    public static Order GetDefaultTakeOrder()
+    {
+        Order order = new TakeOrder();
+        order.orderData.orderRange = .3f;
+        return order;
+    }
+
+    public static Order GetOrderFromString(string orderType)
+    {
+        switch (orderType)
+        {
+            case "UseAbilityOrder":
+                return new UseAbilityOrder();
+            case "CancelOrder":
+                return new CancelOrder();
+            case "ConstructionOrder":
+                return new ConstructionOrder();
+            case "HarvestOrder":
+                return new HarvestOrder();
+            case "PatrolOrder":
+                return new PatrolOrder();
+            case "GuardOrder":
+                return new GuardOrder();
+            case "FollowOrder":
+                return new FollowOrder();
+            case "MoveOrder":
+                return new MoveOrder();
+            case "GiveOrder":
+                return new GiveOrder();
+            case "TakeOrder":
+                return new TakeOrder();
+            default:
+                throw new Exception("order type not found: " + orderType);
+        }
     }
 }

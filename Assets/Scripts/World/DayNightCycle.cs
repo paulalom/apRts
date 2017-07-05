@@ -7,7 +7,7 @@ public class DayNightCycle : MyMonoBehaviour {
     public Light directionalLight;
 
     // Use this for initialization
-    void Start () {
+    public override void MyStart() {
         if (directionalLight == null)
         {
             directionalLight = GameObject.FindGameObjectWithTag("Sun").GetComponent<Light>();
@@ -15,7 +15,7 @@ public class DayNightCycle : MyMonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public override void MyUpdate() {
         /*
         float dt = Time.deltaTime;
         time += dt;

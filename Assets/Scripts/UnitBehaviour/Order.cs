@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -24,7 +25,7 @@ public enum OrderValidationResult
 public abstract class Order {
 
     public OrderData orderData = new OrderData() { phase = OrderPhase.GetInRange, orderRange = 1f, repeatOnComplete = false };
-
+    
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {
         return OrderValidationResult.Success;
@@ -63,7 +64,7 @@ public abstract class Order {
 
     protected void updateChannelDuration(float dt)
     {
-        orderData.remainingChannelTime-= dt;
+        orderData.remainingChannelTime -= dt;
     }
     protected bool IsFinishedChanneling()
     {
@@ -125,5 +126,11 @@ public abstract class Order {
             }
         }
         return true;
+    }
+
+    public override string ToString()
+    {
+        
+        return orderData.ToString();
     }
 }

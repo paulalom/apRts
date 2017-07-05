@@ -6,14 +6,14 @@ public class Setting
 {
     //public Action action;
     public KeyCode key;
-    public bool smartCast = false, isNumeric = false, useExactModifiers = false;
+    public bool isNumeric = false, useExactModifiers = false, isUIOnly = false;
     public string activationType = "KeyUp";
+    public KeyCode DontClearExistingOrdersToggle = KeyCode.LeftShift; // when this key is down, we will queue orders instead of set
     public List<KeyCode> keyModifiers = new List<KeyCode>();
     public Func<KeyCode, bool> checkActivationFunction = Input.GetKeyUp;
-    public Func<Order> getOrder = delegate { return null; };
-    public Action action = delegate { };
-    public Action<RaycastHit> raycastHitAction = delegate { };
+    public Command command;
 }
+
 
 public class SettingsManager : MyMonoBehaviour
 {
@@ -33,21 +33,21 @@ public class SettingsManager : MyMonoBehaviour
         defaultKeyboardSettings.Add("camZ-", new Setting() { actionName = "camZ-", key = KeyCode.S });
         */
         
-        defaultInputSettings.Add(new Setting() { key = KeyCode.E, getOrder = OrderFactory.GetDefaultUseAbilityOrder, smartCast = true });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.X, getOrder = OrderFactory.GetDefaultCancelOrder });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.H, getOrder = OrderFactory.GetDefaultHarvestOrder });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.P, getOrder = OrderFactory.GetDefaultPatrolOrder });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.G, getOrder = OrderFactory.GetDefaultGuardOrder });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.F, getOrder = OrderFactory.GetDefaultFollowOrder });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.E, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultUseAbilityOrder, smartCast = true } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.X, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultCancelOrder } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.H, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultHarvestOrder } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.P, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultPatrolOrder } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.G, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultGuardOrder } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.F, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultFollowOrder } });
 
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyDown, action = gameManager.OnActionButtonPress });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyUp, raycastHitAction = gameManager.OnActionButtonRelease });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, checkActivationFunction = Input.GetKeyUp, raycastHitAction = gameManager.OnMoveButtonRelease });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyDown, command = new Command() { action = CommandAction.OnActionButtonPress } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyUp, command = new Command() { raycastHitAction = CommandRaycastAction.OnActionButtonRelease } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, checkActivationFunction = Input.GetKeyUp, command = new Command() { raycastHitAction = CommandRaycastAction.OnMoveButtonRelease } });
 
-        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, action = camera.RaiseCamera, useExactModifiers = true });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, action = camera.LowerCamera, useExactModifiers = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.T, checkActivationFunction = Input.GetKey, raycastHitAction = gameManager.RaiseTerrain });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Q, checkActivationFunction = Input.GetKey, raycastHitAction = gameManager.SpawnFactory });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, useExactModifiers = true, isUIOnly = true, command = new Command() { action = CommandAction.RaiseCamera } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, useExactModifiers = true, isUIOnly = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift }, command = new Command() { action = CommandAction.LowerCamera } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.T, /*checkActivationFunction = Input.GetKey,*/ command = new Command() { raycastHitAction = CommandRaycastAction.RaiseTerrain } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Q, /*checkActivationFunction = Input.GetKey,*/ command = new Command() { raycastHitAction = CommandRaycastAction.SpawnFactory } });
 
         for (int i = 0; i < 10; i++)
         {

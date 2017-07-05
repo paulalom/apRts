@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class UIManager : MyMonoBehaviour {
 
@@ -12,6 +13,9 @@ public class UIManager : MyMonoBehaviour {
     GameObject floatingTextPrefab;
     public LoadingScreen loadingScreen;
     GameManager gameManager;
+    ButtonManager buttonManager;
+    MenuManager menuManager;
+    
 
     public List<FloatingText> floatingText;
     public bool menuClicked = false;
@@ -47,6 +51,18 @@ public class UIManager : MyMonoBehaviour {
         floatingTextPrefab = rtsGameObjectManager.prefabs["FloatingText"];
     }
 
+    // ui cant init before objects are all set up because bad code and tight coupling... fix is todo
+    public IEnumerator InitUI(GameManager gm, PlayerManager pm, SelectionManager sm)
+    {
+        buttonManager = gameManager.managerManager.SpawnManager(typeof(ButtonManager)).GetComponent<ButtonManager>();
+        menuManager = gameManager.managerManager.SpawnManager(typeof(MenuManager)).GetComponent<MenuManager>();
+        buttonManager.InjectDependencies(gm, pm, sm, this);
+        menuManager.InjectDependencies(gm, pm, this);
+        gameManager.menuManager = menuManager;
+        gameManager.buttonManager = buttonManager;
+        return null;
+    }
+
     public static Type GetNumericMenuType(KeyCode key)
     {
         return numericMenuTypes[key.ToString()];
@@ -55,6 +71,11 @@ public class UIManager : MyMonoBehaviour {
     public static Type GetNumericMenuType(string key)
     {
         return numericMenuTypes[key];
+    }
+
+    public void RemoveText(FloatingText text)
+    {
+        floatingText.Remove(text);
     }
 
     public void CreateText(string text, Vector3 position, Color color, float scale = 1)

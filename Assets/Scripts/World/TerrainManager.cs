@@ -87,7 +87,7 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
         }
     }
     
-    void Start () {
+    public override void MyStart() {
 
         /* this should be removed once world generation is in place
         //This is a little bit of duplicated code from OnCameraMove for setup (which we dont run if we haven't moved).

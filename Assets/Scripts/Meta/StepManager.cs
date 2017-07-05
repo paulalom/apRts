@@ -3,24 +3,28 @@ using System.Collections;
 
 // Step size is currently 1 second
 public class StepManager : MyMonoBehaviour {
-
-    // All game time related features are in "game time". 
-    // For example, movement speed of 30 is 30 distance units per game second.
-    // Real time will not always sync up with game time.
-    // For example, if gameTimePerStep is 10ms, then 10 steps is 100ms game time,
-    // but we may actually compute 8 steps per 100ms real time, making the game appear to run slower.
-    // The game time per step should be at a realistic value, 
-    // so that most of the time we run faster and cap the simulation to real time.
-    // this ensures smooth gameplay most of the time.
-    public const float gameTimeInSecondsPerStep = .02f; // 20ms per frame
+    
+    // Fixme: need to adjust order system and whatnot to scale movement etc with fixedTimeStep
+    // Movement should be movement per gameSecond, changing the step size should not change movement speed
+    public const float fixedStepTimeSize = .03f; // 30ms per frame
+    public const int numStepsToDelayInputProcessing = 5;
+    public static long gameStep = 0;
+    public static long CurrentStep { get { return gameStep; }
+        set // This should only be called when the game needs to sync state with the server
+        { gameStep = value; } }
 
     public static float GetDeltaStep()
     {
-        return Time.deltaTime;//gameTimeInSecondsPerStep;
+        return fixedStepTimeSize;
     }
 
     public static float GetEndOfFrameDelay()
     {
         return 0;
+    }
+
+    public static void Step()
+    {
+        gameStep++;
     }
 }

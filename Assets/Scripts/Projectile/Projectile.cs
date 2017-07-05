@@ -8,13 +8,13 @@ public class Projectile : RTSGameObject {
     public RTSGameObject parent;
     public RTSGameObject rtsGo;
     
-	void Start () {
+	public override void MyStart() {
         mover = GetComponent<Mover>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         rtsGo = GetComponent<RTSGameObject>();
     }
 	
-	void Update () {
+	public override void MyUpdate() {
 	    
 	}
 }

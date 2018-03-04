@@ -16,9 +16,9 @@
     <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
-    <UnityVersion>5.4.3f1</UnityVersion>
+    <UnityVersion>2017.2.1f1</UnityVersion>
     <RootNamespace></RootNamespace>
-    <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
+    <LangVersion>4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -27,8 +27,8 @@
     <IntermediateOutputPath>Temp\UnityVS_obj\Debug\</IntermediateOutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_4_3;UNITY_5_4;UNITY_5;UNITY_64;UNITY_ANALYTICS;ENABLE_NEW_BUGREPORTER;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_EDITOR_RETINA;ENABLE_RETINA_GUISTYLES;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_SPRITE_POLYGON;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;ENABLE_EDITOR_TESTS_RUNNER;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;ENABLE_VSTU;CROSS_PLATFORM_INPUT</DefineConstants>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_2_1;UNITY_2017_2;UNITY_2017;PLATFORM_ARCH_64;UNITY_64;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_GENERICS;ENABLE_PVR_GI;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_NATIVE_ARRAY;ENABLE_SPRITE_MASKING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_VIDEO;ENABLE_RMGUI;ENABLE_PACKMAN;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_STYLE_SHEETS;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_VR;ENABLE_AR;ENABLE_SPATIALTRACKING;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_2_0_SUBSET;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_NATIVE_ARRAY_CHECKS;UNITY_TEAM_LICENSE;ENABLE_VSTU;CROSS_PLATFORM_INPUT</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,8 +37,8 @@
     <IntermediateOutputPath>Temp\UnityVS_obj\Release\</IntermediateOutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_4_3;UNITY_5_4;UNITY_5;UNITY_64;UNITY_ANALYTICS;ENABLE_NEW_BUGREPORTER;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_EDITOR_RETINA;ENABLE_RETINA_GUISTYLES;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_SPRITE_POLYGON;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;ENABLE_EDITOR_TESTS_RUNNER;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_TEXTUREID_MAP;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;ENABLE_VSTU;CROSS_PLATFORM_INPUT</DefineConstants>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_2_1;UNITY_2017_2;UNITY_2017;PLATFORM_ARCH_64;UNITY_64;UNITY_ANALYTICS;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_GENERICS;ENABLE_PVR_GI;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_GRID;ENABLE_TILEMAP;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_DIRECTOR;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_TIMELINE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;ENABLE_NATIVE_ARRAY;ENABLE_SPRITE_MASKING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;ENABLE_MONO_BDWGC;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_VIDEO;ENABLE_RMGUI;ENABLE_PACKMAN;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_STYLE_SHEETS;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_VR;ENABLE_AR;ENABLE_SPATIALTRACKING;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_2_0_SUBSET;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_NATIVE_ARRAY_CHECKS;UNITY_TEAM_LICENSE;ENABLE_VSTU;CROSS_PLATFORM_INPUT</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -49,8 +49,140 @@
     <Reference Include="UnityScript.Lang" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEditor">
+      <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>Library\UnityAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AccessibilityModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AccessibilityModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VehiclesModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VehiclesModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClothModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClothModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainPhysicsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterInputModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClusterInputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterRendererModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ClusterRendererModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UNETModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UNETModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.DirectorModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.DirectorModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityAnalyticsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CrashReportingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.CrashReportingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PerformanceReportingModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.PerformanceReportingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityConnectModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UnityConnectModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.WebModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.WebModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ARModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ARModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VRModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VRModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.StyleSheetsModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.StyleSheetsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GameCenterModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GameCenterModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GridModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GridModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticlesLegacyModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ParticlesLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Physics2DModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.ScreenCaptureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SpriteMaskModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SpriteMaskModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TerrainModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TilemapModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TilemapModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.WindModule">
+      <HintPath>Library\UnityAssemblies\UnityEngine.WindModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
@@ -58,11 +190,32 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TestRunner">
+      <HintPath>Library\UnityAssemblies\UnityEngine.TestRunner.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>Library\UnityAssemblies\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Timeline">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Timeline.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIAutomation">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UIAutomation.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.GoogleAudioSpatializer">
+      <HintPath>Library\UnityAssemblies\UnityEngine.GoogleAudioSpatializer.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.HoloLens">
+      <HintPath>Library\UnityAssemblies\UnityEngine.HoloLens.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.SpatialTracking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.SpatialTracking.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.Analytics">
       <HintPath>Library\UnityAssemblies\UnityEngine.Analytics.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor">
-      <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
+    <Reference Include="UnityEngine.Purchasing">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Purchasing.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -72,129 +225,136 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\AI\AIEconomyManager.cs" />
-    <Compile Include="Assets\Scripts\AI\AIManager.cs" />
-    <Compile Include="Assets\Scripts\AI\AIMilitaryManager.cs" />
-    <Compile Include="Assets\Scripts\AI\AIStrategyManager.cs" />
-    <Compile Include="Assets\Scripts\AI\AITacticsManager.cs" />
-    <Compile Include="Assets\Scripts\AI\MetaClasses\ProductionFacilityMeta.cs" />
-    <Compile Include="Assets\Scripts\Abilities\Ability.cs" />
-    <Compile Include="Assets\Scripts\Abilities\AbilityManager.cs" />
-    <Compile Include="Assets\Scripts\Abilities\Explode.cs" />
-    <Compile Include="Assets\Scripts\Abilities\Shoot.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\MyUnityIntegration\MyMonoBehaviour.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Agent.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Blocks.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Circle.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\KdTree.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Line.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Obstacle.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\RVOMath.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Simulator.cs" />
-    <Compile Include="Assets\Scripts\Dependencies\RVO2\Vector2.cs" />
-    <Compile Include="Assets\Scripts\Items\BasicResource\Coal.cs" />
-    <Compile Include="Assets\Scripts\Items\BasicResource\Iron.cs" />
-    <Compile Include="Assets\Scripts\Items\BasicResource\Stone.cs" />
-    <Compile Include="Assets\Scripts\Items\BasicResource\Wood.cs" />
-    <Compile Include="Assets\Scripts\Items\CompositeResource\Car.cs" />
-    <Compile Include="Assets\Scripts\Items\CompositeResource\Paper.cs" />
-    <Compile Include="Assets\Scripts\Items\CompositeResource\Tool.cs" />
-    <Compile Include="Assets\Scripts\JustC%23Things\MyBitMap.cs" />
-    <Compile Include="Assets\Scripts\JustC%23Things\MyPair.cs" />
-    <Compile Include="Assets\Scripts\JustC%23Things\MyVector3.cs" />
-    <Compile Include="Assets\Scripts\JustC%23Things\Vector3SerializationSurrogate.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Consumer.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Harvester.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Mover.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Producer.cs" />
-    <Compile Include="Assets\Scripts\Logistics\StationNotInUse.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Storage.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Transporter.cs" />
-    <Compile Include="Assets\Scripts\Logistics\Worker.cs" />
-    <Compile Include="Assets\Scripts\Meta\CollisionAvoidanceManager.cs" />
-    <Compile Include="Assets\Scripts\Meta\GameManager.cs" />
-    <Compile Include="Assets\Scripts\Meta\ManagerManager.cs" />
-    <Compile Include="Assets\Scripts\Meta\Player.cs" />
-    <Compile Include="Assets\Scripts\Meta\PlayerManager.cs" />
-    <Compile Include="Assets\Scripts\Meta\SettingsManager.cs" />
-    <Compile Include="Assets\Scripts\Meta\StepManager.cs" />
-    <Compile Include="Assets\Scripts\Network\NetworkLauncher.cs" />
-    <Compile Include="Assets\Scripts\Network\NetworkStateManager.cs" />
-    <Compile Include="Assets\Scripts\Network\TransportManager.cs" />
-    <Compile Include="Assets\Scripts\NonPersistentResources\Energy.cs" />
-    <Compile Include="Assets\Scripts\NonPersistentResources\Magic.cs" />
-    <Compile Include="Assets\Scripts\NonPersistentResources\Power.cs" />
-    <Compile Include="Assets\Scripts\ObjectFactories\AbilityFactory.cs" />
-    <Compile Include="Assets\Scripts\ObjectFactories\ItemFactory.cs" />
-    <Compile Include="Assets\Scripts\ObjectFactories\MyPairFactory.cs" />
-    <Compile Include="Assets\Scripts\ObjectFactories\OrderFactory.cs" />
-    <Compile Include="Assets\Scripts\Projectile\BasicCannonProjectile.cs" />
-    <Compile Include="Assets\Scripts\Projectile\Projectile.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Neutral\EnergyShield.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Neutral\ResourceDeposit.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\RTSGameObject.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\RTSGameObjectManager.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Structure\Factory.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Structure\HarvestingStation.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Structure\PowerPlant.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Structure\Structure.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Unit\Commander.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Unit\ConstructionSphere.cs" />
-    <Compile Include="Assets\Scripts\RTSGameObjects\Unit\Tank.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\AbilitySubsystem.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\ArmoredHull.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Defense.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Hull.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\IActivatable.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\IDamagable.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\Shield.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Combat\Components\ShieldGenerator.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Electronics\Battery.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Electronics\Capacitor.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Electronics\FlowSystem.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Electronics\Generator.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Electronics\PowerGenerator.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Subsystem.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Weapons\AttackSubSystem.cs" />
-    <Compile Include="Assets\Scripts\Subsystems\Weapons\Cannon.cs" />
-    <Compile Include="Assets\Scripts\UI\ButtonManager.cs" />
-    <Compile Include="Assets\Scripts\UI\Elements\Button.cs" />
-    <Compile Include="Assets\Scripts\UI\Elements\FloatingText.cs" />
-    <Compile Include="Assets\Scripts\UI\Elements\LoadingScreen.cs" />
-    <Compile Include="Assets\Scripts\UI\LoadTargetScene.cs" />
-    <Compile Include="Assets\Scripts\UI\LoadingScreenManager.cs" />
-    <Compile Include="Assets\Scripts\UI\MenuManager.cs" />
-    <Compile Include="Assets\Scripts\UI\SelectionManager.cs" />
-    <Compile Include="Assets\Scripts\UI\UIManager.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Command.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Interactions\FactoryInteraction.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Order.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\OrderData.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\OrderManager.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\CancelOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\ConstructOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\FollowOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\GiveOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\GuardOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\HarvestOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\HoldPositionOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\MoveOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\PatrolOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\TakeOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\UseAbilityOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Orders\WaitOrder.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Plan.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Plans\AttackNearestEnemyPlan.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Plans\CollectResourcePlan.cs" />
-    <Compile Include="Assets\Scripts\UnitBehaviour\Plans\ConstructionPlan.cs" />
-    <Compile Include="Assets\Scripts\World\DayNightCycle.cs" />
-    <Compile Include="Assets\Scripts\World\ICameraObserver.cs" />
-    <Compile Include="Assets\Scripts\World\MultiTerrain.cs" />
-    <Compile Include="Assets\Scripts\World\RTSCamera.cs" />
-    <Compile Include="Assets\Scripts\World\TerrainManager.cs" />
-    <Compile Include="Assets\Scripts\World\World.cs" />
-    <Compile Include="Assets\Scripts\World\WorldManager.cs" />
-    <Compile Include="Assets\Scripts\World\WorldSettings.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\AIEconomyManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\AIManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\AIMilitaryManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\AIStrategyManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\AITacticsManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\AI\MetaClasses\ProductionFacilityMeta.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\CollisionAvoidanceManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\GameManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\ManagerManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\Player.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\PlayerManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\StepManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\ButtonManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\Button.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\FloatingText.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\LoadingScreen.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\LoadingScreenManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\LoadTargetScene.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\MenuManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\SelectionManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\SettingsManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\UI\UIManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\DayNightCycle.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\ICameraObserver.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\MultiTerrain.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\TerrainManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\World.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\WorldManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\World\WorldSettings.cs" />
+    <Compile Include="Assets\Scripts\CTF\CTFGameManager.cs" />
+    <Compile Include="Assets\Scripts\CTF\CTFPlayerManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Abilities\Ability.cs" />
+    <Compile Include="Assets\Scripts\Shared\Abilities\AbilityManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Abilities\Explode.cs" />
+    <Compile Include="Assets\Scripts\Shared\Abilities\Shoot.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\MyUnityIntegration\MyMonoBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Agent.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Blocks.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Circle.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\KdTree.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Line.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Obstacle.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\RVOMath.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Simulator.cs" />
+    <Compile Include="Assets\Scripts\Shared\Dependencies\RVO2\Vector2.cs" />
+    <Compile Include="Assets\Scripts\Shared\GameLauncher.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\BasicResource\Coal.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\BasicResource\Iron.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\BasicResource\Stone.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\BasicResource\Wood.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\CompositeResource\Car.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\CompositeResource\Paper.cs" />
+    <Compile Include="Assets\Scripts\Shared\Items\CompositeResource\Tool.cs" />
+    <Compile Include="Assets\Scripts\Shared\JustC#Things\MyBitMap.cs" />
+    <Compile Include="Assets\Scripts\Shared\JustC#Things\MyPair.cs" />
+    <Compile Include="Assets\Scripts\Shared\JustC#Things\Vector3SerializationSurrogate.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Consumer.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Harvester.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Mover.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Producer.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\StationNotInUse.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Storage.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Transporter.cs" />
+    <Compile Include="Assets\Scripts\Shared\Logistics\Worker.cs" />
+    <Compile Include="Assets\Scripts\Shared\Network\NetworkLauncher.cs" />
+    <Compile Include="Assets\Scripts\Shared\Network\TransportManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\NonPersistentResources\Energy.cs" />
+    <Compile Include="Assets\Scripts\Shared\NonPersistentResources\Magic.cs" />
+    <Compile Include="Assets\Scripts\Shared\NonPersistentResources\Power.cs" />
+    <Compile Include="Assets\Scripts\Shared\ObjectFactories\AbilityFactory.cs" />
+    <Compile Include="Assets\Scripts\Shared\ObjectFactories\CommandFactory.cs" />
+    <Compile Include="Assets\Scripts\Shared\ObjectFactories\ItemFactory.cs" />
+    <Compile Include="Assets\Scripts\Shared\ObjectFactories\MyPairFactory.cs" />
+    <Compile Include="Assets\Scripts\Shared\ObjectFactories\OrderFactory.cs" />
+    <Compile Include="Assets\Scripts\Shared\Projectile\BasicCannonProjectile.cs" />
+    <Compile Include="Assets\Scripts\Shared\Projectile\Projectile.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Neutral\EnergyShield.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Neutral\ResourceDeposit.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\RTSGameObject.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\RTSGameObjectManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Structure\Factory.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Structure\HarvestingStation.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Structure\PowerPlant.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Structure\Structure.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Unit\Commander.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Unit\ConstructionSphere.cs" />
+    <Compile Include="Assets\Scripts\Shared\RTSGameObjects\Unit\Tank.cs" />
+    <Compile Include="Assets\Scripts\Shared\StateManagers\IStateManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\StateManagers\NetworkStateManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\AbilitySubsystem.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\ArmoredHull.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\Defense.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\Hull.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\IActivatable.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\IDamagable.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\Shield.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Combat\Components\ShieldGenerator.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Electronics\Battery.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Electronics\Capacitor.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Electronics\FlowSystem.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Electronics\Generator.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Electronics\PowerGenerator.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Subsystem.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Weapons\AttackSubSystem.cs" />
+    <Compile Include="Assets\Scripts\Shared\Subsystems\Weapons\Cannon.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\CommandSystem\Command.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\CommandSystem\CommandQueue.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\CommandSystem\ICommandManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\CommandSystem\NetworkedCommandManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Interactions\FactoryInteraction.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\CancelOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\ConstructOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\FollowOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\GiveOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\GuardOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\HarvestOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\HoldPositionOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\MoveOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\Order.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\OrderData.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\OrderManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\PatrolOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\TakeOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\UseAbilityOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Orders\WaitOrder.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Plans\AttackNearestEnemyPlan.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Plans\CollectResourcePlan.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Plans\ConstructionPlan.cs" />
+    <Compile Include="Assets\Scripts\Shared\UnitBehaviour\Plans\Plan.cs" />
+    <Compile Include="Assets\Scripts\Shared\World\RTSCamera.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Legal\contributions.txt" />

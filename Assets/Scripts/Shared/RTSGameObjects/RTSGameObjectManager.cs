@@ -408,8 +408,11 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public void SetUnitMoveTarget(RTSGameObject unit, Vector2 targetPos, float dt)
     {
         Mover mover = unit.GetComponent<Mover>();
-        Vector2 velocity = Vector2.MoveTowards(unit.Position2D, targetPos, mover.moveSpeed * dt) - unit.Position2D;
-        mover.SetVelocity2D(velocity);
+        if (mover != null && mover.isActive)
+        {
+            Vector2 velocity = Vector2.MoveTowards(unit.Position2D, targetPos, mover.moveSpeed * dt) - unit.Position2D;
+            mover.SetVelocity2D(velocity);
+        }
     }
 
     public void UseAbility(RTSGameObject unit, RTSGameObject target, Vector3 targetPosition, Ability ability)

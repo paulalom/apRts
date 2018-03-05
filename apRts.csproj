@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2017.2.1f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion>4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -237,22 +239,23 @@
     <Compile Include="Assets\Scripts\ApRTS\AI\AIStrategyManager.cs" />
     <Compile Include="Assets\Scripts\ApRTS\AI\AITacticsManager.cs" />
     <Compile Include="Assets\Scripts\ApRTS\AI\MetaClasses\ProductionFacilityMeta.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\CollisionAvoidanceManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\GameManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\ManagerManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\Player.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\PlayerManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\Meta\StepManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\ButtonManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\Button.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\FloatingText.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\Elements\LoadingScreen.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\LoadingScreenManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\LoadTargetScene.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\MenuManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\SelectionManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\SettingsManager.cs" />
-    <Compile Include="Assets\Scripts\ApRTS\UI\UIManager.cs" />
+    <Compile Include="Assets\Scripts\ApRTS\Meta\RtsGameManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\CollisionAvoidanceManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\ManagerManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\Player.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\PlayerManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\Meta\StepManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\ButtonManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\Elements\Button.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\Elements\FloatingText.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\Elements\LoadingScreen.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\LoadingScreenManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\LoadTargetScene.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\MenuManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\SelectionManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\SettingsManager.cs" />
+    <Compile Include="Assets\Scripts\Shared\UI\UIManager.cs" />
     <Compile Include="Assets\Scripts\ApRTS\World\DayNightCycle.cs" />
     <Compile Include="Assets\Scripts\ApRTS\World\ICameraObserver.cs" />
     <Compile Include="Assets\Scripts\ApRTS\World\MultiTerrain.cs" />
@@ -453,6 +456,7 @@
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAddSoft.shader" />
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
 </Project>

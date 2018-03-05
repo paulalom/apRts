@@ -23,13 +23,6 @@ public class MenuManager : MyMonoBehaviour {
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
     }
-
-    public void InjectDependencies(GameManager gm, PlayerManager pm, UIManager uim)
-    {
-        gameManager = gm;
-        playerManager = pm;
-        uiManager = uim;
-    }
     
     void OnGUI()
     {

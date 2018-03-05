@@ -2,18 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CTFGameManager : MonoBehaviour {
+public class CTFGameManager : GameManager {
 
-    UIManager uiManager;
-    private float realTimeSinceLastStep;
-
-
-    // Use this for initialization
-    void Start () {
-        StartCoroutine(StartGame());
+    // Update is called once per frame
+    protected void Update()
+    {
+        uiManager.HandleInput();
     }
 
-    public IEnumerator StartGame()
+    protected override IEnumerator StartGame()
     {
         yield return SetUpWorld(null, null);
         //yield return uiManager.InitUI(null, null, null);
@@ -28,7 +25,7 @@ public class CTFGameManager : MonoBehaviour {
         LoadingScreenManager.CompleteLoadingScreen();
     }
 
-    IEnumerator MainGameLoop()
+    protected override IEnumerator MainGameLoop()
     {
         while (true)
         {
@@ -46,18 +43,8 @@ public class CTFGameManager : MonoBehaviour {
         }
     }
 
-    void StepGame(float stepDt)
-    {
-
-    }
-
     void SetUpPlayer()
     {
 
     }
-
-    // Update is called once per frame
-    void Update () {
-		
-	}
 }

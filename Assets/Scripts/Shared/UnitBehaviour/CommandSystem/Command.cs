@@ -129,7 +129,7 @@ public class Command
             case CommandAction.RaiseCamera:
                 return gameManager.mainCamera.RaiseCamera;
             case CommandAction.OnActionButtonPress:
-                return gameManager.OnActionButtonPress;
+                return gameManager.uiManager.OnActionButtonPress;
             default:
                 return delegate { };
         }
@@ -154,9 +154,9 @@ public class Command
         switch (commandRaycastHitUnitAction)
         {
             case CommandRaycastHitUnitAction.OnMoveButtonRelease:
-                return gameManager.OnMoveButtonRelease;
+                return gameManager.uiManager.OnMoveButtonRelease;
             case CommandRaycastHitUnitAction.OnActionButtonRelease:
-                return gameManager.OnActionButtonRelease;
+                return gameManager.uiManager.OnActionButtonRelease;
             default:
                 return delegate { };
         }

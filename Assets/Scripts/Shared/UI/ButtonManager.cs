@@ -11,14 +11,6 @@ public class ButtonManager : MyMonoBehaviour {
     public UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
     
-    public void InjectDependencies(GameManager gm, PlayerManager pm, SelectionManager sm, UIManager uim)
-    {
-        gameManager = gm;
-        playerManager = pm;
-        selectionManager = sm;
-        uiManager = uim;
-    }
-
     void OnGUI()
     {
         if(playerManager == null || gameManager == null || selectionManager == null || uiManager == null)

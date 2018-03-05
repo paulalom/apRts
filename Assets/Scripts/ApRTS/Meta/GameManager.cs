@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour {
     public IEnumerator StartGame()
     {
         yield return netStateManager.InitilizeLocalGame(this, playerManager);
-        yield return worldManager.SetupWorld(terrainManager, mainCamera);
+        yield return worldManager.SetUpWorld(terrainManager, mainCamera);
         yield return uiManager.InitUI(this, playerManager, selectionManager);
         yield return MainGameLoop();
     }

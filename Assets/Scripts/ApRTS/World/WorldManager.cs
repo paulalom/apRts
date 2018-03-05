@@ -13,7 +13,7 @@ public class WorldManager : MyMonoBehaviour {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
-    public IEnumerator SetupWorld(TerrainManager terrainManager, RTSCamera mainCamera)
+    public IEnumerator SetUpWorld(TerrainManager terrainManager, RTSCamera mainCamera)
     {
         LoadingScreenManager.SetLoadingProgress(0.10f);
         WorldSettings worldSettings = GetWorldSettings(numWorlds);

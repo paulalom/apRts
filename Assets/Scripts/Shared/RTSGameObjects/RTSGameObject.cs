@@ -110,6 +110,13 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
         }
     }
 
+    /* as per clappyherd, ontriggerEnter:
+        Vector3 dpos = transform.position - collision.collider.transform.position;
+        if (dpos.sqrMagnitude == 0) { dpos = new Vector3(0.1f, 0, 0); }
+        Vector3 targetPos = transform.position + dpos;
+        transform.position = Vector3.MoveTowards(transform.position, targetPos, dpos.magnitude * Time.deltaTime);
+     */
+
     void OnTriggerStay(Collider other)
     {
         if (mover != null && rtsGameObjectManager != null && !(other.GetComponent<RTSGameObject>() is Projectile))// && other.GetComponent<Mover>() == null)

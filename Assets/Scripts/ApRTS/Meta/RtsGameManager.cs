@@ -23,7 +23,6 @@ namespace Assets.Scripts.ApRTS.Meta
             playerManager.numAIPlayers = worldSettings.aiPresenceRating;
             playerManager.gameManager = this;
             netStateManager = GameObject.Find("NetworkStateManager").GetComponent<NetworkStateManager>();
-            managerManager = GameObject.Find("ManagerManager").GetComponent<ManagerManager>();
             commandManager.netStateManager = netStateManager;
             commandManager.playerManager = playerManager;
 

@@ -7,9 +7,9 @@ using System.Collections;
 
 public class UIManager : MyMonoBehaviour {
 
-    public Type[] typesWithMenuIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(ConstructionSphere), typeof(Tank), typeof(HarvestingStation), typeof(Factory), typeof(ResourceDeposit) };
-    public static Dictionary<Type, Texture2D> menuIcon = new Dictionary<Type, Texture2D>();
-    static Dictionary<string, Type> numericMenuTypes;
+    public Type[] typesWithIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(ConstructionSphere), typeof(Tank), typeof(HarvestingStation), typeof(Factory), typeof(ResourceDeposit) };
+    public static Dictionary<Type, Texture2D> icons = new Dictionary<Type, Texture2D>();
+    
     GameObject floatingTextPrefab;
     public LoadingScreen loadingScreen;
     public ButtonManager buttonManager;
@@ -23,26 +23,18 @@ public class UIManager : MyMonoBehaviour {
 
     public override void MyAwake()
     {
-        menuIcon = new Dictionary<Type, Texture2D>();
-        numericMenuTypes = new Dictionary<string, Type>();
         floatingText = new List<FloatingText>();
+        icons = new Dictionary<Type, Texture2D>();
 
         // Get menu icons
-        foreach (Type type in typesWithMenuIcons)
+        foreach (Type type in typesWithIcons)
         {
-            menuIcon[type] = Resources.Load<Texture2D>("MyAssets/Icons/" + type.ToString() + "Icon");
-            if (menuIcon[type] == null)
+            icons[type] = Resources.Load<Texture2D>("MyAssets/Icons/" + type.ToString() + "Icon");
+            if (icons[type] == null)
             {
-                menuIcon[type] = Resources.Load<Texture2D>("MyAssets/Icons/None");
+                icons[type] = Resources.Load<Texture2D>("MyAssets/Icons/None");
             }
         }
-
-        numericMenuTypes[KeyCode.Alpha1.ToString()] = typeof(ConstructionSphere);
-        numericMenuTypes[KeyCode.Alpha2.ToString()] = typeof(HarvestingStation);
-        numericMenuTypes[KeyCode.Alpha3.ToString()] = typeof(Factory);
-        numericMenuTypes[KeyCode.Alpha4.ToString()] = typeof(Tank);
-        numericMenuTypes[KeyCode.Alpha5.ToString()] = typeof(Tool);
-        numericMenuTypes[KeyCode.Alpha6.ToString()] = typeof(Paper);
     }
 
     public override void MyStart()
@@ -56,17 +48,7 @@ public class UIManager : MyMonoBehaviour {
     {
         return null;
     }
-
-    public static Type GetNumericMenuType(KeyCode key)
-    {
-        return numericMenuTypes[key.ToString()];
-    }
-
-    public static Type GetNumericMenuType(string key)
-    {
-        return numericMenuTypes[key];
-    }
-
+   
     public void RemoveText(FloatingText text)
     {
         floatingText.Remove(text);
@@ -188,7 +170,9 @@ public class UIManager : MyMonoBehaviour {
                 if (setting.isNumeric)
                 {
                     List<MyPair<Type, int>> items = new List<MyPair<Type, int>>();
-                    items.Add(new MyPair<Type, int>(UIManager.GetNumericMenuType(setting.key), 1));
+                    string key = setting.key.ToString();
+                    int keyNum = int.Parse(key.Substring(key.Length - 1, 1)); // parse the last character of key like "Alpha1"
+                    items.Add(new MyPair<Type, int>(menuManager.GetNumericMenuType(keyNum), 1));
                     command.orderData.items = items;
                     command.getOrder = CommandGetOrderFunction.GetDefaultConstructionOrder;
                     command.overrideDefaultOrderData = true;

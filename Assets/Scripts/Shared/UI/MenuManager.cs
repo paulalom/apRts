@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 public class MenuManager : MyMonoBehaviour {
 
-    public List<Texture2D> constructionIcons;
-    [HideInInspector]
-    public List<Texture2D> inventoryIcons;
     public GameManager gameManager;
     public PlayerManager playerManager;
     public UIManager uiManager;
@@ -15,13 +12,26 @@ public class MenuManager : MyMonoBehaviour {
     float menuWidth = 400, menuHeight = 50;
     Rect constructionMenuRect;
     Dictionary<RTSGameObject, Rect> inventoryMenuRects;
-
+    static Type[] menuTypes;
 
     // Use this for initialization
-    public override void MyAwake() {
-        
+    public override void MyAwake()
+    {
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
+        
+        menuTypes = new Type[6];
+        menuTypes[0] = typeof(ConstructionSphere);
+        menuTypes[1] = typeof(HarvestingStation);
+        menuTypes[2] = typeof(Factory);
+        menuTypes[3] = typeof(Tank);
+        menuTypes[4] = typeof(Tool);
+        menuTypes[5] = typeof(Paper);
+    }
+
+    public override void MyStart()
+    {
+
     }
     
     void OnGUI()
@@ -38,7 +48,7 @@ public class MenuManager : MyMonoBehaviour {
     void DrawConstructionMenu()
     {
         drawMenu(constructionMenuRect);
-        drawMenuButtons(constructionMenuRect, constructionIcons);
+        drawMenuButtons(constructionMenuRect);
     }
 
     void drawMenu(Rect menu)
@@ -48,18 +58,22 @@ public class MenuManager : MyMonoBehaviour {
         GUI.Box(menu, "", container);
     }
 
+    public Type GetNumericMenuType(int key)
+    {
+        return menuTypes[key - 1];
+    }
 
-    void drawMenuButtons(Rect menu, List<Texture2D> iconList)
+    void drawMenuButtons(Rect menu)
     {
         //Make this better later
-        for (int x = 0; x < iconList.Count; x++)
+        for (int x = 0; x < menuTypes.Length; x++)
         {
             GUIStyle icon = new GUIStyle();
-            icon.normal.background = iconList[x];
+            icon.normal.background = UIManager.icons[menuTypes[x]];
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
             if (GUI.Button(button, (x+1).ToString(), icon))
             {
-                gameManager.ProduceFromMenu(UIManager.GetNumericMenuType("Alpha" + (x + 1)), 1);
+                gameManager.ProduceFromMenu(menuTypes[x], 1);
                 uiManager.menuClicked = true;
             }
         }

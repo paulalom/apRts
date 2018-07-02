@@ -18,7 +18,7 @@ public class PlayerManager : MyMonoBehaviour {
     public AIManager AiManager { get { return ActivePlayer.aiManager; } }
     public List<long> PlayerSelectedUnits { get { return ActivePlayer.selectedUnits; } }
     public UnityEvent OnPlayerSelectionChange { get { return ActivePlayer.onSelectionChange; } set { ActivePlayer.onSelectionChange = value; } }
-    private Player _activePlayer;
+    private Player _activePlayer = new Player();
     private int _activePlayerId;
     public Player ActivePlayer
     {

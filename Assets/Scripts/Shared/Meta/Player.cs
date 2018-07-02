@@ -13,9 +13,9 @@ public class Player {
     PlayerManager playerManager;
     public AIManager aiManager;
     public UnityEvent onSelectionChange;
-    public List<long> selectedUnits;
-    public Dictionary<long, RTSGameObject> units;
-    public Dictionary<Type,int> resources;
+    public List<long> selectedUnits = new List<long>();
+    public Dictionary<long, RTSGameObject> units = new Dictionary<long, RTSGameObject>();
+    public Dictionary<Type,int> resources = new Dictionary<Type, int>();
     public List<MyPair<float, MyPair<Type, int>>> incomeEventsLast30Seconds = new List<MyPair<float, MyPair<Type, int>>>(); // this should be linkedList to improve efficiency
     public Dictionary<Type, int> avgResourceIncomesLast30Seconds = new Dictionary<Type, int>(); 
     public RTSGameObject commander;
@@ -30,15 +30,18 @@ public class Player {
     // Temp UI display of resource totals
     public string statusBarString = "";
     string statusBarText, resourceText = "", unitCountText = " Units: 0";
+    
+    //Empty player for pre-init placeholding
+    public Player()
+    {
+
+    }
 
     public Player(PlayerManager playerManager, AIManager aiManager, bool isHuman)
     {
         this.playerManager = playerManager;
         this.isHuman = isHuman;
         this.aiManager = aiManager;
-        selectedUnits = new List<long>();
-        units = new Dictionary<long, RTSGameObject>();
-        resources = new Dictionary<Type, int>();
         onSelectionChange = new UnityEvent();
         onEconomicChange = new UnityEvent();
         onUnitCountIncrease = new OnUnitCountIncrease();

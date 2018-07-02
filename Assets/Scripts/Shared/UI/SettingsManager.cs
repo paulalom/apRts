@@ -14,10 +14,8 @@ public class Setting
     public Command command;
 }
 
-
 public class SettingsManager : MyMonoBehaviour
 {
-
     public List<Setting> defaultInputSettings;
     public List<Setting> inputSettings;
 

@@ -18,7 +18,6 @@ public abstract class GameManager : MonoBehaviour {
     public SettingsManager settingsManager;
     public WorldManager worldManager;
     public NetworkStateManager netStateManager;
-    public ManagerManager managerManager;
     public NetworkedCommandManager commandManager;
     protected KeyCode prevKeyClicked;
     
@@ -28,6 +27,20 @@ public abstract class GameManager : MonoBehaviour {
 
     public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
 
+    public void Awake()
+    {
+        mainCamera = GameObject.Find("MainCamera").GetComponent<RTSCamera>();
+        terrainManager = GameObject.Find("TerrainManager").GetComponent<TerrainManager>();
+        orderManager = GameObject.Find("OrderManager").GetComponent<OrderManager>();
+        rtsGameObjectManager = GameObject.Find("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        playerManager = GameObject.Find("PlayerManager").GetComponent<PlayerManager>();
+        settingsManager = GameObject.Find("SettingsManager").GetComponent<SettingsManager>();
+        worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
+        commandManager = GameObject.Find("NetworkedCommandManager").GetComponent<NetworkedCommandManager>();
+        buttonManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
+        menuManager = GameObject.Find("MenuManager").GetComponent<MenuManager>();
+    }
 
     // Use this for initialization
     public void Start()

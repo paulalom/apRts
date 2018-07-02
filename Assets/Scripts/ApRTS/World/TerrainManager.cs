@@ -472,13 +472,11 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
                 // Add 5 so riverbank starts above water
                 float isRiverbank = Mathf.Clamp(waterThreshold - height + 15, 0, 10);
 
-                //Im not sure this currentbiome variable makes sense here, though i know what it's trying to do
                 alphaMap[y, x, currentBiome + 0] = 1 - isRocky - isCliff - isSnow - isRiverbank;
                 alphaMap[y, x, currentBiome + 1] = isRocky - isCliff;
                 alphaMap[y, x, currentBiome + 2] = isCliff;
                 alphaMap[y, x, currentBiome + 3] = isRiverbank - isCliff - isRocky;
-                alphaMap[y, x, currentBiome + 4] = isSnow - isRocky - isCliff - isRiverbank;
-                
+                alphaMap[y, x, currentBiome + 4] = isSnow - isRocky - isCliff - isRiverbank;                
             }
         }
 

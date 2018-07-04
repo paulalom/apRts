@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using Assets.Scripts.Shared.UI;
 
 public class UIManager : MyMonoBehaviour {
 
@@ -19,10 +20,17 @@ public class UIManager : MyMonoBehaviour {
     public GameManager gameManager;
 
     public List<FloatingText> floatingText;
-    public bool menuClicked = false;
 
     public override void MyAwake()
     {
+        selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
+        buttonManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
+        menuManager = GameObject.Find("MenuManager").GetComponent<MenuManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        InputActions.gameManager = gameManager;
+        InputActions.menuManager = menuManager;
+        InputActions.selectionManager = selectionManager;
+
         floatingText = new List<FloatingText>();
         icons = new Dictionary<Type, Texture2D>();
 
@@ -77,16 +85,15 @@ public class UIManager : MyMonoBehaviour {
 
     public void HandleInput()
     {
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        bool rayCast = Physics.Raycast(ray, out hit);
-
-        if (rayCast)
+        foreach (Setting setting in gameManager.settingsManager.inputSettings)
         {
-            UICheckSelectionEvents(hit);
-            CheckInputSettings(GetClickedUnit(hit.collider), hit.point);
-            //terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
+            if (setting.checkActivationFunction(setting.key) && AreKeyModifiersActive(setting))
+            {
+                setting.action.Invoke();
+            }
         }
+
+        //terrainManager.projector.position = new Vector3(hit.point.x, terrainManager.GetHeightFromGlobalCoords(hit.point.x, hit.point.z, playerManager.activeWorld) + 5, hit.point.z);
 
         selectionManager.resizeSelectionBox();
         mainCamera.CheckCameraUpdate(); // Improve this eventually
@@ -100,102 +107,9 @@ public class UIManager : MyMonoBehaviour {
         }
         return null;
     }
-
-
-    // This happens when the Game Loop processes commands for a step, but is queued on press
-    public void OnActionButtonPress()
-    {
-
-    }
-
-    // This happens when the Game Loop processes commands for a step, but is queued on release
-    public void OnActionButtonRelease(List<long> unitIds, Command command)
-    {
-    }
-
-    private void UICheckSelectionEvents(RaycastHit screenClickLocation)
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            selectionManager.mouseDown = Input.mousePosition;
-        }
-        if (Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            if (selectionManager.mouseDown == Input.mousePosition)
-            {
-                selectionManager.CheckSingleSelectionEvent(screenClickLocation);
-            }
-            else
-            {
-                selectionManager.CheckBoxSelectionEvent(mainCamera.GetComponent<Camera>());
-            }
-            menuClicked = false;
-        }
-    }
-
-    // This happens when the Game Loop processes commands for a step, but is queued on release
-    public void OnMoveButtonRelease(List<long> unitIds, Command command)
-    {
-        if (command.clearExistingOrders) // if outside of loop is more efficient
-        {
-            foreach (RTSGameObject unit in gameManager.playerManager.GetUnits(unitIds))
-            {
-                Order moveOrder = OrderFactory.GetDefaultMoveOrder();
-                moveOrder.orderData = command.orderData;
-                gameManager.orderManager.SetOrder(unit, moveOrder);
-            }
-        }
-        else
-        {
-            foreach (RTSGameObject unit in gameManager.playerManager.GetUnits(unitIds))
-            {
-                Order moveOrder = OrderFactory.GetDefaultMoveOrder();
-                moveOrder.orderData = command.orderData;
-                gameManager.orderManager.QueueOrder(unit, moveOrder);
-            }
-        }
-    }
-
-    void CheckInputSettings(RTSGameObject clickedUnit, Vector3 screenClickLocation)
-    {
-        foreach (Setting setting in gameManager.settingsManager.inputSettings)
-        {
-            if (setting.checkActivationFunction(setting.key) && AreExactModifiersActive(setting) && setting.command != null)
-            {
-                Command command = setting.command;
-                if (Input.GetKey(setting.DontClearExistingOrdersToggle))
-                {
-                    command.clearExistingOrders = false;
-                }
-                if (setting.isNumeric)
-                {
-                    List<MyPair<Type, int>> items = new List<MyPair<Type, int>>();
-                    string key = setting.key.ToString();
-                    int keyNum = int.Parse(key.Substring(key.Length - 1, 1)); // parse the last character of key like "Alpha1"
-                    items.Add(new MyPair<Type, int>(menuManager.GetNumericMenuType(keyNum), 1));
-                    command.orderData.items = items;
-                    command.getOrder = CommandGetOrderFunction.GetDefaultConstructionOrder;
-                    command.overrideDefaultOrderData = true;
-                }
-                else
-                {
-                    command.orderData.targetPosition = screenClickLocation;
-                    command.orderData.target = clickedUnit;
-                }
-                if (setting.isUIOnly)
-                {
-                    gameManager.commandManager.AddNonNetworkedCommand(command);
-                }
-                else
-                {
-                    gameManager.commandManager.AddCommand(command);
-                }
-            }
-        }
-    }
-
+        
     // Returns true when all key modifiers down and nothing else
-    bool AreExactModifiersActive(Setting setting)
+    bool AreKeyModifiersActive(Setting setting)
     {
         foreach (KeyCode modifier in setting.keyModifiers)
         {
@@ -204,19 +118,12 @@ public class UIManager : MyMonoBehaviour {
                 return false;
             }
         }
-
-        if (setting.useExactModifiers)
+        
+        foreach (KeyCode key in setting.keyExclusions)
         {
-            // Ugh. Unity should maintain a list of all keys currently held down but I couldn't find any reference to it.
-            // It also didn't end up being better to maintain my own list, because I would have to iterate
-            // through the entire list every frame.
-            // If you know a better way to do this please let me know.
-            foreach (KeyCode key in Enum.GetValues(typeof(KeyCode)))
+            if (Input.GetKey(key))
             {
-                if (Input.GetKey(key) && !setting.keyModifiers.Contains(key) && setting.key != key)
-                {
-                    return false;
-                }
+                return false;
             }
         }
         return true;

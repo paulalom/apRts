@@ -16,7 +16,7 @@ public class NetworkStateManager : IStateManager{
     public GameManager gameManager;
     public PlayerManager playerManager;
     public TransportManager transportManager;
-    public Dictionary<int, List<string>> receivedMessages = new Dictionary<int, List<string>>();
+    public Dictionary<int, List<string>> recievedMessages = new Dictionary<int, List<string>>();
     public CommandQueue localCommands = new CommandQueue();
 
     public long serverStep;
@@ -82,7 +82,7 @@ public class NetworkStateManager : IStateManager{
             switch (messageTypeId)
             {
                 case (int)MessageIds.CommandMessage:
-                    StoreReceivedCommand(clientId, message);
+                    StoreReceivedCommand(clientId, message); // memory leak for now, will use this later for short term resync
                     ParseCommand(message);
                     break;
                 case (int)MessageIds.StepMessage:
@@ -251,13 +251,13 @@ public class NetworkStateManager : IStateManager{
     
     void StoreReceivedCommand(int clientId, string command)
     {
-        if (receivedMessages.ContainsKey(clientId))
+        if (recievedMessages.ContainsKey(clientId))
         {
-            receivedMessages[clientId].Add(command);
+            recievedMessages[clientId].Add(command);
         }
         else
         {
-            receivedMessages.Add(clientId, new List<string>() { command });
+            recievedMessages.Add(clientId, new List<string>() { command });
         }
     }
 }

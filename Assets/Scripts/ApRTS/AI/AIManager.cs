@@ -122,7 +122,7 @@ public class AIManager
         {
             return false;
         }
-        else if(commands[0].Value.getOrder == CommandGetOrderFunction.GetDefaultConstructionOrder)
+        else if(commands[0].Value.getOrder == OrderBuilderFunction.NewConstructionOrder)
         {// construction orders queue, not set
             commands[0].Value.clearExistingOrders = false;
         }

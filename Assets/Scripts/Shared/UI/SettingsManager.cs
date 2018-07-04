@@ -1,17 +1,22 @@
-﻿using System;
+﻿using Assets.Scripts.Shared.UI;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Setting
 {
-    //public Action action;
     public KeyCode key;
-    public bool isNumeric = false, useExactModifiers = false, isUIOnly = false;
-    public string activationType = "KeyUp";
-    public KeyCode DontClearExistingOrdersToggle = KeyCode.LeftShift; // when this key is down, we will queue orders instead of set
-    public List<KeyCode> keyModifiers = new List<KeyCode>();
+
+    // Input qualifiers
+    public List<KeyCode> keyModifiers = new List<KeyCode>(); // setting will only fire if all of these are held
+    public List<KeyCode> keyExclusions = new List<KeyCode>(); // setting will not fire if any of these are held
     public Func<KeyCode, bool> checkActivationFunction = Input.GetKeyUp;
-    public Command command;
+
+    // when this key is down, we will queue orders instead of set
+    public static KeyCode dontClearExistingOrdersToggle = KeyCode.LeftShift; 
+
+    // The only thing that happens when key is pressed
+    public Action action = delegate { };
 }
 
 public class SettingsManager : MyMonoBehaviour
@@ -30,30 +35,33 @@ public class SettingsManager : MyMonoBehaviour
         defaultKeyboardSettings.Add("camZ+", new Setting() { actionName = "camZ+", key = KeyCode.W });
         defaultKeyboardSettings.Add("camZ-", new Setting() { actionName = "camZ-", key = KeyCode.S });
         */
-        
-        defaultInputSettings.Add(new Setting() { key = KeyCode.E, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultUseAbilityOrder, smartCast = true } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.X, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultCancelOrder } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.H, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultHarvestOrder } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.P, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultPatrolOrder } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.G, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultGuardOrder } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.F, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultFollowOrder } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, keyExclusions = new List<KeyCode>() { KeyCode.LeftShift }, action = InputActions.RaiseCamera });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift }, action = InputActions.LowerCamera });
 
-        // This does nothing right now so let's comment it
-        //defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyDown, command = new Command() { action = CommandAction.OnActionButtonPress } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyUp, command = new Command() { raycastHitUnitAction = CommandRaycastHitUnitAction.OnActionButtonRelease } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, checkActivationFunction = Input.GetKeyUp, command = new Command() { raycastHitUnitAction = CommandRaycastHitUnitAction.OnMoveButtonRelease } });
-
-        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, useExactModifiers = true, isUIOnly = true, command = new Command() { action = CommandAction.RaiseCamera } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.C, checkActivationFunction = Input.GetKey, useExactModifiers = true, isUIOnly = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift }, command = new Command() { action = CommandAction.LowerCamera } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.T, /*checkActivationFunction = Input.GetKey,*/ command = new Command() { raycastHitAction = CommandRaycastHitAction.RaiseTerrain } });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Q, /*checkActivationFunction = Input.GetKey,*/ command = new Command() { raycastHitAction = CommandRaycastHitAction.SpawnFactory } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.E, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewUseAbilityOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.X, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCancelOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.H, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewHarvestOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.P, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewPatrolOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.G, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewGuardOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.F, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewFollowOrder); }});
+        defaultInputSettings.Add(new Setting() { key = KeyCode.T, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCheatRaiseTerrainOrder); } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Q, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCheatSpawnFactoryOrder); } });
+                
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, action = InputActions.OnActionButtonRelease });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewMoveOrder); } });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyDown, action = InputActions.OnActionButtonPress });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, checkActivationFunction = Input.GetKeyDown, action = InputActions.OnMoveButtonPress });
 
         for (int i = 0; i < 10; i++)
         {
-            defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, useExactModifiers = true, command = new Command() { getOrder = CommandGetOrderFunction.GetDefaultConstructionOrder } });
-            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, useExactModifiers = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftAlt } });
-            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, useExactModifiers = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
-            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, isNumeric = true, useExactModifiers = true, keyModifiers = new List<KeyCode>() { KeyCode.LeftControl } });
+            // We need to create a new local variable j each iteration instead of using i
+            // so that our delegates will use that instead of all being set to 10 (the value of i after the loop exits)
+            int j = i; 
+            
+            defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, keyExclusions = new List<KeyCode>() { KeyCode.LeftShift, KeyCode.LeftAlt, KeyCode.LeftControl }, action = delegate { InputActions.NumericMenuButton(j); } });
+            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, keyExclusions = new List<KeyCode>() { KeyCode.LeftShift, KeyCode.LeftControl }, keyModifiers = new List<KeyCode>() { KeyCode.LeftAlt } });
+            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, keyExclusions = new List<KeyCode>() { KeyCode.LeftAlt, KeyCode.LeftControl }, keyModifiers = new List<KeyCode>() { KeyCode.LeftShift } });
+            //defaultInputSettings.Add(new Setting() { key = KeyCode.Alpha0 + i, keyExclusions = new List<KeyCode>() { KeyCode.LeftShift, KeyCode.LeftAlt }, keyModifiers = new List<KeyCode>() { KeyCode.LeftControl } });
         }
 
         inputSettings = defaultInputSettings;

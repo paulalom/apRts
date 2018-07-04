@@ -4,19 +4,20 @@ using UnityEngine;
 
 public class SelectionManager : MyMonoBehaviour {
 
-    UIManager uiManager;
     PlayerManager playerManager;
+    Camera mainCamera;
     public Texture2D selectionHighlight;
     public static Rect selectionBox = new Rect(0, 0, 0, 0);
     public static Vector3 mouseDownVectorSentinel = new Vector3(-99999, -99999, -99999);
     float mouseSlipTolerance = 4; // The square of the distance you are allowed to move your mouse before a drag select is detected
     public Vector3 mouseDown;
     public const int maxSelectedUnits = 100;
+    public bool menuClicked = false;
 
     public override void MyAwake()
     {
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         mouseDown = mouseDownVectorSentinel;
     }
 
@@ -32,8 +33,11 @@ public class SelectionManager : MyMonoBehaviour {
     public void CheckSingleSelectionEvent(RaycastHit hit)
     {
         List<RTSGameObject> selectedUnits = playerManager.GetPlayerSelectedUnits();
-        // objectClicked May be null
-        RTSGameObject objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
+        RTSGameObject objectClicked = hit.collider.GetComponent<RTSGameObject>();
+        if (objectClicked == null)
+        {
+            objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
+        }
         
         // Select one
         if (objectClicked != null && !(objectClicked is Projectile))// && selectableTypes.Contains(objectClicked.GetType()))
@@ -55,7 +59,7 @@ public class SelectionManager : MyMonoBehaviour {
     }
 
     // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
-    public void CheckBoxSelectionEvent(Camera mainCamera)
+    public void CheckBoxSelectionEvent()
     {
         if (Input.GetMouseButtonUp(0))
         {
@@ -71,9 +75,9 @@ public class SelectionManager : MyMonoBehaviour {
             }
 
             // Only do box selection / selection clearing if we drag a box or we click empty space
-            if (!uiManager.menuClicked && (Input.mousePosition - mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
+            if (!menuClicked && (Input.mousePosition - mouseDown).sqrMagnitude > mouseSlipTolerance) // && hit.collider.GetComponentInParent<RTSGameObject>() == null))
             {
-                CheckSelected(playerManager.GetAllUnits(), mainCamera);
+                CheckSelected(playerManager.GetAllUnits());
             }
             mouseDown = mouseDownVectorSentinel;
         }
@@ -90,7 +94,7 @@ public class SelectionManager : MyMonoBehaviour {
         }
     }
 
-    public void CheckSelected(HashSet<RTSGameObject> units, Camera mainCamera)
+    public void CheckSelected(HashSet<RTSGameObject> units)
     {
         HashSet<RTSGameObject> unitsInSelectionBox = new HashSet<RTSGameObject>();
         foreach (RTSGameObject unit in units)

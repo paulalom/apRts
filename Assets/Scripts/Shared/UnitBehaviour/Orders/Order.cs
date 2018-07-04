@@ -21,10 +21,9 @@ public enum OrderValidationResult
     NotOnSelf,
 }
 
-// Orders probably need to be rewritten into many classes (one per type?)
 public abstract class Order {
 
-    public OrderData orderData = new OrderData() { phase = OrderPhase.GetInRange, orderRange = 1f, repeatOnComplete = false };
+    public OrderData orderData = new OrderData();
     
     public virtual OrderValidationResult Validate(RTSGameObject performingUnit)
     {
@@ -130,7 +129,6 @@ public abstract class Order {
 
     public override string ToString()
     {
-        
         return orderData.ToString();
     }
 }

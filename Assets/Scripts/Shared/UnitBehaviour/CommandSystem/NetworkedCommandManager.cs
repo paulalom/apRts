@@ -57,9 +57,6 @@ public class NetworkedCommandManager : ICommandManager{
         foreach (MyPair<List<long>, Command> command in GetCommandsForStep(step))
         {
             Command comm = command.Value;
-            Command.GetAction(comm.action, gameManager).Invoke();
-            Command.GetRayCastHitAction(comm.raycastHitAction, gameManager).Invoke(comm.orderData.target, comm.orderData.targetPosition);
-            Command.GetUnitCommandAction(comm.raycastHitUnitAction, gameManager).Invoke(command.Key, comm);
 
             Order order = Command.GetNextDefaultOrderFunction(comm.getOrder, gameManager).Invoke();
             if (order != null)
@@ -75,9 +72,6 @@ public class NetworkedCommandManager : ICommandManager{
 
     public override List<MyPair<List<long>, Command>> GetCommandsForStep(long step)
     {
-        List<MyPair<List<long>, Command>> commands;
-        commands = nonNetworkedCommandQueue.GetCommandsForStep(step);
-        commands.AddRange(netStateManager.localCommands.GetCommandsForStep(step));
-        return commands;
+        return netStateManager.localCommands.GetCommandsForStep(step);
     }
 }

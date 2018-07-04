@@ -104,12 +104,24 @@ public static class OrderFactory {
         order.orderData.orderRange = 1f;
         return order;
     }
+
+    internal static Order NewCheatSpawnFactoryOrder()
+    {
+        return new CheatSpawnFactoryOrder() { orderData = new OrderData() };
+    }
+
     public static Order GetDefaultHarvestOrder()
     {
         Order order = new HarvestOrder();
         order.orderData.orderRange = 15f;
         return order;
     }
+
+    internal static Order NewCheatRaiseTerrainOrder()
+    {
+        return new CheatRaiseTerrainOrder() { orderData = new OrderData() { remainingChannelTime = 1f } };
+    }
+
     public static Order GetDefaultPatrolOrder()
     {
         Order order = new PatrolOrder();

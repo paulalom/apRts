@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 public class OrderData {
     
-    public OrderPhase phase;
+    public OrderPhase phase = OrderPhase.GetInRange;
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
-    public float orderRange;
+    public float orderRange = 1f;
     public List<MyPair<Type, int>> items;
     public RTSGameObject target;
     public Ability ability;
-    public bool repeatOnComplete;
+    public bool repeatOnComplete = false;
     public float remainingChannelTime;
 
     public override string ToString()

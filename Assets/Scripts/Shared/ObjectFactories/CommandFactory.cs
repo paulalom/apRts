@@ -11,7 +11,7 @@ public class CommandFactory {
         command.clearExistingOrders = false;
         command.orderData = order.orderData;
         command.overrideDefaultOrderData = true;
-        command.getOrder = (CommandGetOrderFunction)Enum.Parse(typeof(CommandGetOrderFunction), "GetDefault" + order.GetType().ToString());
+        command.getOrder = (OrderBuilderFunction)Enum.Parse(typeof(OrderBuilderFunction), "New" + order.GetType().ToString());
         return command;
     }
 }

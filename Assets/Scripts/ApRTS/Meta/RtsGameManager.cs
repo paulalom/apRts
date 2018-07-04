@@ -8,15 +8,10 @@ namespace Assets.Scripts.ApRTS.Meta
 {
     class RtsGameManager : GameManager
     {
-        public static string mainSceneName = "Main Scene";
-
-        public void Awake()
+        public override void Awake()
         {
+            base.Awake();
             debug = true;
-            if (LoadingScreenManager.GetInstance() == null)
-            {
-                throw new InvalidOperationException("The game must be started from the start menu scene");
-            }
             Debug.Log("Start time: " + DateTime.Now);
 
             WorldSettings worldSettings = worldManager.GetWorldSettings(worldManager.numWorlds);

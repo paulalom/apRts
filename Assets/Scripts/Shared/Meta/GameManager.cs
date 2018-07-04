@@ -27,8 +27,14 @@ public abstract class GameManager : MonoBehaviour {
 
     public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
 
-    public void Awake()
+    public virtual void Awake()
     {
+        // didnt start from start menu, switching...
+        if (LoadingScreenManager.GetInstance() == null)
+        {
+            DestroyImmediate(this);
+            throw new Exception("Warning: Game not started from start menu scene");
+        }
         mainCamera = GameObject.Find("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.Find("TerrainManager").GetComponent<TerrainManager>();
         orderManager = GameObject.Find("OrderManager").GetComponent<OrderManager>();
@@ -218,7 +224,7 @@ public abstract class GameManager : MonoBehaviour {
             {
                 Order order = OrderFactory.BuildConstructionOrder(items);
                 Command command = new Command() { orderData = order.orderData };
-                command.getOrder = CommandGetOrderFunction.GetDefaultConstructionOrder;
+                command.getOrder = OrderBuilderFunction.NewConstructionOrder;
                 command.overrideDefaultOrderData = true;
                 command.clearExistingOrders = false;
                 commandManager.AddCommand(command, unitIds);
@@ -234,21 +240,6 @@ public abstract class GameManager : MonoBehaviour {
     public void CreateText(string text, Vector3 position, float scale = 1)
     {
         uiManager.CreateText(text, position, scale);
-    }
-
-    public void RaiseTerrain(object nothing, Vector3 position)
-    {
-        try
-        { //Try catch to swallow exception. FixMe
-          // only does raiseTerrain
-            terrainManager.ModifyTerrain(position, .003f, 20, playerManager.activeWorld);
-        }
-        catch (Exception e) { }
-    }
-
-    public void SpawnFactory(object nothing, Vector3 position)
-    {
-        rtsGameObjectManager.SpawnUnit(typeof(Factory), position, 1, playerManager.ActivePlayer.units.FirstOrDefault().Value.gameObject, playerManager.activeWorld);
     }
 
     public static void RegisterObject(MyMonoBehaviour obj)

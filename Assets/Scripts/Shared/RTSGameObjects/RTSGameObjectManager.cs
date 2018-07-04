@@ -448,6 +448,21 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             unit.TakeDamage(damage);
         }
     }
+    
+    public void CheatRaiseTerrain(Vector3 position)
+    {
+        try
+        { //Try catch to swallow exception. FixMe
+          // only does raiseTerrain
+            terrainManager.ModifyTerrain(position, .003f, 20, playerManager.activeWorld);
+        }
+        catch (Exception e) { }
+    }
+
+    public void CheatSpawnFactory(Vector3 position, int ownerId)
+    {
+        SpawnUnit(typeof(Factory), position, ownerId, playerManager.ActivePlayer.units.FirstOrDefault().Value.gameObject, playerManager.activeWorld);
+    }
 
     public void DestroyUnit(RTSGameObject unit)
     {

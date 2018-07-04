@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class CommandQueue
 {
+    // Map of step->List of (unitIds->Command)
     public Dictionary<long, List<MyPair<List<long>, Command>>> commands = new Dictionary<long, List<MyPair<List<long>, Command>>>();
     
     public List<MyPair<List<long>, Command>> GetCommandsForStep(long step)

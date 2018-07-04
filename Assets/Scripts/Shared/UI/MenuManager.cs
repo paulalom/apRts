@@ -7,7 +7,7 @@ public class MenuManager : MyMonoBehaviour {
 
     public GameManager gameManager;
     public PlayerManager playerManager;
-    public UIManager uiManager;
+    public SelectionManager selectionManager;
     public Texture2D menuGraphic;
     float menuWidth = 400, menuHeight = 50;
     Rect constructionMenuRect;
@@ -17,6 +17,10 @@ public class MenuManager : MyMonoBehaviour {
     // Use this for initialization
     public override void MyAwake()
     {
+        selectionManager = GameObject.FindGameObjectWithTag("SelectionManager").GetComponent<SelectionManager>();
+        playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
         
@@ -36,10 +40,11 @@ public class MenuManager : MyMonoBehaviour {
     
     void OnGUI()
     {
-        if (playerManager == null || gameManager == null || uiManager == null)
+        /*
+        if (playerManager == null || gameManager == null || selectionManager == null)
         {
             return;
-        }
+        }*/
         GUI.depth = 100; // Smaller is closer. Buttons need < menus
         DrawConstructionMenu();
         drawInventoryMenus();
@@ -58,9 +63,9 @@ public class MenuManager : MyMonoBehaviour {
         GUI.Box(menu, "", container);
     }
 
-    public Type GetNumericMenuType(int key)
+    public Type[] GetNumericMenuTypes()
     {
-        return menuTypes[key - 1];
+        return menuTypes;
     }
 
     void drawMenuButtons(Rect menu)
@@ -74,7 +79,7 @@ public class MenuManager : MyMonoBehaviour {
             if (GUI.Button(button, (x+1).ToString(), icon))
             {
                 gameManager.ProduceFromMenu(menuTypes[x], 1);
-                uiManager.menuClicked = true;
+                selectionManager.menuClicked = true;
             }
         }
     }
@@ -105,7 +110,7 @@ public class MenuManager : MyMonoBehaviour {
                         List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value };
                         Order order = OrderFactory.BuildGiveOrder(unit, 3f, items);
                         Command command = new Command() { orderData = order.orderData };
-                        command.getOrder = CommandGetOrderFunction.GetDefaultGiveOrder;
+                        command.getOrder = OrderBuilderFunction.NewGiveOrder;
                         command.overrideDefaultOrderData = true;
                         gameManager.commandManager.AddCommand(command, new List<long>() { sourceUnit.uid });
                     }
@@ -115,7 +120,7 @@ public class MenuManager : MyMonoBehaviour {
                         List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() { gameManager.itemTransferSource.Value };
                         Order order = OrderFactory.BuildTakeOrder(sourceUnit, 3f, items);
                         Command command = new Command() { orderData = order.orderData };
-                        command.getOrder = CommandGetOrderFunction.GetDefaultTakeOrder;
+                        command.getOrder = OrderBuilderFunction.NewTakeOrder;
                         command.overrideDefaultOrderData = true;
                         gameManager.commandManager.AddCommand(command, new List<long>() { unit.uid });
                     }
@@ -124,7 +129,7 @@ public class MenuManager : MyMonoBehaviour {
                         // Nothing, we have a source but the destination is not valid, or the source was unintended
                     }
                 }
-                uiManager.menuClicked = true;
+                selectionManager.menuClicked = true;
             }
             i++;
 

@@ -28,6 +28,7 @@ public class ButtonManager : MyMonoBehaviour {
         Rect button;
         RTSGameObject newSelectedUnit = null;
 
+        // This might be spawning a button for each selected unit... we should fix that (in addition to everything else in this function)
         foreach (RTSGameObject unit in playerManager.GetPlayerSelectedUnits())
         {
             j = 1;
@@ -48,7 +49,7 @@ public class ButtonManager : MyMonoBehaviour {
                 {
                     Debug.Log("Item button!");
                     gameManager.itemTransferSource = new MyPair<RTSGameObject, MyPair<Type, int>>(unit, new MyPair<Type, int>(item));
-                    uiManager.menuClicked = true;
+                    selectionManager.menuClicked = true;
                 }
                 j++;
                 itemCount += item.Value;
@@ -60,7 +61,7 @@ public class ButtonManager : MyMonoBehaviour {
             if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))
             {
                 newSelectedUnit = unit;
-                uiManager.menuClicked = true;
+                selectionManager.menuClicked = true;
             }
 
             Producer producer = unit.GetComponent<Producer>();
@@ -84,7 +85,7 @@ public class ButtonManager : MyMonoBehaviour {
                     || GUI.Button(progressBarFront, "", progressBarFrontStyle))
                 {
                     Command command = new Command();
-                    command.getOrder = CommandGetOrderFunction.GetDefaultCancelOrder;
+                    command.getOrder = OrderBuilderFunction.NewCancelOrder;
                     gameManager.commandManager.AddCommand(command, new List<long>() { unit.uid });
                 }
             }

@@ -37,7 +37,7 @@ public class AIEconomyManager {
             if (missingResources.Count > 0) {
                 List<Type> missingResourceTypes = new List<Type>();
                 missingResources.ForEach(x => missingResourceTypes.Add(x.Key));
-                productionTarget = producer.GetFirstProducableItem(missingResourceTypes);
+                productionTarget = producer.GetFirstProducableItemFromList(missingResourceTypes);
             }
             else
             {

@@ -4,18 +4,13 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(Storage))]
-//[RequireComponent(typeof(RTSGameObject))]
 public class Producer : MyMonoBehaviour {
-
+    
     private Storage storage;
-    // We dont care about random access (our queue shouldn't be that long), 
-    // we want to be able to duplicate keys if they are not next to each other in the queue.
-    // eg. build unit T1, unit T2, unit T1, unit t3, unit T1
-    // We use KVP so that duplications which are next to eacother can be grouped. 
-    // Our production queue can be one item with a thousand units queued.
-    public MyPair<Type, int> currentProduction;
-    public HashSet<Type> canProduce = new HashSet<Type>();
-    public Dictionary<Type, float> productionTime = new Dictionary<Type, float>();
+    public int productionLevel;
+    public Type currentProductionType;
+    public HashSet<Type> possibleProductions = new HashSet<Type>();
+    public Dictionary<Type, int> productionTime = new Dictionary<Type, int>();
     public Dictionary<Type, int> productionQuantity = new Dictionary<Type, int>();
     public Dictionary<Type, Dictionary<Type, int>> productionCost = new Dictionary<Type, Dictionary<Type, int>>();
     RTSGameObjectManager rtsGameObjectManager;
@@ -24,20 +19,6 @@ public class Producer : MyMonoBehaviour {
     public OnProductionBeginEvent onProductionBeginEvent = new OnProductionBeginEvent();
 
     public float timeLeftToProduce = 0;
-    private bool _isActive = false;
-    // If we turn on, start counting production duration from the correct time
-    public bool IsActive {
-        get { return _isActive; }
-        set
-        {
-            if (_isActive != value)
-            {
-                previousTime = Time.time;
-                _isActive = value;
-            }
-        }
-    }
-    float previousTime;
 
     // Use this for initialization
     public override void MyStart()
@@ -45,15 +26,11 @@ public class Producer : MyMonoBehaviour {
         storage = GetComponent<Storage>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
 
-        foreach (Type type in canProduce)
+        foreach (Type type in possibleProductions)
         {
-            if (!productionCost.ContainsKey(type))
-            {
-                //producer.productionCost.Add(type, new Dictionary<Type, int>()); // This wont fix it, but it will fail quietly
-            }
             if (!productionTime.ContainsKey(type))
             {
-                productionTime.Add(type, 30); // default
+                productionTime.Add(type, 30000); // default
             }
             if (!productionQuantity.ContainsKey(type))
             {
@@ -62,56 +39,37 @@ public class Producer : MyMonoBehaviour {
         }
     }
 
-    // This is called once per frame
-    public override void MyUpdate()
+    public void SetProductionTarget(Type type)
     {
-        if (IsActive) {
-            timeLeftToProduce -= StepManager.GetDeltaStep();
-            if (timeLeftToProduce <= 0)
-            {
-                if (Produce())
-                {
-                    StartNextProduction();
-                }
-            }
-        }
+        currentProductionType = type;
     }
-    
-    bool Produce()
+
+    public int GetQuantityToProduce()
     {
-        if (currentProduction == null)
-        {
-            throw new System.Exception("Y'all be crazy... Aint nothin to produce. ");
-        }
-        Type typeToProduce = currentProduction.Key;
         int qtyToProduce = 1;
+
+        if (currentProductionType == null)
+        {
+            throw new System.Exception("Exception trying to produce with nothing queued");
+        }       
+
         try {
-            qtyToProduce = productionQuantity[currentProduction.Key];
+            qtyToProduce = productionQuantity[currentProductionType];
         }
         catch (Exception e)
         {
-            Debug.Log("Probably productionQuantity doesnt contain: " + currentProduction.Key);
+            Debug.Log("Probably productionQuantity doesnt contain: " + currentProductionType);
         }
-        if (storage.canContain.Contains(typeToProduce))
-        {
-            return ProduceToStorage(typeToProduce, qtyToProduce);
-        }
-        else
-        {
-            return ProduceToWorld(typeToProduce, qtyToProduce);
-        }
-    }  
 
-    bool ProduceToStorage(Type typeToProduce, int qtyToProduce)
+        return qtyToProduce;
+    }
+
+    public bool ProduceToStorage()
     {
-        if (storage.freeSpace < qtyToProduce) //todo: qty * objectSize
+        int qtyToProduce = GetQuantityToProduce();
+        if (storage.freeSpace >= qtyToProduce && (storage.AddItem(currentProductionType, qtyToProduce) > 0)) //todo: qty * objectSize
         {
-            return false;
-        }
-
-        if (storage.AddItem(typeToProduce, qtyToProduce) > 0)
-        { 
-            PopProductionQueue();
+            currentProductionType = null;
             return true;
         }
         else
@@ -120,139 +78,118 @@ public class Producer : MyMonoBehaviour {
         }
     }
 
-    bool ProduceToWorld(Type typeToProduce, int qtyToProduce)
+    public List<RTSGameObject> ProduceUnitsToWorld()
     {
-        bool success;
-        if (typeToProduce.IsSubclassOf(typeof(Structure))) {
-            success = rtsGameObjectManager.StartNewStructure(typeToProduce, qtyToProduce, gameObject);
-        }
-        else
+        int qtyToProduce = GetQuantityToProduce();
+        List<RTSGameObject> newUnits = rtsGameObjectManager.SpawnUnitsAround(currentProductionType, qtyToProduce, gameObject);
+        if (newUnits.Count > 0)
         {
-            success = rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject);
+            currentProductionType = null;
         }
-        if (success){
-            PopProductionQueue();
+        return newUnits;
+    }
+
+    public RTSGameObject ProduceStructureToWorld()
+    {
+        RTSGameObject newUnit = rtsGameObjectManager.StartNewStructure(currentProductionType, gameObject);
+        currentProductionType = null;
+        return newUnit;
+    }
+
+    /// <summary>
+    /// Gets the amount of resources which should be taken for this particular tick of construction.
+    /// WARNING: Resource cost is calculated assuming EXACTLY the fixed step time has passed
+    /// </summary>
+    /// <param name="productionType"></param>
+    /// <param name="timeSpentOnProduction"></param>
+    /// <returns></returns>
+    public Dictionary<Type, int> GetCostForProductionStep(Type productionType, int timeRemainingOnProduction)
+    {
+        Dictionary<Type, int> itemCosts = new Dictionary<Type, int>();
+        int fullProductionTime = productionTime[productionType];
+        int numStepsToBuild = fullProductionTime / StepManager.fixedStepTimeSize;
+        int timeSinceStart = fullProductionTime - timeRemainingOnProduction;
+        // add a hardcoded numStepsToBuild so we start construction by taking 1 instead of taking 1 at the end
+        int stepsSinceStart = numStepsToBuild + timeSinceStart / StepManager.fixedStepTimeSize; // evenly divisible because times moves in steps of this
+
+        foreach (KeyValuePair<Type, int> cost in productionCost[productionType])
+        {
+            float costPerStep = (float)cost.Value / numStepsToBuild;
+            float costPerStepDecimalPortion = costPerStep - (int)costPerStep;
+            int itemCost = (int)costPerStep +
+                (int)(costPerStepDecimalPortion * (stepsSinceStart)) - (int)(costPerStepDecimalPortion * (stepsSinceStart - 1));
+
+            itemCosts.Add(cost.Key, itemCost);
+        }
+        return itemCosts;
+    }
+
+    // potential issue where percentage time remaining is always very small and so items round to zero
+    public Dictionary<Type, int> GetFractionOfProductionCost(Type productionType, float timeSpentOnProduction, float returnInefficiencyMultiplier = 1)
+    {
+        Dictionary<Type, int> refundItems = new Dictionary<Type, int>();
+        float percentageTimeRemaining = timeSpentOnProduction / productionTime[productionType];
+        foreach (KeyValuePair<Type, int> cost in productionCost[productionType])
+        {
+            refundItems.Add(cost.Key, Mathf.RoundToInt(cost.Value * percentageTimeRemaining * returnInefficiencyMultiplier));
+        }
+        return refundItems;
+    }
+
+    public void CancelProduction(float timeSpentOnProduction)
+    {
+        if (currentProductionType != null)
+        {
+            Debug.Log("Cancelling production.. time spent: " + timeSpentOnProduction);
+            Dictionary<Type, int> refundItems = GetFractionOfProductionCost(currentProductionType, timeSpentOnProduction);
+            Debug.Log("Cancelling production.. refundItems = " + refundItems);
+            storage.AddItems(refundItems);
+        }
+    }
+
+    public bool HasResourcesForProduction(Type type, int quantity)
+    {
+        Dictionary<Type, int> costs = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> item in productionCost[type])
+        {
+            costs.Add(item.Key, item.Value * quantity);
+        }
+        if (storage.HasItems(costs))
+        {
             return true;
         }
         else
         {
             return false;
-        }
-    }
-
-    public void CancelProduction()
-    {
-        if (currentProduction != null)
-        {
-            storage.AddItems(productionCost[currentProduction.Key]);
-            PopProductionQueue();
-            if (currentProduction == null)
-            {
-                IsActive = false;
-            }
-        }
-    }
-
-    void PopProductionQueue()
-    {
-        if (currentProduction.Value > 1)
-        {
-            currentProduction.Value -= 1;
-        }
-        else
-        {
-            currentProduction = null;
-        }
-    }
-
-    void StartNextProduction()
-    {
-        if (currentProduction == null)
-        {
-            IsActive = false;
-            return;
-        }
-        try
-        {
-            StartProduction(currentProduction.Key, currentProduction.Value);
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Probably productionTime doesnt contain: " + currentProduction.Key);
-        }
-    }
-
-    void StartProduction(Type type, int quantity)
-    {
-        if (type.IsSubclassOf(typeof(Structure)))
-        {
-            timeLeftToProduce = 0;
-        }
-        else {
-            timeLeftToProduce = productionTime[currentProduction.Key];
-        }
-    }
-
-    public bool TryQueueItem(Type type, int quantity, bool preValidated = false)
-    {
-        try
-        {
-            if (preValidated || ValidateNewProductionRequest(type, quantity))
-            {
-                Dictionary<Type, int> costs = new Dictionary<Type, int>();
-                foreach (KeyValuePair<Type, int> item in productionCost[type])
-                {
-                    costs.Add(item.Key, item.Value * quantity);
-                }
-                if (storage.TakeItems(costs))
-                {
-                    QueueItem(type, quantity);
-                    return true;
-                }
-            }
-        }
-        catch(Exception e)
-        {
-            Debug.Log("Exception when queueing item of type: " + type + " to unit: " + gameObject.name);
-        }
-        return false;
-    }
-
-    private void QueueItem(Type type, int quantity)
-    {
-        bool restartProduction = false;
-        if (currentProduction == null)
-        {
-            currentProduction = new MyPair<Type, int>(type, quantity);
-            restartProduction = true;
-        }
-        else if (currentProduction.Key == type)
-        {
-            currentProduction.Value += quantity;
-        }
-        else
-        {
-            Debug.Log("Warning: Queueing an item which is not the type of current production!");
-            currentProduction = new MyPair<Type, int>(type, quantity);
-            restartProduction = true;
-        }
-
-        //Queueing automatically turns producer on
-        if (restartProduction)
-        {
-            StartNextProduction();
-            IsActive = true;
         }
     }
 
     public bool ValidateNewProductionRequest(Type type, int quantity) {
-        if (canProduce.Contains(type))
+        if (possibleProductions.Contains(type) && quantity == 1)
         {
             return true;
         }
-        else {
-            return false;
+        else if (quantity != 1)
+        {
+            throw new NotImplementedException("Production request with qty>1 issued... queueing is now done by order instead of in the producer. type requested: " + type + " qty: " + quantity);
         }
+        return false;
+    }
+
+    public Dictionary<Type, int> GetAvailableResourcesForProduction(Type type)
+    {
+        Dictionary<Type, int> availableResources = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> cost in productionCost[type])
+        {
+            if (storage.HasItem(cost.Key, cost.Value))
+            {
+                Dictionary<Type, int> storageItems = storage.GetItems();
+                int availableQty = (storageItems.ContainsKey(cost.Key) ? storageItems[cost.Key] : 0);
+                availableQty = Mathf.Min(cost.Value, availableQty);
+                availableResources.Add(cost.Key, availableQty);
+            }
+        }
+        return availableResources;
     }
 
     public List<MyPair<Type, int>> GetMissingResourcesForProduction(Type type)
@@ -270,11 +207,11 @@ public class Producer : MyMonoBehaviour {
         return missingResources;
     }
 
-    public Type GetFirstProducableItem(List<Type> items)
+    public Type GetFirstProducableItemFromList(List<Type> items)
     {
         foreach (Type item in items)
         {
-            if (canProduce.Contains(item) && storage.HasItems(productionCost[item]))
+            if (possibleProductions.Contains(item) && storage.HasItems(productionCost[item]))
             {
                 return item;
             }

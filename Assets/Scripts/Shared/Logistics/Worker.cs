@@ -24,7 +24,7 @@ public class Worker : MyMonoBehaviour
     {
         foreach (Type t in defaultCanProduce)
         {
-            producer.canProduce.Add(t);
+            producer.possibleProductions.Add(t);
         }
         producer.productionCost.Add(typeof(Factory), new Dictionary<Type, int>());
         producer.productionCost[typeof(Factory)].Add(typeof(Iron), 500);

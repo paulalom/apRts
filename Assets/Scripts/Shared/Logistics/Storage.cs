@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Storage : MyMonoBehaviour {
+public class Storage : MyMonoBehaviour
+{
 
     public int size;
     public int usedSpace;
@@ -32,7 +33,7 @@ public class Storage : MyMonoBehaviour {
         //onStorageChangedEvent.AddListener(DebugStorage);
     }
 
-    public bool AddItems(Dictionary<Type, int> items)
+    public virtual bool AddItems(Dictionary<Type, int> items)
     {
         Dictionary<Type, int> itemsAdded = new Dictionary<Type, int>();
         foreach (KeyValuePair<Type, int> kvp in items)
@@ -59,7 +60,7 @@ public class Storage : MyMonoBehaviour {
     }
 
     // Internal does not trigger onChanged events in case we fail to add a list of items, so we expose this instead
-    public int AddItem(Type type, int count, bool allOrNone = true)
+    public virtual int AddItem(Type type, int count, bool allOrNone = true)
     {
         int numItemsAdded = AddItemInternal(type, count, allOrNone);
         if (numItemsAdded > 0)
@@ -85,7 +86,7 @@ public class Storage : MyMonoBehaviour {
                 return 0;
             }
             else
-            { 
+            {
                 count = freeSpace;
             }
         }
@@ -104,7 +105,7 @@ public class Storage : MyMonoBehaviour {
         return count;
     }
 
-    public bool TakeItems(Dictionary<Type, int> items)
+    public virtual bool TakeItems(Dictionary<Type, int> items)
     {
         Dictionary<Type, int> itemsTaken = new Dictionary<Type, int>();
         int numItemsToTake;
@@ -139,7 +140,7 @@ public class Storage : MyMonoBehaviour {
     }
 
     // Internal does not trigger onChanged events in case we fail to add a list of items, so we expose this instead
-    public int TakeItem(Type type, int count, bool allOrNone = true)
+    public virtual int TakeItem(Type type, int count, bool allOrNone = true)
     {
         int numItemsTaken;
         if (!items.ContainsKey(type))
@@ -196,9 +197,9 @@ public class Storage : MyMonoBehaviour {
         return count;
     }
 
-    public bool HasItems(Dictionary<Type, int> hasItems) 
+    public bool HasItems(Dictionary<Type, int> hasItems)
     {
-        foreach(KeyValuePair<Type, int> item in hasItems)
+        foreach (KeyValuePair<Type, int> item in hasItems)
         {
             if (!HasItem(item.Key, item.Value))
             {
@@ -254,7 +255,8 @@ public class Storage : MyMonoBehaviour {
     void DebugStorage()
     {
         string debugMessage = this + "[";
-        foreach (KeyValuePair<Type, int> item in items) { 
+        foreach (KeyValuePair<Type, int> item in items)
+        {
             debugMessage += item.Key.ToString() + ": " + item.Value + ", ";
         }
         debugMessage += "]";
@@ -266,15 +268,8 @@ public class Storage : MyMonoBehaviour {
     {
         return items;
     }
-    public List<MyPair<Type, int>> GetItemsMyKVP()
-    {
-        List<MyPair<Type, int>> outItems = new List<MyPair<Type, int>>();
-        foreach (KeyValuePair<Type,int> item in items){
-            outItems.Add(new MyPair<Type, int>(item));
-        }
-        return outItems;
-    }
-    public List<MyPair<Type, int>> GetItemsMyKVP(int quantity)
+
+    public List<MyPair<Type, int>> GetItemsMyPair(int quantity)
     {
         List<MyPair<Type, int>> outItems = new List<MyPair<Type, int>>();
         foreach (KeyValuePair<Type, int> item in items)

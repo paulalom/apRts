@@ -19,7 +19,7 @@ public class Tank : RTSGameObject {
         
         // No fuel yet, just use coal
         consumer.operationCosts.Add(typeof(Coal), 1);
-        consumer.operationInterval = 1f;
+        consumer.operationInterval = 1000;
         defaultAbility = GetComponent<Shoot>();
         ((Shoot)defaultAbility).projectileType = typeof(BasicCannonProjectile);
         storage.AddItem(typeof(Coal), 30);

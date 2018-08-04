@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using System.Collections.Generic;
 
 public enum OrderPhase
 {
@@ -30,7 +29,17 @@ public abstract class Order {
         return OrderValidationResult.Success;
     }
 
-    public virtual bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    public virtual void OnQueue(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    {
+
+    }
+
+    public virtual void OnCancel(RTSGameObject performingUnit, GameManager gameManager, RTSGameObjectManager rtsGameObjectManager)
+    {
+
+    }
+
+    public virtual bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
     {
         Vector3 targetPos = orderData.target == null ? orderData.targetPosition : orderData.target.transform.position;
 
@@ -50,9 +59,9 @@ public abstract class Order {
         return true;
     }
 
-    public virtual bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    public virtual bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
     {
-        updateChannelDuration(dt);
+        ChannelForTime(dt);
         return IsFinishedChanneling();
     }
 
@@ -61,10 +70,17 @@ public abstract class Order {
         return true;
     }
 
-    protected void updateChannelDuration(float dt)
+    // dt should be factored into channeled time
+    protected void ChannelForTime(int channeledTime)
     {
-        orderData.remainingChannelTime -= dt;
+        orderData.remainingChannelTime = orderData.remainingChannelTime - channeledTime; //+ StepManager.fixedStepTimeSize;
     }
+
+    protected void SetRemainingChannelTime(float remainingTime)
+    {
+
+    }
+
     protected bool IsFinishedChanneling()
     {
         return orderData.remainingChannelTime <= 0;

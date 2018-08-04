@@ -28,7 +28,7 @@ public class FlowSystem : Subsystem {
 
     public override void MyUpdate()
     {
-        float dt = StepManager.GetDeltaStep();
+        int dt = StepManager.GetDeltaStep();
 
         availableChargeOut += maxPowerOutPerSecond * dt;
         availableChargeOut = Math.Min(maxPowerOutPerSecond, availableChargeOut);

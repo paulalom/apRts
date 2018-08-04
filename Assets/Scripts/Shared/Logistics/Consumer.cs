@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -9,33 +10,46 @@ public class Consumer : MyMonoBehaviour {
 
     private Storage storage;
 
-    public Dictionary<Type, int> operationCosts;
-    public float operationInterval = 5;
-    float lastConsume;
+    public Dictionary<Type, int> operationCosts; // Passive resource cost just to stay online
+    public int operationInterval = 400; // ms
+    long lastConsume;
 
     // Use this for initialization
     public override void MyAwake() {
         storage = GetComponent<Storage>();
-        lastConsume = Time.time;
+        lastConsume = StepManager.gameTime;
         operationCosts = new Dictionary<Type, int>();
 	}
-
-    // this should probably just be in update and fire an event when the state changes
-
-    /// <summary>
-    /// Takes operating costs from storage
-    /// </summary>
-    /// <returns>Whether or not we could operate</returns>
+    
     public bool Operate()
     {
-        if (Time.time > lastConsume + operationInterval)
+        if (StepManager.gameTime > lastConsume + operationInterval)
         {
-            lastConsume = Time.time;
+            lastConsume = StepManager.gameTime;
             return storage.TakeItems(operationCosts);
         }
-        else // We are operating because we recently consumed
+        else
         {
-            return true;
+            return false;
         }
+    }
+
+    public bool Operate(Dictionary<Type, int> externalConsumptionCosts)
+    {
+        Dictionary<Type, int> costs = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> cost in externalConsumptionCosts)
+        {
+            costs.Add(cost.Key, cost.Value);
+        }
+
+        if (StepManager.gameTime > lastConsume + operationInterval)
+        {
+            lastConsume = StepManager.gameTime;
+            foreach (KeyValuePair<Type, int> cost in operationCosts)
+            {
+                costs.Add(cost.Key, cost.Value);
+            }
+        }
+        return storage.TakeItems(costs);
     }
 }

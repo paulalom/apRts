@@ -59,7 +59,7 @@ namespace RVO
         /**
          * <summary>Defines a pair of scalar values.</summary>
          */
-        private struct FloatPair
+        private struct floatPair
         {
             private float a_;
             private float b_;
@@ -71,7 +71,7 @@ namespace RVO
              * <param name="a">The first scalar value.</returns>
              * <param name="b">The second scalar value.</returns>
              */
-            internal FloatPair(float a, float b)
+            internal floatPair(float a, float b)
             {
                 a_ = a;
                 b_ = b;
@@ -87,7 +87,7 @@ namespace RVO
              * <param name="pair1">The first pair of scalar values.</param>
              * <param name="pair2">The second pair of scalar values.</param>
              */
-            public static bool operator <(FloatPair pair1, FloatPair pair2)
+            public static bool operator <(floatPair pair1, floatPair pair2)
             {
                 return pair1.a_ < pair2.a_ || !(pair2.a_ < pair1.a_) && pair1.b_ < pair2.b_;
             }
@@ -102,7 +102,7 @@ namespace RVO
              * <param name="pair1">The first pair of scalar values.</param>
              * <param name="pair2">The second pair of scalar values.</param>
              */
-            public static bool operator <=(FloatPair pair1, FloatPair pair2)
+            public static bool operator <=(floatPair pair1, floatPair pair2)
             {
                 return (pair1.a_ == pair2.a_ && pair1.b_ == pair2.b_) || pair1 < pair2;
             }
@@ -117,7 +117,7 @@ namespace RVO
              * <param name="pair1">The first pair of scalar values.</param>
              * <param name="pair2">The second pair of scalar values.</param>
              */
-            public static bool operator >(FloatPair pair1, FloatPair pair2)
+            public static bool operator >(floatPair pair1, floatPair pair2)
             {
                 return !(pair1 <= pair2);
             }
@@ -133,7 +133,7 @@ namespace RVO
              * <param name="pair1">The first pair of scalar values.</param>
              * <param name="pair2">The second pair of scalar values.</param>
              */
-            public static bool operator >=(FloatPair pair1, FloatPair pair2)
+            public static bool operator >=(floatPair pair1, floatPair pair2)
             {
                 return !(pair1 < pair2);
             }
@@ -376,13 +376,13 @@ namespace RVO
                         ++rightSize;
                     }
 
-                    if (new FloatPair(Math.Max(leftSize, rightSize), Math.Min(leftSize, rightSize)) >= new FloatPair(Math.Max(minLeft, minRight), Math.Min(minLeft, minRight)))
+                    if (new floatPair(Math.Max(leftSize, rightSize), Math.Min(leftSize, rightSize)) >= new floatPair(Math.Max(minLeft, minRight), Math.Min(minLeft, minRight)))
                     {
                         break;
                     }
                 }
 
-                if (new FloatPair(Math.Max(leftSize, rightSize), Math.Min(leftSize, rightSize)) < new FloatPair(Math.Max(minLeft, minRight), Math.Min(minLeft, minRight)))
+                if (new floatPair(Math.Max(leftSize, rightSize), Math.Min(leftSize, rightSize)) < new floatPair(Math.Max(minLeft, minRight), Math.Min(minLeft, minRight)))
                 {
                     minLeft = leftSize;
                     minRight = rightSize;

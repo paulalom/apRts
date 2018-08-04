@@ -50,15 +50,11 @@ namespace Assets.Scripts.ApRTS.Meta
         {
             while (true)
             {
-                realTimeSinceLastStep += Time.deltaTime;
-                float stepDt = StepManager.GetDeltaStep();
-
-                while (stepDt < realTimeSinceLastStep || StepManager.CurrentStep < netStateManager.serverStep - 1)
+                realTimeSinceLastStep += (int)(Time.deltaTime * 1000);
+                int stepDt = StepManager.GetDeltaStep();
+                
+                while (stepDt < realTimeSinceLastStep && StepManager.CurrentStep <= netStateManager.serverStep)
                 {
-                    if (StepManager.CurrentStep >= netStateManager.serverStep)
-                    {
-                        yield return null;
-                    }
                     StepGame(stepDt);
                     realTimeSinceLastStep -= stepDt;
                     netStateManager.Step();

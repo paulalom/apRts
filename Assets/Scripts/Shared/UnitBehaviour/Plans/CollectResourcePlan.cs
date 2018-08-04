@@ -80,7 +80,7 @@ public class CollectResourcesPlan : Plan {
         }
         else
         {
-            List<MyPair<Type, int>> items = harvestingStation.storage.GetItemsMyKVP(-1);
+            List<MyPair<Type, int>> items = harvestingStation.storage.GetItemsMyPair(-1);
             if (items.Count != 0) {
                 collectionOrders.Add(OrderFactory.BuildTakeOrder(harvestingStation, items));
             }

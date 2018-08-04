@@ -9,11 +9,6 @@ public static class OrderFactory {
         return BuildConstructionOrder(items, Vector3.zero);
     }
 
-    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, float buildTime)
-    {
-        return BuildConstructionOrder(items, Vector3.zero, buildTime);
-    }
-
     public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, Vector3 targetPosition)
     {
         Order order = new ConstructionOrder();
@@ -21,13 +16,11 @@ public static class OrderFactory {
         order.orderData.items = items;
         return order;
     }
-    
-    public static Order BuildConstructionOrder(List<MyPair<Type, int>> items, Vector3 targetPosition, float buildTime)
+
+    public static Order BuildProductionOrder(List<MyPair<Type, int>> items)
     {
-        Order order = new ConstructionOrder();
-        order.orderData.targetPosition = targetPosition;
+        Order order = new ProductionOrder();
         order.orderData.items = items;
-        order.orderData.remainingChannelTime = buildTime;
         return order;
     }
 
@@ -98,6 +91,12 @@ public static class OrderFactory {
         order.orderData.orderRange = 1f;
         return order;
     }
+    public static Order GetDefaultProductionOrder()
+    {
+        Order order = new ProductionOrder();
+        order.orderData.orderRange = 1f;
+        return order;
+    }
     public static Order GetDefaultConstructionOrder()
     {
         Order order = new ConstructionOrder();
@@ -119,7 +118,7 @@ public static class OrderFactory {
 
     internal static Order NewCheatRaiseTerrainOrder()
     {
-        return new CheatRaiseTerrainOrder() { orderData = new OrderData() { remainingChannelTime = 1f } };
+        return new CheatRaiseTerrainOrder() { orderData = new OrderData() { remainingChannelTime = 1000 } };
     }
 
     public static Order GetDefaultPatrolOrder()
@@ -167,6 +166,8 @@ public static class OrderFactory {
                 return GetDefaultUseAbilityOrder;
             case "CancelOrder":
                 return GetDefaultCancelOrder;
+            case "ProductionOrder":
+                return GetDefaultProductionOrder;
             case "ConstructionOrder":
                 return GetDefaultConstructionOrder;
             case "HarvestOrder":

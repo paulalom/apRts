@@ -12,7 +12,7 @@ public class OrderData {
     public RTSGameObject target;
     public Ability ability;
     public bool repeatOnComplete = false;
-    public float remainingChannelTime;
+    public int remainingChannelTime;
 
     public override string ToString()
     {
@@ -66,7 +66,7 @@ public class OrderData {
         outOData.orderIssuedPosition = orderIssuedPosition;
         outOData.orderRange = float.Parse(orderDataComponents[3]);
         outOData.phase = (OrderPhase)Enum.Parse(typeof(OrderPhase), orderDataComponents[4]);
-        outOData.remainingChannelTime = float.Parse(orderDataComponents[5]);
+        outOData.remainingChannelTime = int.Parse(orderDataComponents[5]);
         outOData.repeatOnComplete = bool.Parse(orderDataComponents[6]);
         outOData.target = orderDataComponents[7] == "" ? null : playerManager.GetUnit(long.Parse(orderDataComponents[7]));
         outOData.targetPosition = targetPosition;

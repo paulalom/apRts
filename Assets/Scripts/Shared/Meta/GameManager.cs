@@ -22,7 +22,7 @@ public abstract class GameManager : MonoBehaviour {
     protected KeyCode prevKeyClicked;
     
     public bool debug;
-    protected float realTimeSinceLastStep;
+    protected int realTimeSinceLastStep; // time in ms
     //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
     public MyPair<RTSGameObject, MyPair<Type, int>> itemTransferSource = null;
@@ -58,7 +58,7 @@ public abstract class GameManager : MonoBehaviour {
 
     protected abstract IEnumerator MainGameLoop();
 
-    protected void StepGame(float dt)
+    protected void StepGame(int dt)
     {
         commandManager.ProcessCommandsForStep(StepManager.CurrentStep, this);
         foreach (MyMonoBehaviour obj in allObjects)
@@ -70,12 +70,7 @@ public abstract class GameManager : MonoBehaviour {
         List<RTSGameObject> nonNeutralUnits = playerManager.GetNonNeutralUnits();
         foreach (RTSGameObject unit in nonNeutralUnits)
         {
-            Mover mover = unit.GetComponent<Mover>();
-            if (mover != null)
-            {
-                mover.velocity = new Vector3();
-            }
-            rtsGameObjectManager.collisionAvoidanceManager.SyncObjectState(unit, dt);
+            //rtsGameObjectManager.collisionAvoidanceManager.SyncObjectState(unit, dt);
         }
         orderManager.CarryOutOrders(nonNeutralUnits, dt);
         rtsGameObjectManager.UpdateAll(units, nonNeutralUnits, dt);
@@ -222,12 +217,24 @@ public abstract class GameManager : MonoBehaviour {
             }
             else if (producer != null)
             {
-                Order order = OrderFactory.BuildConstructionOrder(items);
-                Command command = new Command() { orderData = order.orderData };
-                command.getOrder = OrderBuilderFunction.NewConstructionOrder;
-                command.overrideDefaultOrderData = true;
-                command.clearExistingOrders = false;
-                commandManager.AddCommand(command, unitIds);
+                if (type == typeof(Structure))
+                {
+                    Order order = OrderFactory.BuildConstructionOrder(items);
+                    Command command = new Command() { orderData = order.orderData };
+                    command.getOrder = OrderBuilderFunction.NewConstructionOrder;
+                    command.overrideDefaultOrderData = true;
+                    command.clearExistingOrders = false;
+                    commandManager.AddCommand(command, unitIds);
+                }
+                else
+                {
+                    Order order = OrderFactory.BuildProductionOrder(items);
+                    Command command = new Command() { orderData = order.orderData };
+                    command.getOrder = OrderBuilderFunction.NewProductionOrder;
+                    command.overrideDefaultOrderData = true;
+                    command.clearExistingOrders = false;
+                    commandManager.AddCommand(command, unitIds);
+                }
             }
         }
     }

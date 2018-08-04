@@ -20,7 +20,7 @@ public class OrderManager : MyMonoBehaviour {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
     }
 
-    public void CarryOutOrders(List<RTSGameObject> units, float dt)
+    public void CarryOutOrders(List<RTSGameObject> units, int dt)
     {
         foreach (RTSGameObject unit in units)
         {
@@ -163,6 +163,7 @@ public class OrderManager : MyMonoBehaviour {
             if (ValidateOrder(unit, order))
             {
                 orders[unit].Add(order);
+                order.OnQueue(unit, rtsGameObjectManager);
                 return true;
             }
             else
@@ -173,6 +174,7 @@ public class OrderManager : MyMonoBehaviour {
         else
         {
             orders[unit].Add(order);
+            order.OnQueue(unit, rtsGameObjectManager);
             return true;
         }
     }
@@ -208,29 +210,11 @@ public class OrderManager : MyMonoBehaviour {
     {
         if (orders.ContainsKey(unit) && orders[unit].Count > 0)
         {
-            // Dequeue productions
-            Producer producer = unit.GetComponent<Producer>();
             foreach (Order order in orders[unit])
             {
-                if (order.GetType() == typeof(ConstructionOrder))
-                {
-                    Worker worker = unit.GetComponent<Worker>();
-                    if (worker != null && worker.unitUnderConstruction != null)
-                    {
-                        ((Structure)worker.unitUnderConstruction).DemolishStructure("Construction cancelled!", gameManager, rtsGameObjectManager);
-                        worker.unitUnderConstruction = null;
-                    }
-                    else {
-                        producer.CancelProduction();
-                    }
-                }
+                order.OnCancel(unit, gameManager, rtsGameObjectManager);
             }
             orders[unit].Clear();
         }
-    }
-
-    public void CancelOrder(RTSGameObject unit, Order order)
-    {
-
     }
 }

@@ -73,7 +73,7 @@ public class UIManager : MyMonoBehaviour {
         GameObject go = Instantiate(floatingTextPrefab,
             position,
             Quaternion.identity) as GameObject;
-        go.name = "FloatingText" + floatingText.Count;
+        go.name = "floatingText" + floatingText.Count;
         go.transform.localScale = new Vector3(scale, scale, scale);
 
         FloatingText ft = go.GetComponent<FloatingText>();

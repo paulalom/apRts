@@ -29,8 +29,8 @@ public class CTFGameManager : GameManager {
     {
         while (true)
         {
-            realTimeSinceLastStep += Time.deltaTime;
-            float stepDt = StepManager.GetDeltaStep();
+            realTimeSinceLastStep += (int)(Time.deltaTime * 1000);
+            int stepDt = StepManager.GetDeltaStep();
 
             while (stepDt < realTimeSinceLastStep)
             {

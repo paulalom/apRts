@@ -5,8 +5,8 @@ public class Ability : MyMonoBehaviour {
 
     public RTSGameObject target;
     public Vector3 targetPosition;
-    public float range;
-    public float cooldown;
+    public int range;
+    public int cooldown;
 
     public override string ToString()
     {
@@ -38,8 +38,8 @@ public class Ability : MyMonoBehaviour {
         Ability ability = AbilityFactory.GetAbilityFromString(abilityComponents[0]);
         ability.target = GameObject.Find(abilityComponents[1]).GetComponent<RTSGameObject>();
         ability.targetPosition = targetPosition;
-        ability.range = float.Parse(abilityComponents[3]);
-        ability.cooldown = float.Parse(abilityComponents[4]);
+        ability.range = int.Parse(abilityComponents[3]);
+        ability.cooldown = int.Parse(abilityComponents[4]);
 
         return ability;
     }

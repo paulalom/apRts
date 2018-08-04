@@ -39,7 +39,7 @@ public class FloatingText : MonoBehaviour {
         }
 
         float speed = distToTop / duration;
-        float dt = StepManager.GetDeltaStep();
+        int dt = StepManager.GetDeltaStep();
         float dy = speed * dt;
         // I want text to wave left and right but i would need to do trig and whatnot or use some other method of positioning (eg. GUI.Label), so thats TODO
         //+ (directionLeft ? transform.position.x - leftRightDisplacement : transform.position.x + leftRightDisplacement)

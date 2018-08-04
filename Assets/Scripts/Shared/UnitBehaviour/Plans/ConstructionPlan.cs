@@ -158,7 +158,7 @@ public class ConstructionPlan : Plan {
         {
             for(int i = 0; i < thingToBuild.Value; i++)
             {
-                constructionOrders.Add(OrderFactory.BuildConstructionOrder(new List<MyPair<Type, int>>() { thingToBuild }, producer.productionTime[thingToBuild.Key]));
+                constructionOrders.Add(OrderFactory.BuildConstructionOrder(new List<MyPair<Type, int>>() { thingToBuild }));
             }
         }
         return constructionOrders;

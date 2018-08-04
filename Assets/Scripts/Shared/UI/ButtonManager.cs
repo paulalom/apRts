@@ -10,7 +10,13 @@ public class ButtonManager : MyMonoBehaviour {
     public SelectionManager selectionManager;
     public UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
+    public OrderManager orderManager;
     
+    public override void MyAwake()
+    {
+        orderManager = GameObject.Find("OrderManager").GetComponent<OrderManager>();
+    }
+
     void OnGUI()
     {
         if(playerManager == null || gameManager == null || selectionManager == null || uiManager == null)
@@ -65,11 +71,13 @@ public class ButtonManager : MyMonoBehaviour {
             }
 
             Producer producer = unit.GetComponent<Producer>();
-            if (producer != null && producer.currentProduction != null)
+            if (producer != null && producer.currentProductionType != null)
             {
-                MyPair<Type, int> nextInQueue = producer.currentProduction;
+                Type currentProduction = producer.currentProductionType;
+                
+                int qtyToProduce = GetSameProductionOrderCount(unit, currentProduction);
                 icon = new GUIStyle();
-                icon.normal.background = UIManager.icons[nextInQueue.Key];
+                icon.normal.background = UIManager.icons[currentProduction];
                 icon.normal.textColor = Color.red;
                 button = new Rect(menu.width - 50, menu.y + 5, 40, 40);
                 
@@ -78,9 +86,9 @@ public class ButtonManager : MyMonoBehaviour {
                 Rect progressBarBack = new Rect(menu.width - 48, menu.y + 37, 36, 5);
                 GUIStyle progressBarFrontStyle = new GUIStyle();
                 progressBarFrontStyle.normal.background = progressBarFrontTex;
-                Rect progressBarFront = new Rect(menu.width - 46, menu.y + 38, 34 *(producer.productionTime[nextInQueue.Key] - producer.timeLeftToProduce)/producer.productionTime[nextInQueue.Key], 3);
+                Rect progressBarFront = new Rect(menu.width - 46, menu.y + 38, 34 *(producer.productionTime[currentProduction] - producer.timeLeftToProduce)/producer.productionTime[currentProduction], 3);
 
-                if (GUI.Button(button, nextInQueue.Value.ToString(), icon) 
+                if (GUI.Button(button, qtyToProduce.ToString(), icon) 
                     || GUI.Button(progressBarBack, "", progressBarBackStyle) 
                     || GUI.Button(progressBarFront, "", progressBarFrontStyle))
                 {
@@ -102,5 +110,25 @@ public class ButtonManager : MyMonoBehaviour {
         {
             selectionManager.SetSelectionToUnit(newSelectedUnit);
         }
+    }
+
+    int GetSameProductionOrderCount(RTSGameObject unit, Type productionType)
+    {
+        int numProductionOrders = 0;
+        foreach (Order order in orderManager.orders[unit])
+        {
+            if (order.GetType() == typeof(ProductionOrder))
+            {
+                if (((ProductionOrder)order).orderData.items[0].Key == productionType)
+                {
+                    numProductionOrders++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        return numProductionOrders;
     }
 }

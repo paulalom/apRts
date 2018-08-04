@@ -100,7 +100,6 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
         }
     }
 
-    // Temporary solution to prevent units from entering buildings until pathing is set up
     void OnTriggerEnter(Collider other)
     {
         RTSGameObject otherRtsGo = other.GetComponent<RTSGameObject>();
@@ -109,20 +108,25 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
             orderManager.CheckOrderCompletionOnCollision(this, otherRtsGo);
         }
     }
-
-    /* as per clappyherd, ontriggerEnter:
-        Vector3 dpos = transform.position - collision.collider.transform.position;
-        if (dpos.sqrMagnitude == 0) { dpos = new Vector3(0.1f, 0, 0); }
-        Vector3 targetPos = transform.position + dpos;
-        transform.position = Vector3.MoveTowards(transform.position, targetPos, dpos.magnitude * Time.deltaTime);
-     */
-
+    
     void OnTriggerStay(Collider other)
     {
-        if (mover != null && rtsGameObjectManager != null && !(other.GetComponent<RTSGameObject>() is Projectile))// && other.GetComponent<Mover>() == null)
+        if (mover != null && rtsGameObjectManager != null && !(other.GetComponent<RTSGameObject>() is Projectile))
         {
-            Vector3 targetPos = transform.position + (transform.position - other.transform.position) * 1000;
-            rtsGameObjectManager.MoveUnit(this, new Vector2(targetPos.x, targetPos.z), mover.moveSpeed, StepManager.GetDeltaStep());
+            Vector2 dpos = new Vector2(transform.position.x, transform.position.z)
+                - new Vector2(other.transform.position.x, other.transform.position.z);
+
+            Vector2 size = (new Vector2(transform.localScale.x, transform.localScale.z)
+                + new Vector2(other.transform.localScale.x, other.transform.localScale.z)) / 2;
+
+            float distToMove = size.magnitude; 
+            if (dpos.sqrMagnitude == 0) { dpos = new Vector3(0.1f, 0, 0); }
+            Vector2 newDPos = (distToMove * dpos.normalized);
+            Vector3 targetPos = other.transform.position + new Vector3(newDPos.x, 0, newDPos.y);
+            
+            rtsGameObjectManager.SetUnitMoveTarget(this, new Vector2(targetPos.x, targetPos.z), StepManager.fixedStepTimeSize);
+            transform.position += mover.velocity;
+            mover.SetVelocity2D(Vector2.zero);
         }
     }
 }

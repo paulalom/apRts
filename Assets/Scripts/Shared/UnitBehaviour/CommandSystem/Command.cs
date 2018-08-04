@@ -14,6 +14,7 @@ public enum OrderBuilderFunction
 {
     NewUseAbilityOrder,
     NewCancelOrder,
+    NewProductionOrder,
     NewConstructionOrder,
     NewHarvestOrder,
     NewPatrolOrder,
@@ -75,6 +76,8 @@ public class Command
                 return OrderFactory.GetDefaultUseAbilityOrder;
             case OrderBuilderFunction.NewCancelOrder:
                 return OrderFactory.GetDefaultCancelOrder;
+            case OrderBuilderFunction.NewProductionOrder:
+                return OrderFactory.GetDefaultProductionOrder;
             case OrderBuilderFunction.NewConstructionOrder:
                 return OrderFactory.GetDefaultConstructionOrder;
             case OrderBuilderFunction.NewHarvestOrder:

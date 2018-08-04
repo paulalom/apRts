@@ -38,16 +38,14 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         {
             prefabs.Add(InspectorPrefabTypes[i].name, InspectorPrefabTypes[i]);
         }
-        collisionAvoidanceManager.MyStart();
+        //collisionAvoidanceManager.MyStart();
     }
     
-    public void UpdateAll(HashSet<RTSGameObject> units, List<RTSGameObject> nonNeutralUnits, float dt)
+    public void UpdateAll(HashSet<RTSGameObject> units, List<RTSGameObject> nonNeutralUnits, int dt)
     {
-        collisionAvoidanceManager.Update();
-        foreach (RTSGameObject unit in nonNeutralUnits)
-        {
-            MoveUnit(unit);
-        }
+        //collisionAvoidanceManager.Update();
+
+        MoveUnits(nonNeutralUnits);        
         SnapToTerrain(nonNeutralUnits, playerManager.activeWorld);
     }
 
@@ -159,7 +157,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     
     public GameObject NewDeposit(string name, Color color, DepositType type, Dictionary<Type, int> items, Vector3 position, World world)
     {
-        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, null, world);
+        GameObject go = SpawnUnit(typeof(ResourceDeposit), position, 0, null, world).gameObject;
         ResourceDeposit deposit = go.GetComponent<ResourceDeposit>();
         deposit.type = type;
         go.name = name;
@@ -190,25 +188,24 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         return go;
     }
     
-    public bool StartNewStructure(Type type, int quantity, GameObject producer)
+    public RTSGameObject StartNewStructure(Type type, GameObject producer)
     {
         RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
+        
         if (!prefabs.ContainsKey(type.ToString()))
         {
             throw new Exception("Attempting to spawn type: " + type + " which does not exist in prefab list");
         }
-        for (int i = 0; i < quantity; i++)
-        {
-            Vector3 positionToSpawn = GetPositionToSpawn(producer, type);
-            StartNewStructure(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world);
-        }
-        return true;
+        Vector3 positionToSpawn = GetPositionToSpawn(producer, type);
+        return StartNewStructure(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world);
     }
 
     //The "around" bit is todo
-    public bool SpawnUnitsAround(Type type, int quantity, GameObject producer)
+    public List<RTSGameObject> SpawnUnitsAround(Type type, int quantity, GameObject producer)
     {
         RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
+        List<RTSGameObject> newUnits = new List<RTSGameObject>();
+
         if (!prefabs.ContainsKey(type.ToString()))
         {
             throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
@@ -216,32 +213,30 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         for (int i = 0; i < quantity; i++)
         {
             Vector3 positionToSpawn = GetPositionToSpawn(producer, type);
-            SpawnUnit(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world);
+            newUnits.Add(SpawnUnit(type, positionToSpawn, rtsGo.ownerId, producer, rtsGo.world));
         }
-        return true;
+        return newUnits;
     }
 
-    public GameObject StartNewStructure(Type type, Vector3 position, int ownerId, GameObject producer, World world)
+    public RTSGameObject StartNewStructure(Type type, Vector3 position, int ownerId, GameObject producer, World world)
     {
         string unitPrefabType = type.ToString() + "UnderConstruction";
         return SpawnUnit(unitPrefabType, position, ownerId, producer, world);
     }
 
-    public GameObject SpawnUnit(Type type, Vector3 position, int ownerId, GameObject producer, World world)
+    public RTSGameObject SpawnUnit(Type type, Vector3 position, int ownerId, GameObject producer, World world)
     {
         return SpawnUnit(type.ToString(), position, ownerId, producer, world);
     }
     
-    public GameObject SpawnUnit(string type, Vector3 position, int ownerId, GameObject producer, World world)
+    public RTSGameObject SpawnUnit(string type, Vector3 position, int ownerId, GameObject producer, World world)
     {
         GameObject newUnit = Instantiate(prefabs[type],
             position,
             Quaternion.identity) as GameObject;
         newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
 
-        BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
-        
-        return newUnit;
+        return BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
     }
 
     public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, string requestedType, int ownerId, GameObject producer, World world)
@@ -386,31 +381,29 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         }
     }
 
-    public void MoveUnit(RTSGameObject unit, Vector2 targetPos, float moveSpeed, float dt)
+    private void MoveUnits(List<RTSGameObject> units)
     {
-        Mover mover = unit.GetComponent<Mover>();
-        if (mover.isActive)
+        List<Mover> movers = new List<Mover>();
+
+        foreach (RTSGameObject unit in units)
         {
-            Vector2 newPos = Vector2.MoveTowards(unit.Position2D, targetPos, moveSpeed * dt);
-            unit.transform.position = new Vector3(newPos.x, unit.transform.position.y, newPos.y);
+            movers.Add(unit.GetComponent<Mover>());
         }
-    }
-    public void MoveUnit(RTSGameObject unit)
-    {
-        Mover mover = unit.GetComponent<Mover>();
-        if (mover != null && mover.isActive)
+        movers.RemoveAll(x => x == null || x.isActive == false);
+        foreach (Mover mover in movers)
         {
             Vector3 vel = mover.velocity;
-            unit.transform.position += vel;
+            mover.transform.position += vel;
+            mover.SetVelocity2D(Vector2.zero);
         }
     }
-
-    public void SetUnitMoveTarget(RTSGameObject unit, Vector2 targetPos, float dt)
+    
+    public void SetUnitMoveTarget(RTSGameObject unit, Vector2 targetPos, int dt)
     {
         Mover mover = unit.GetComponent<Mover>();
         if (mover != null && mover.isActive)
         {
-            Vector2 velocity = Vector2.MoveTowards(unit.Position2D, targetPos, mover.moveSpeed * dt) - unit.Position2D;
+            Vector2 velocity = Vector2.MoveTowards(unit.Position2D, targetPos, mover.moveSpeed * dt/1000f) - unit.Position2D;
             mover.SetVelocity2D(velocity);
         }
     }

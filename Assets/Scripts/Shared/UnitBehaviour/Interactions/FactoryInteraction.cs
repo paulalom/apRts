@@ -19,7 +19,7 @@ public class FactoryInteraction
         }
         else
         {
-            List<MyPair<Type, int>> items = unit.storage.GetItemsMyKVP(-1);
+            List<MyPair<Type, int>> items = unit.storage.GetItemsMyPair(-1);
             if (items.Count != 0)
             {
                 dropOffOrders.Add(OrderFactory.BuildGiveOrder(depot, items));

@@ -24,7 +24,7 @@ public class Factory : Structure
         }
         foreach (Type t in defaultCanProduce)
         {
-            producer.canProduce.Add(t);
+            producer.possibleProductions.Add(t);
         }
         producer.productionCost.Add(typeof(ConstructionSphere), new Dictionary<Type, int>());
         producer.productionCost.Add(typeof(Paper), new Dictionary<Type, int>());
@@ -38,46 +38,22 @@ public class Factory : Structure
         producer.productionCost[typeof(Tank)].Add(typeof(Tool), 50);
         producer.productionCost[typeof(Tank)].Add(typeof(Coal), 50);
         producer.productionCost[typeof(Paper)].Add(typeof(Wood), 5);
-        producer.productionCost[typeof(Tool)].Add(typeof(Wood), 5);
-        producer.productionCost[typeof(Tool)].Add(typeof(Iron), 5);
+        producer.productionCost[typeof(Tool)].Add(typeof(Wood), 1500);
+        producer.productionCost[typeof(Tool)].Add(typeof(Iron), 1000);
+        producer.productionCost[typeof(Tool)].Add(typeof(Paper), 1);
         producer.productionCost[typeof(Car)].Add(typeof(Tool), 5);
         producer.productionCost[typeof(Car)].Add(typeof(Iron), 5);
         producer.productionCost[typeof(Car)].Add(typeof(Coal), 5);
 
-        producer.productionTime[typeof(ConstructionSphere)] = 2;
-        producer.productionTime[typeof(Tank)] = 2;
-        producer.productionTime[typeof(Paper)] = 2;
-        producer.productionTime[typeof(Tool)] = 2;
+        producer.productionTime[typeof(ConstructionSphere)] = 3000;
+        producer.productionTime[typeof(Tank)] = 2000;
+        producer.productionTime[typeof(Paper)] = 2000;
+        producer.productionTime[typeof(Tool)] = 2000;
 
         producer.productionQuantity[typeof(Paper)] = 10;
         producer.productionQuantity[typeof(Tool)] = 10;
 
         consumer.operationCosts[typeof(Coal)] = 3;
-        consumer.operationInterval = .3f;
-        producer.IsActive = false;
-    }
-
-    public override void MyStart()
-    {
-        storage.onStorageAddEvent.AddListener(CheckActivate);
-    }
-
-    public override void MyUpdate()
-    {
-        if (!underConstruction && producer.IsActive)
-        {
-            producer.IsActive = consumer.Operate();
-        }
-    }
-    
-    void CheckActivate(Dictionary<Type, int> items)
-    {
-        if (!underConstruction && producer.IsActive == false && producer.currentProduction != null)
-        {
-            if (storage.HasItems(consumer.operationCosts))
-            {
-                producer.IsActive = true;
-            }
-        }
+        consumer.operationInterval = 400;
     }
 }

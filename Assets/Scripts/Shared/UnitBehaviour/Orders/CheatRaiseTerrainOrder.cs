@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CheatRaiseTerrainOrder : Order {
 
-    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, float dt)
+    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
     {
         rtsGameObjectManager.CheatRaiseTerrain(orderData.targetPosition);
         return true;

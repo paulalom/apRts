@@ -195,10 +195,10 @@ public class NetworkStateManager : IStateManager{
         //todo validate here
         string[] messageComponents = message.Split(messageVariableSeparatorChar);
         long clientStep = long.Parse(messageComponents[2]);
-        if (clientStep < serverStep + 1)
+        if (clientStep <= serverStep)
         {
             messageComponents[2] = serverStep.ToString() + StepManager.numStepsToDelayInputProcessing;
-            Debug.Log("server step: " + serverStep + ", requested step: " + clientStep + " response step: " + serverStep + StepManager.numStepsToDelayInputProcessing);
+            Debug.Log("server step: " + serverStep + ", requested step: " + clientStep + " response step: " + (serverStep + StepManager.numStepsToDelayInputProcessing));
         }
         else
         {

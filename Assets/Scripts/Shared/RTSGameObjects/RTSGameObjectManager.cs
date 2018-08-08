@@ -324,7 +324,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             terrainManager.FlattenTerrainUnderObject(unit, unit.world);
         }
         onUnitCreated.Invoke(unit);
-        unit.Idle = true;
+        unit.currentOrderPhase = OrderPhase.Idle;
         unitCreationQueue.Add(unit);
     }
 

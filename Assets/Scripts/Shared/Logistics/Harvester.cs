@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public class Harvester : Transporter
 { 
     public int harvesterLevel = 1;
-    public float operationInterval = 5;
+    public float operationInterval = 5000;
     private float lastHarvest;
     public ResourceDeposit harvestTarget;
     public float harvestingRange = 20;
@@ -22,7 +22,7 @@ public class Harvester : Transporter
         {
             if (_isActive != value)
             {
-                lastHarvest = Time.time;
+                lastHarvest = StepManager.gameTime;
                 _isActive = value;
             }
         }
@@ -32,14 +32,14 @@ public class Harvester : Transporter
     public override void MyAwake()
     {
         storage = GetComponent<Storage>();
-        lastHarvest = Time.time;
+        lastHarvest = StepManager.gameTime;
     }
 
     public bool Harvest()
     {
-        if (Time.time > lastHarvest + operationInterval)
+        if (StepManager.gameTime > lastHarvest + operationInterval)
         {
-            lastHarvest = Time.time;
+            lastHarvest = StepManager.gameTime;
             return Take(harvestTarget.harvestItems, harvestTarget.storage, false);
         }
         else // We are operating because we recently consumed

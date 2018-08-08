@@ -24,20 +24,20 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     public int kills = 0;
     public float flyHeight = 0;
     float lastIdleTime;
-    float updateIdleInterval = 5;
-    public bool idle = false;
-    public bool Idle { get { return idle; } set
+    float updateIdleInterval = 5000;
+    public OrderPhase currentOrderPhase = OrderPhase.Idle;
+    public OrderPhase CurrentOrderPhase { get { return currentOrderPhase; } set
         {
-            if (value != idle)
+            if (value != OrderPhase.Idle)
             {
-                idle = value;
-                onIdle.Invoke(this, value);
+                currentOrderPhase = value;
+                onUnitOrderPhaseChange.Invoke(this, value);
             }
         }
     }
     
-    public class OnIdleEvent : UnityEvent<RTSGameObject, bool> { }
-    public OnIdleEvent onIdle = new OnIdleEvent();
+    public class OrderPhaseChangeEvent : UnityEvent<RTSGameObject, OrderPhase> { }
+    public OrderPhaseChangeEvent onUnitOrderPhaseChange = new OrderPhaseChangeEvent();
     
     public override void MyStart()
     {
@@ -54,7 +54,7 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     protected void DefaultInit()
     {
         prevPositionForHeightMapCheck = transform.position;
-        lastIdleTime = Time.time;
+        lastIdleTime = StepManager.gameTime;
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
@@ -74,10 +74,10 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
 
     protected void DefaultUpdate()
     {
-        if (idle && lastIdleTime + updateIdleInterval < Time.time)
+        if (currentOrderPhase == OrderPhase.Idle && lastIdleTime + updateIdleInterval < StepManager.gameTime)
         {
-            onIdle.Invoke(this, idle);
-            lastIdleTime = Time.time;
+            onUnitOrderPhaseChange.Invoke(this, currentOrderPhase);
+            lastIdleTime = StepManager.gameTime;
         }
     }
 

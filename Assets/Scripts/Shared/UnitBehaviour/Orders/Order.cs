@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum OrderPhase
 {
+    Idle,
     GetInRange,
     Activate,
     Channel,

@@ -16,7 +16,7 @@ public class Player {
     public List<long> selectedUnits = new List<long>();
     public Dictionary<long, RTSGameObject> units = new Dictionary<long, RTSGameObject>();
     public Dictionary<Type,int> resources = new Dictionary<Type, int>();
-    public List<MyPair<float, MyPair<Type, int>>> incomeEventsLast30Seconds = new List<MyPair<float, MyPair<Type, int>>>(); // this should be linkedList to improve efficiency
+    public List<MyPair<long, MyPair<Type, int>>> incomeEventsLast30Seconds = new List<MyPair<long, MyPair<Type, int>>>(); // this should be linkedList to improve efficiency
     public Dictionary<Type, int> avgResourceIncomesLast30Seconds = new Dictionary<Type, int>(); 
     public RTSGameObject commander;
     public float economicPower;
@@ -57,7 +57,7 @@ public class Player {
 
     public void UpdatePlayer()
     {
-        while (incomeEventsLast30Seconds.Count > 0 && incomeEventsLast30Seconds[0].Key < Time.time - 2)
+        while (incomeEventsLast30Seconds.Count > 0 && incomeEventsLast30Seconds[0].Key < StepManager.gameTime - 2000)
         {
             MyPair<Type, int> incomeEvent = incomeEventsLast30Seconds[0].Value;
             avgResourceIncomesLast30Seconds[incomeEvent.Key] -= incomeEvent.Value;
@@ -130,7 +130,7 @@ public class Player {
         {
             UpdateResources(item.Key, item.Value);
             UpdateAvgResourceIncomes(item.Key, item.Value);
-            incomeEventsLast30Seconds.Add(new MyPair<float, MyPair<Type, int>>(Time.time, new MyPair<Type, int>(item.Key, item.Value)));
+            incomeEventsLast30Seconds.Add(new MyPair<long, MyPair<Type, int>>(StepManager.gameTime, new MyPair<Type, int>(item.Key, item.Value)));
         }
         onEconomicChange.Invoke();
     }
@@ -141,7 +141,7 @@ public class Player {
         {
             UpdateResources(item.Key, -item.Value);
             UpdateAvgResourceIncomes(item.Key, -item.Value);
-            incomeEventsLast30Seconds.Add(new MyPair<float, MyPair<Type, int>>(Time.time, new MyPair<Type, int>(item.Key, -item.Value)));
+            incomeEventsLast30Seconds.Add(new MyPair<long, MyPair<Type, int>>(StepManager.gameTime, new MyPair<Type, int>(item.Key, -item.Value)));
         }
         onEconomicChange.Invoke();
     }

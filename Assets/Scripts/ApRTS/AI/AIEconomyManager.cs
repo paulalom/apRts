@@ -27,7 +27,7 @@ public class AIEconomyManager {
         productionFacilities.productionTargets.Clear();
         foreach(RTSGameObject productionFacility in productionFacilities.productionFacilities)
         {
-            if (!productionFacility.idle)
+            if (productionFacility.currentOrderPhase != OrderPhase.Idle)
             {
                 continue;
             }

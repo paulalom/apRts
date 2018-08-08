@@ -69,12 +69,12 @@ public class AIManager
 
     void SubscribeToIdleEvents(RTSGameObject idleUnit)
     {
-        idleUnit.onIdle.AddListener(OnIdleChangeEvent);
+        idleUnit.onUnitOrderPhaseChange.AddListener(OnOrderPhaseChangeEvent);
     }
 
-    void OnIdleChangeEvent(RTSGameObject unit, bool idleStatus)
+    void OnOrderPhaseChangeEvent(RTSGameObject unit, OrderPhase unitOrderPhase)
     {
-        if (idleStatus && !playerManager.PlayerSelectedUnits.Contains(unit.uid))
+        if (unitOrderPhase == OrderPhase.Idle && !playerManager.PlayerSelectedUnits.Contains(unit.uid))
         {
             if (!SetNewPlanForUnit(unit))
             {

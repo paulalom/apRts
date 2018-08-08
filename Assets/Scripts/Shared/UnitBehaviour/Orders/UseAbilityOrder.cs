@@ -7,7 +7,6 @@ public class UseAbilityOrder : Order {
 
     public UseAbilityOrder(Order o)
     {
-        orderData.phase = o.orderData.phase;
         orderData.targetPosition = o.orderData.targetPosition;
         orderData.orderIssuedPosition = o.orderData.orderIssuedPosition;
         orderData.orderRange = o.orderData.orderRange;

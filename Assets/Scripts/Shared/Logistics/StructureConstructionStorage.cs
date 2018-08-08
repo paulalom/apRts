@@ -6,8 +6,7 @@ using System.Text;
 class StructureConstructionStorage : Storage
 {
     public Dictionary<Type, int> totalRequiredItems, suppliedItems = new Dictionary<Type, int>(), usedItems = new Dictionary<Type, int>();
-    public bool constructionInitiated = false;
-
+    
     public override int AddItem(Type type, int count, bool allOrNone = true)
     {
         int numItemsTaken = base.AddItem(type, count, allOrNone);

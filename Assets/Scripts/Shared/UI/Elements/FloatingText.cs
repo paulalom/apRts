@@ -4,8 +4,8 @@ using System.Collections;
 // Todo: Outline on the text to make it easier to read. This should be good enough for now though
 public class FloatingText : MonoBehaviour {
     
-    public float duration = 5; // text on screen for 5s
-    private float leftRightinterval = 0.75f; // text moves left to right in this number of seconds
+    public float duration = 5000; // text on screen for 5s
+    private float leftRightinterval = 750; // text moves left to right in this number of ms
     private float distToTop = 10; // distance the text travels in the y direction
     private float startTime;
     private float lastDirectionChange;
@@ -20,22 +20,22 @@ public class FloatingText : MonoBehaviour {
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<RTSCamera>();
         textMesh = GetComponent<TextMesh>();
-        startTime = Time.time; // this will need more logic if we implement pause
-        lastDirectionChange = Time.time; // this too, and more!
+        startTime = StepManager.gameTime;
+        lastDirectionChange = StepManager.gameTime;
     }
 
 	// Update is called once per frame
 	 void Update() {
-        if (Time.time - startTime > duration)
+        if (StepManager.gameTime - startTime > duration)
         {
             uiManager.RemoveText(this);
             Destroy(gameObject);
             return;
         }
-        else if (Time.time - lastDirectionChange > leftRightinterval)
+        else if (StepManager.gameTime - lastDirectionChange > leftRightinterval)
         {
             directionLeft = !directionLeft;
-            lastDirectionChange = Time.time;
+            lastDirectionChange = StepManager.gameTime;
         }
 
         float speed = distToTop / duration;

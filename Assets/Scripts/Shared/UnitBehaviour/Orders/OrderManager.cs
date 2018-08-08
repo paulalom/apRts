@@ -28,19 +28,22 @@ public class OrderManager : MyMonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                switch (order.orderData.phase)
+                switch (unit.currentOrderPhase)
                 {
+                    case OrderPhase.Idle:
+                        unit.currentOrderPhase++;
+                        break;
                     case OrderPhase.GetInRange:
-                        order.orderData.phase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        unit.currentOrderPhase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Activate:
-                        order.orderData.phase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        unit.currentOrderPhase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Channel:
-                        order.orderData.phase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        unit.currentOrderPhase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.FinishChannel:
-                        order.orderData.phase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        unit.currentOrderPhase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
                         break;
                     default:
                         completedOrders.Add(unit);
@@ -57,6 +60,7 @@ public class OrderManager : MyMonoBehaviour {
             Order completedOrder = orders[completer][0];
             if (completedOrder.orderData.repeatOnComplete)
             {
+                completer.currentOrderPhase = OrderPhase.GetInRange;
                 unitOrders.Add(completedOrder);
             }
             CompleteOrder(completer);
@@ -70,7 +74,7 @@ public class OrderManager : MyMonoBehaviour {
         if (orders[unit].Count == 0)
         {
             orders.Remove(unit);
-            unit.Idle = true;
+            unit.currentOrderPhase = OrderPhase.Idle;
         }
     }
 
@@ -156,7 +160,7 @@ public class OrderManager : MyMonoBehaviour {
         if (!orders.ContainsKey(unit))
         {
             orders.Add(unit, new List<Order>());
-            unit.Idle = false;
+            unit.currentOrderPhase = OrderPhase.GetInRange;
         }
         if (validateOrder)
         {

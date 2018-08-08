@@ -26,7 +26,7 @@ public class ProductionOrder : Order {
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
     {
         Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(producer.currentProductionType, orderData.remainingChannelTime);
-        if (consumer.Operate(productionCosts))
+        if (consumer.Operate(performingUnit.storage, productionCosts))
         {
             ChannelForTime(dt);
             producer.timeLeftToProduce = orderData.remainingChannelTime; // temporary for GUI to work

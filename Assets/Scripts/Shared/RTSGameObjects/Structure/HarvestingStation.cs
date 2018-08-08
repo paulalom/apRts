@@ -45,7 +45,6 @@ public class HarvestingStation : Structure {
             if (!harvester.Harvest())
             {
                 harvester.IsActive = false;
-                idle = true;
             }
         }
         else

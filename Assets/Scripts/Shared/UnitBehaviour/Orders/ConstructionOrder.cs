@@ -19,23 +19,29 @@ public class ConstructionOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
     {
-        Type structureToBuild = orderData.items[0].Key;
-        producer = performingUnit.GetComponent<Producer>();
-        consumer = performingUnit.GetComponent<Consumer>();
-        producer.SetProductionTarget(structureToBuild);
-        orderData.remainingChannelTime = producer.productionTime[structureToBuild];
-        newStructure = producer.ProduceStructureToWorld();
+        //if (orderData.target == null)
+        //{
+            Type structureToBuild = orderData.items[0].Key;
+            producer = performingUnit.GetComponent<Producer>();
+            consumer = performingUnit.GetComponent<Consumer>();
+            producer.SetProductionTarget(structureToBuild);
+            orderData.remainingChannelTime = producer.productionTime[structureToBuild];
+            newStructure = producer.ProduceStructureToWorld();
 
-        StructureConstructionStorage newStructureStorage = (StructureConstructionStorage)newStructure.storage;
-        newStructureStorage.totalRequiredItems = producer.productionCost[structureToBuild]; // this might need to change to a deep clone since production costs may eventually not be readonly
-        
-        Dictionary<Type, int> availableResources = producer.GetAvailableResourcesForProduction(structureToBuild);
+            StructureConstructionStorage newStructureStorage = (StructureConstructionStorage)newStructure.storage;
+            newStructureStorage.totalRequiredItems = producer.productionCost[structureToBuild]; // this might need to change to a deep clone since production costs may eventually not be readonly
 
-        performingUnit.storage.TakeItems(availableResources);
-        newStructureStorage.AddItems(availableResources);
+            Dictionary<Type, int> availableResources = producer.GetAvailableResourcesForProduction(structureToBuild);
 
-        // performingUnit.storage.onStorageAddEvent.AddListener() // check for new required resources 
-        return true;
+            performingUnit.storage.TakeItems(availableResources);
+            newStructureStorage.AddItems(availableResources);
+            return true;
+       /* }
+        else
+        {
+            newStructure = orderData.target;
+
+        }*/
     }
 
     // Foreach unit assigned to order
@@ -44,7 +50,7 @@ public class ConstructionOrder : Order {
         StructureConstructionStorage storage = newStructure.GetComponent<StructureConstructionStorage>();
         
         Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(newStructure.GetType(), orderData.remainingChannelTime);
-        if (consumer.Operate(productionCosts))
+        if (consumer.Operate(newStructure.storage, productionCosts))
         {
             ChannelForTime(dt);
         }

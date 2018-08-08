@@ -34,7 +34,7 @@ public class Consumer : MyMonoBehaviour {
         }
     }
 
-    public bool Operate(Dictionary<Type, int> externalConsumptionCosts)
+    public bool Operate(Storage storage, Dictionary<Type, int> externalConsumptionCosts)
     {
         Dictionary<Type, int> costs = new Dictionary<Type, int>();
         foreach (KeyValuePair<Type, int> cost in externalConsumptionCosts)

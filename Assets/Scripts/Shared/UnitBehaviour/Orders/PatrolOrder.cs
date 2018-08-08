@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// NOTE THIS ORDER DOES NOT WORK WITH MUTLI-UNITS (the target switches with the issuedPos as soon as any unit gets to the target)
+/// could fix by instead of swapping local targets, giving the performing unit a new patrol order with reversed targets
+/// </summary>
 public class PatrolOrder : Order {
 
     public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
@@ -21,7 +25,7 @@ public class PatrolOrder : Order {
         Vector3 tempOrderIssuePosition = orderData.targetPosition;
         orderData.targetPosition = orderData.orderIssuedPosition;
         orderData.orderIssuedPosition = tempOrderIssuePosition;
-        orderData.phase = OrderPhase.Activate;
+        performingUnit.currentOrderPhase = OrderPhase.Activate;
         return true;
     }
 

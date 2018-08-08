@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class OrderData {
     
-    public OrderPhase phase = OrderPhase.GetInRange;
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
     public float orderRange = 1f;
@@ -21,7 +20,6 @@ public class OrderData {
         ItemFactory.ItemsToString(items) + "~" +
         "isPos: " + orderIssuedPosition.x + "," + orderIssuedPosition.y + "," + orderIssuedPosition.z + "~" +
         "r: " + orderRange + "~" +
-        phase + "~" +
         "chanl: " + remainingChannelTime + "~" +
         "repOnComp: " + repeatOnComplete + "~" +
         "targ: " + (target == null ? "" : target.name) + "~" +
@@ -37,7 +35,6 @@ public class OrderData {
         ItemFactory.ItemsToString(items) + "~" +
         orderIssuedPosition.x + "," + orderIssuedPosition.y + "," + orderIssuedPosition.z + "~" +
         orderRange + "~" +
-        (int)phase + "~" +
         remainingChannelTime + "~" +
         repeatOnComplete + "~" +
         (target == null ? "" : target.uid.ToString()) + "~" +
@@ -51,7 +48,7 @@ public class OrderData {
         OrderData outOData = new OrderData();
         string[] orderDataComponents = orderData.Split('~');
         string[] orderIssuedPositionComponents = orderDataComponents[2].Split(',');
-        string[] targetPositionComponents = orderDataComponents[8].Split(',');
+        string[] targetPositionComponents = orderDataComponents[7].Split(',');
         Vector3 orderIssuedPosition = new Vector3();
         orderIssuedPosition.x = float.Parse(orderIssuedPositionComponents[0]);
         orderIssuedPosition.y = float.Parse(orderIssuedPositionComponents[1]);
@@ -65,10 +62,9 @@ public class OrderData {
         outOData.items = ItemFactory.GetItemsFromString(orderDataComponents[1]);
         outOData.orderIssuedPosition = orderIssuedPosition;
         outOData.orderRange = float.Parse(orderDataComponents[3]);
-        outOData.phase = (OrderPhase)Enum.Parse(typeof(OrderPhase), orderDataComponents[4]);
-        outOData.remainingChannelTime = int.Parse(orderDataComponents[5]);
-        outOData.repeatOnComplete = bool.Parse(orderDataComponents[6]);
-        outOData.target = orderDataComponents[7] == "" ? null : playerManager.GetUnit(long.Parse(orderDataComponents[7]));
+        outOData.remainingChannelTime = int.Parse(orderDataComponents[4]);
+        outOData.repeatOnComplete = bool.Parse(orderDataComponents[5]);
+        outOData.target = orderDataComponents[6] == "" ? null : playerManager.GetUnit(long.Parse(orderDataComponents[6]));
         outOData.targetPosition = targetPosition;
 
         return outOData;

@@ -110,13 +110,10 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
         {
             orderManager.CheckOrderCompletionOnCollision(this, otherRtsGo);
         }
-    }
-    
-    void OnTriggerStay(Collider other)
-    {
+
         if (mover != null && rtsGameObjectManager != null 
-            && !(other.GetComponent<RTSGameObject>() is Projectile)
-            && (other.GetComponent<Mover>() == null || unitId < other.GetComponent<RTSGameObject>().unitId)) // only one should push.. will still be weird
+            && other.transform.GetComponent<RTSGameObject>() != null // Don't collide with our own shields/child colliders
+            && !(other.GetComponent<RTSGameObject>() is Projectile)) 
         {
             Vector2 dpos = new Vector2(transform.position.x, transform.position.z)
                 - new Vector2(other.transform.position.x, other.transform.position.z);
@@ -128,10 +125,11 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
             if (dpos.sqrMagnitude == 0) { dpos = new Vector3(0.1f, 0, 0); }
             Vector2 newDPos = (distToMove * dpos.normalized);
             Vector3 targetPos = other.transform.position + new Vector3(newDPos.x, 0, newDPos.y);
-            
-            rtsGameObjectManager.SetUnitMoveTarget(this, new Vector2(targetPos.x, targetPos.z), StepManager.fixedStepTimeSize);
-            transform.position += mover.velocity;
-            mover.SetVelocity2D(Vector2.zero);
+
+            transform.position = targetPos;
+            //rtsGameObjectManager.SetUnitMoveTarget(this, new Vector2(targetPos.x, targetPos.z), StepManager.fixedStepTimeSize);
+           // transform.position += mover.velocity;
+           // mover.SetVelocity2D(Vector2.zero);
         }
     }
 }

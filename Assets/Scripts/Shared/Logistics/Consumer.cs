@@ -10,27 +10,26 @@ public class Consumer : MyMonoBehaviour {
 
     private Storage storage;
 
-    public Dictionary<Type, int> operationCosts; // Passive resource cost just to stay online
-    public int operationInterval = 400; // ms
-    long lastConsume;
+    public Dictionary<Type, int> operationCosts; // costs to operate structure per second of active time
+    public long upkeepInterval = 1000; // 1s
+    long lastUpkeepTaken;
 
     // Use this for initialization
     public override void MyAwake() {
         storage = GetComponent<Storage>();
-        lastConsume = StepManager.gameTime;
         operationCosts = new Dictionary<Type, int>();
+        lastUpkeepTaken = StepManager.gameTime;
 	}
     
     public bool Operate()
     {
-        if (StepManager.gameTime > lastConsume + operationInterval)
+        if (StepManager.gameTime - lastUpkeepTaken > upkeepInterval)
         {
-            lastConsume = StepManager.gameTime;
             return storage.TakeItems(operationCosts);
         }
         else
         {
-            return false;
+            return true;
         }
     }
 
@@ -41,13 +40,19 @@ public class Consumer : MyMonoBehaviour {
         {
             costs.Add(cost.Key, cost.Value);
         }
-
-        if (StepManager.gameTime > lastConsume + operationInterval)
+        if (StepManager.gameTime - lastUpkeepTaken > upkeepInterval)
         {
-            lastConsume = StepManager.gameTime;
             foreach (KeyValuePair<Type, int> cost in operationCosts)
             {
                 costs.Add(cost.Key, cost.Value);
+            }
+            if (storage.HasItems(costs))
+            {
+                lastUpkeepTaken = StepManager.gameTime;
+            }
+            else
+            {
+                return false;
             }
         }
         return storage.TakeItems(costs);

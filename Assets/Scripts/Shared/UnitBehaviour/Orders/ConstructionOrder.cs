@@ -20,12 +20,13 @@ public class ConstructionOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit)
     {
+        if (isActivated) { return true; }
+        base.Activate(performingUnit);
         Type typeToBuild = orderData.items[0].Key;
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
         newStructure = (Structure)producer.ProduceStructureToWorld(orderData.items[0].Key);
         newStructure.constructionComponent.constructionTimeRemaining = producer.productionTime[typeToBuild];
-        performingUnit.GetComponent<Worker>().unitUnderConstruction = newStructure;
         
         producer.GiveNeededItems(typeToBuild, newStructure.storage);
         orderData.isJoinable = true;
@@ -34,7 +35,6 @@ public class ConstructionOrder : Order {
 
     public override void Join(RTSGameObject performingUnit)
     {
-        performingUnit.GetComponent<Worker>().unitUnderConstruction = newStructure;
         producer.GiveNeededItems(newStructure.GetType(), newStructure.storage);
     }
 
@@ -57,12 +57,7 @@ public class ConstructionOrder : Order {
 
     public override bool FinishChannel(RTSGameObject performingUnit)
     {
-        Worker worker = performingUnit.GetComponent<Worker>();
-        if (worker != null && worker.unitUnderConstruction != null)
-        {
-            ((Structure)worker.unitUnderConstruction).CompleteConstruction(rtsGameObjectManager);
-            worker.unitUnderConstruction = null;
-        }
+        newStructure.CompleteConstruction(rtsGameObjectManager);
         return true;
     }
 
@@ -81,15 +76,6 @@ public class ConstructionOrder : Order {
         else
         {
             return OrderValidationResult.Failure;
-        }
-    }
-    
-    public override void OnCancel(RTSGameObject performingUnit, GameManager gameManager)
-    {
-        Worker worker = performingUnit.GetComponent<Worker>();
-        if (worker != null && worker.unitUnderConstruction != null)
-        {   
-            worker.unitUnderConstruction = null;
         }
     }
 }

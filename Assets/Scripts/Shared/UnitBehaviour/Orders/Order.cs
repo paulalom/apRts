@@ -39,6 +39,7 @@ public abstract class Order {
     protected OrderPhase _phase = OrderPhase.GetInRange;
     public virtual OrderPhase Phase { get; set; }
     public RTSGameObject initiatingUnit;
+    protected bool isActivated = false;
 
     // this happens before validation but is not a part of the normal phases, 
     // since the order needs to be validated before sent over the network as a command
@@ -81,6 +82,7 @@ public abstract class Order {
 
     public virtual bool Activate(RTSGameObject performingUnit)
     {
+        isActivated = true;
         return true;
     }
 

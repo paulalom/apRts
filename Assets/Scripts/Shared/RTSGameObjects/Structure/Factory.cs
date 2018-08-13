@@ -43,8 +43,8 @@ public class Factory : Structure
         producer.productionCost[typeof(Tank)].Add(typeof(Tool), 50);
         producer.productionCost[typeof(Tank)].Add(typeof(Coal), 50);
         producer.productionCost[typeof(Paper)].Add(typeof(Wood), 5);
-        producer.productionCost[typeof(Tool)].Add(typeof(Wood), 1500);
-        producer.productionCost[typeof(Tool)].Add(typeof(Iron), 1000);
+        producer.productionCost[typeof(Tool)].Add(typeof(Wood), 15);
+        producer.productionCost[typeof(Tool)].Add(typeof(Iron), 10);
         producer.productionCost[typeof(Tool)].Add(typeof(Paper), 1);
         producer.productionCost[typeof(Car)].Add(typeof(Tool), 5);
         producer.productionCost[typeof(Car)].Add(typeof(Iron), 5);
@@ -59,6 +59,5 @@ public class Factory : Structure
         producer.productionQuantity[typeof(Tool)] = 10;
 
         consumer.operationCosts[typeof(Coal)] = 3;
-        consumer.operationInterval = 400;
     }
 }

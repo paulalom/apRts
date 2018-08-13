@@ -18,6 +18,8 @@ public class ProductionOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit)
     {
+        if (isActivated) { return true; }
+        base.Activate(performingUnit);
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
         orderData.remainingChannelTime = producer.productionTime[currentProductionType];

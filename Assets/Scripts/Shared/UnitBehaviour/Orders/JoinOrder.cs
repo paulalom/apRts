@@ -80,6 +80,8 @@ public class JoinOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit)
     {
+        if (isActivated) { return true; }
+        base.Activate(performingUnit);
         // already joined, activate is only ever called when we attempt to join, 
         // and we never call the source order's activate function
         if (isJoined)

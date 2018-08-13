@@ -35,14 +35,15 @@ public class Harvester : Transporter
 
     public bool Harvest()
     {
-        if (StepManager.gameTime > lastHarvest + operationInterval)
+        if (StepManager.gameTime - lastHarvest > operationInterval 
+            && Take(harvestTarget.harvestItems, harvestTarget.storage, false))
         {
             lastHarvest = StepManager.gameTime;
-            return Take(harvestTarget.harvestItems, harvestTarget.storage, false);
-        }
-        else // We are operating because we recently consumed
-        {
             return true;
+        }
+        else 
+        {
+            return false;
         }
     }
     

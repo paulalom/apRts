@@ -23,8 +23,8 @@ public class RTSGameObjectManager : MyMonoBehaviour {
 
     public LayerMask rtsGameObjectLayerMask;
     
-    public class OnUnitCreatedEvent : UnityEvent<RTSGameObject> { }
-    public OnUnitCreatedEvent onUnitCreated = new OnUnitCreatedEvent();
+    public class OnUnitChangedEvent : UnityEvent<RTSGameObject> { }
+    public OnUnitChangedEvent onUnitCreated = new OnUnitChangedEvent();
 
     public override void MyAwake()
     {
@@ -56,7 +56,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             foreach (RTSGameObject unit in unitCreationQueue)
             {
                 playerManager.AddUnit(unit, unit.ownerId);
-                allUnits.Add(unit.uid, unit);
+                allUnits.Add(unit.unitId, unit);
                 SnapToTerrainHeight(unit, unit.world);
             }
             unitCreationQueue.Clear();
@@ -67,9 +67,9 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     {
         foreach (RTSGameObject unit in unitDestructionQueue)
         {
-            playerManager.ActivePlayer.selectedUnits.Remove(unit.uid);
-            playerManager.players[unit.ownerId].units.Remove(unit.uid);
-            allUnits.Remove(unit.uid);
+            playerManager.ActivePlayer.selectedUnits.Remove(unit.unitId);
+            playerManager.players[unit.ownerId].units.Remove(unit.unitId);
+            allUnits.Remove(unit.unitId);
             if (!(unit is Projectile))
             {
                 playerManager.players[unit.ownerId].onUnitCountDecrease.Invoke(unit);
@@ -86,7 +86,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
                                                         unit.transform.position,
                                                         Quaternion.identity) as GameObject;
                     go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
-                    Destroy(go, go.GetComponent<ParticleSystem>().duration);
+                    Destroy(go, go.GetComponent<ParticleSystem>().main.duration);
                 }
 
                 Destroy(unit.gameObject);
@@ -243,19 +243,11 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     {
         RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
         Storage storage = newUnit.GetComponent<Storage>();
-
-        if (requestedType.Contains("UnderConstruction"))
-        {
-            producer.GetComponent<Worker>().unitUnderConstruction = rtsGo;
-        }
-        else if(rtsGo is Structure){
-            ((Structure)rtsGo).underConstruction = false;
-        }
-
+        
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
         rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
-        rtsGo.uid = gameManager.netStateManager.GetNextUID();
+        rtsGo.unitId = gameManager.netStateManager.GetNextUID();
 
         if (storage != null)
         {
@@ -295,19 +287,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             default:
                 break;
         }
-
-
-        if (gameManager.debug && rtsGo.GetType() == typeof(Factory))
-        {
-            Dictionary<Type, int> items = new Dictionary<Type, int>();
-            items.Add(typeof(Coal), 2000);
-            items.Add(typeof(Iron), 2000);
-            items.Add(typeof(Wood), 2000);
-            items.Add(typeof(Stone), 2000);
-            items.Add(typeof(Paper), 200);
-            items.Add(typeof(Tool), 10);
-            rtsGo.storage.AddItems(items);
-        }
+        
         InsertRTSGameObjectIntoGame(rtsGo);
         if (!(rtsGo is Projectile))
         {
@@ -324,7 +304,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             terrainManager.FlattenTerrainUnderObject(unit, unit.world);
         }
         onUnitCreated.Invoke(unit);
-        unit.currentOrderPhase = OrderPhase.Idle;
+        unit.IsIdle = true;
         unitCreationQueue.Add(unit);
     }
 
@@ -338,7 +318,6 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             return false; // some weird joojoo here
         }
         harvester.harvestTarget = target;
-        harvester.IsActive = true;
         return true;
     }
 
@@ -460,6 +439,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public void DestroyUnit(RTSGameObject unit)
     {
         unitDestructionQueue.Add(unit);
+        unit.onDestroyed.Invoke();
     }
 
     public bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)

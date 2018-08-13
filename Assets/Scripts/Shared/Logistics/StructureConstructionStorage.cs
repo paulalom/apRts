@@ -5,18 +5,15 @@ using System.Text;
 
 class StructureConstructionStorage : Storage
 {
-    public Dictionary<Type, int> totalRequiredItems, suppliedItems = new Dictionary<Type, int>(), usedItems = new Dictionary<Type, int>();
+    // neededItems may go negative, but we need to keep this to track incase someone adds extra then removes all
+    public Dictionary<Type, int> totalRequiredItems, neededItems = new Dictionary<Type, int>(), usedItems = new Dictionary<Type, int>();
     
     public override int AddItem(Type type, int count, bool allOrNone = true)
     {
         int numItemsTaken = base.AddItem(type, count, allOrNone);
-        if (suppliedItems.ContainsKey(type))
+        if (neededItems.ContainsKey(type))
         {
-            suppliedItems[type] += count;
-        }
-        else
-        {
-            suppliedItems.Add(type, count);
+            neededItems[type] -= count;
         }
         return numItemsTaken;
     }
@@ -28,12 +25,11 @@ class StructureConstructionStorage : Storage
         {
             foreach (KeyValuePair<Type, int> item in items)
             {
-                if (suppliedItems.ContainsKey(item.Key)){
-                    suppliedItems[item.Key] += item.Value;
-                }
-                else
+                Type type = item.Key;
+                int count = item.Value;
+                if (neededItems.ContainsKey(type))
                 {
-                    suppliedItems.Add(item.Key, item.Value);
+                    neededItems[type] -= count;
                 }
             }
         }
@@ -44,7 +40,11 @@ class StructureConstructionStorage : Storage
     public override int TakeItem(Type type, int count, bool allOrNone = true)
     {
         int numItemsTaken = base.TakeItem(type, count, allOrNone);
-        suppliedItems[type] -= numItemsTaken;
+
+        if (neededItems.ContainsKey(type))
+        {
+            neededItems[type] += count;
+        }
         return numItemsTaken;
     }
 
@@ -55,7 +55,10 @@ class StructureConstructionStorage : Storage
         {
             foreach (KeyValuePair<Type, int> item in items)
             {
-                suppliedItems[item.Key] -= item.Value;
+                if (neededItems.ContainsKey(item.Key))
+                {
+                    neededItems[item.Key] += item.Value;
+                }
             }
         }
         return success;

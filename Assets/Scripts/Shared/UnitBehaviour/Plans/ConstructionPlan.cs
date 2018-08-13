@@ -37,7 +37,13 @@ public class ConstructionPlan : Plan {
         {
             return planSteps;
         }
-        
+        planSteps.AddRange(ConstructThings(unit, producer));
+        // This used to check if unit had enough resources, and if not go get them from the nearest factory, then begin construction
+        // since we moved to the new construction method where no resources are required to start, we should change the behaviour.
+        // It may be better to move the checking for needed resources into the constructionOrder channel, as we need to be able to
+        // periodically abort and restart the order as more resources are needed or become available.
+
+        /*
         costs = GetConstructionCosts(producer);
         missingResources = CheckForMissingResources(unit, costs);
 
@@ -61,7 +67,8 @@ public class ConstructionPlan : Plan {
                 planSteps.AddRange(ConstructThings(unit, producer));
             }
         }
-        
+        */
+
         return planSteps;
     }
 

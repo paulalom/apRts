@@ -7,6 +7,7 @@ public class StepManager : MyMonoBehaviour {
     // Fixme: need to adjust order system and whatnot to scale movement etc with fixedTimeStep
     // Movement should be movement per gameSecond, changing the step size should not change movement speed
     public const int fixedStepTimeSize = 25; // 25ms per frame, 40 fps
+    public const int fixedStepTimeSizeX1000 = fixedStepTimeSize * 1000;
     public const int stepTimeSizeNumDigits = 3; // used for rounding
     public const int numStepsToDelayInputProcessing = 4;
     public static long gameStep = 0;

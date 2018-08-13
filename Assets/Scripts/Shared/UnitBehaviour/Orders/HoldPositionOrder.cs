@@ -3,7 +3,7 @@ using System.Collections;
 
 public class HoldPositionOrder : Order { 
 
-    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
+    public override bool Channel(RTSGameObject performingUnit, int dt)
     {
 
         return false;

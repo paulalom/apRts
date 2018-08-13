@@ -30,15 +30,10 @@ public class SelectionManager : MyMonoBehaviour {
         }
     }
 
-    public void CheckSingleSelectionEvent(RaycastHit hit)
+    public void CheckSingleSelectionEvent(RTSGameObject objectClicked)
     {
         List<RTSGameObject> selectedUnits = playerManager.GetPlayerSelectedUnits();
-        RTSGameObject objectClicked = hit.collider.GetComponent<RTSGameObject>();
-        if (objectClicked == null)
-        {
-            objectClicked = hit.collider.GetComponentInParent<RTSGameObject>();
-        }
-        
+                
         // Select one
         if (objectClicked != null && !(objectClicked is Projectile))// && selectableTypes.Contains(objectClicked.GetType()))
         {
@@ -157,11 +152,11 @@ public class SelectionManager : MyMonoBehaviour {
     {
         if (select)
         {
-            playerManager.PlayerSelectedUnits.Add(obj.uid);
+            playerManager.PlayerSelectedUnits.Add(obj.unitId);
         }
         else
         {
-            playerManager.PlayerSelectedUnits.Remove(obj.uid);
+            playerManager.PlayerSelectedUnits.Remove(obj.unitId);
         }
         obj.selected = select;
         obj.selectionCircle.enabled = select;
@@ -177,7 +172,7 @@ public class SelectionManager : MyMonoBehaviour {
         }
         playerManager.PlayerSelectedUnits.Clear();
 
-        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit.uid);
+        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit.unitId);
         newlySelectedUnit.selected = true;
         newlySelectedUnit.selectionCircle.enabled = true;
         playerManager.OnPlayerSelectionChange.Invoke();

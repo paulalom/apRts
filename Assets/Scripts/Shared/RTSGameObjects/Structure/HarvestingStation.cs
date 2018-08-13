@@ -2,9 +2,6 @@
 using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(Consumer))]
-[RequireComponent(typeof(Harvester))]
-[RequireComponent(typeof(Storage))]
 public class HarvestingStation : Structure {
 
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone) };
@@ -14,45 +11,39 @@ public class HarvestingStation : Structure {
     public override void MyAwake()
     {
         storage = GetComponent<Storage>();
+        foreach (Type t in defaultCanContain)
+        {
+            storage.canContain.Add(t);
+        }
+        // temp hack for under construction structures
+        if (constructionComponent != null)
+        {
+            return;
+        }
+
         consumer = GetComponent<Consumer>();
         harvester = GetComponent<Harvester>();
         rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
 
-        foreach (Type t in defaultCanContain)
-        {
-            storage.canContain.Add(t);
-        }
-        harvester.IsActive = false;
+        DefaultInit();
     }
 
     public override void MyStart()
     {
-        DefaultInit();
-        int layerMask = LayerMask.NameToLayer("Resource");
-        harvester.harvestTarget = (ResourceDeposit)(rtsGameObjectManager.GetNearestComponentInRange(GetComponent<Collider>(), transform.position, harvester.harvestingRange, 1 << layerMask));
-        if (harvester.harvestTarget == null)
-        {
-            DemolishStructure("Invalid Construction Location: No Resource within " + harvester.harvestingRange + " units", gameManager, rtsGameObjectManager);
-        }
     }
 
     public override void MyUpdate()
     {
-        if (harvester.IsActive)
+        // temp until we get Data orented design style lists of active objects
+        if (harvester != null)
         {
-            harvester.IsActive = consumer.Operate();
-            if (!harvester.Harvest())
-            {
-                harvester.IsActive = false;
-            }
+            harvester.MyUpdate();
         }
-        else
-        {
-            if (!underConstruction)
-            {
-                harvester.IsActive = true;
-            }
-        }
+    }
+
+    public override bool ValidatePlacement(RTSGameObjectManager rtsGameObjectManager, Vector3 targetPosition)
+    {
+        return Harvester.GetHarvestingTarget(rtsGameObjectManager, GetComponent<Collider>(), targetPosition, GetComponent<Harvester>().harvestingRange);
     }
 }

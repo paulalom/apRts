@@ -152,7 +152,7 @@ public class PlayerManager : MyMonoBehaviour {
     public void AddUnit(RTSGameObject unit, int playerId)
     {
         Player player = players[playerId];
-        player.units.Add(unit.uid, unit);
+        player.units.Add(unit.unitId, unit);
     }
     
     // We should store these lists (nonneutral, enemyUnits etc..) and maintain them rather than building them each time.

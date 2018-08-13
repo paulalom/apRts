@@ -49,7 +49,7 @@ public class AIStrategyManager {
 
         foreach (Order order in orders)
         {
-            startCommands.Add(new MyPair<List<long>, Command>(new List<long>() { playerToManage.commander.uid }, 
+            startCommands.Add(new MyPair<List<long>, Command>(new List<long>() { playerToManage.commander.unitId }, 
                 CommandFactory.GetCommandFromOrder(order)));
         }
 

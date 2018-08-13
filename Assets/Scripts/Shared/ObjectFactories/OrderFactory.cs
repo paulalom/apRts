@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public static class OrderFactory {
-  
+    
     public static Order BuildConstructionOrder(List<MyPair<Type, int>> items)
     {
         return BuildConstructionOrder(items, Vector3.zero);
@@ -26,12 +26,7 @@ public static class OrderFactory {
 
     public static Order BuildAbilityOrder(RTSGameObject target, Ability ability)
     {
-        Order abilityOrder = new UseAbilityOrder();
-        abilityOrder.orderData.target = target;
-        abilityOrder.orderData.orderRange = ability.range;
-        abilityOrder.orderData.ability = ability;
-        abilityOrder.orderData.remainingChannelTime = ability.cooldown;
-        return abilityOrder;
+        return BuildAbilityOrder(target, Vector3.zero, ability.range, ability);
     }
 
     public static Order BuildAbilityOrder(RTSGameObject target, Vector3 targetPosition, float range, Ability ability)
@@ -41,6 +36,7 @@ public static class OrderFactory {
         abilityOrder.orderData.targetPosition = targetPosition;
         abilityOrder.orderData.orderRange = range;
         abilityOrder.orderData.ability = ability;
+        abilityOrder.orderData.remainingChannelTime = ability.cooldown;
         return abilityOrder;
     }
 
@@ -87,7 +83,7 @@ public static class OrderFactory {
     
     public static Order GetDefaultCancelOrder()
     {
-        Order order = new CancelOrder();
+        Order order = new StopOrder();
         order.orderData.orderRange = 1f;
         return order;
     }
@@ -100,7 +96,19 @@ public static class OrderFactory {
     public static Order GetDefaultConstructionOrder()
     {
         Order order = new ConstructionOrder();
-        order.orderData.orderRange = 1f;
+        order.orderData.orderRange = 15f;
+        return order;
+    }
+    public static Order GetDefaultResumeConstructionOrder()
+    {
+        Order order = new ResumeConstructionOrder();
+        order.orderData.orderRange = 15f;
+        return order;
+    }
+    public static Order GetDefaultJoinOrder()
+    {
+        Order order = new JoinOrder();
+        order.orderData.orderRange = 15f;
         return order;
     }
 
@@ -130,13 +138,13 @@ public static class OrderFactory {
     public static Order GetDefaultGuardOrder()
     {
         Order order = new GuardOrder();
-        order.orderData.orderRange = 6f;
+        order.orderData.orderRange = 15f;
         return order;
     }
     public static Order GetDefaultFollowOrder()
     {
         Order order = new FollowOrder();
-        order.orderData.orderRange = 6f;
+        order.orderData.orderRange = 15f;
         return order;
     }
     public static Order GetDefaultMoveOrder()
@@ -148,73 +156,13 @@ public static class OrderFactory {
     public static Order GetDefaultGiveOrder()
     {
         Order order = new GiveOrder();
-        order.orderData.orderRange = .3f;
+        order.orderData.orderRange = 2f;
         return order;
     }
     public static Order GetDefaultTakeOrder()
     {
         Order order = new TakeOrder();
-        order.orderData.orderRange = .3f;
+        order.orderData.orderRange = 2f;
         return order;
-    }
-
-    public static Func<Order> GetDefaultOrderFunction(string orderType)
-    {
-        switch (orderType)
-        {
-            case "UseAbilityOrder":
-                return GetDefaultUseAbilityOrder;
-            case "CancelOrder":
-                return GetDefaultCancelOrder;
-            case "ProductionOrder":
-                return GetDefaultProductionOrder;
-            case "ConstructionOrder":
-                return GetDefaultConstructionOrder;
-            case "HarvestOrder":
-                return GetDefaultHarvestOrder;
-            case "PatrolOrder":
-                return GetDefaultPatrolOrder;
-            case "GuardOrder":
-                return GetDefaultGuardOrder;
-            case "FollowOrder":
-                return GetDefaultFollowOrder;
-            case "MoveOrder":
-                return GetDefaultMoveOrder;
-            case "GiveOrder":
-                return GetDefaultGiveOrder;
-            case "TakeOrder":
-                return GetDefaultTakeOrder;
-            default:
-                throw new Exception("order type not found: " + orderType);
-        }
-    }
-
-    public static Order GetNewOrderOftype(string orderType)
-    {
-        switch (orderType)
-        {
-            case "UseAbilityOrder":
-                return new UseAbilityOrder();
-            case "CancelOrder":
-                return new CancelOrder();
-            case "ConstructionOrder":
-                return new ConstructionOrder();
-            case "HarvestOrder":
-                return new HarvestOrder();
-            case "PatrolOrder":
-                return new PatrolOrder();
-            case "GuardOrder":
-                return new GuardOrder();
-            case "FollowOrder":
-                return new FollowOrder();
-            case "MoveOrder":
-                return new MoveOrder();
-            case "GiveOrder":
-                return new GiveOrder();
-            case "TakeOrder":
-                return new TakeOrder();
-            default:
-                throw new Exception("order type not found: " + orderType);
-        }
     }
 }

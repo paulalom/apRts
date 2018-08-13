@@ -12,8 +12,8 @@ public abstract class Generator : Subsystem, IActivatable {
     {
         if (isActive)
         {
-            float delta = StepManager.GetDeltaStep();
-            Generate(generationAmountPerStep * delta);
+            float dt = StepManager.GetDeltaStep()/1000f;
+            Generate(generationAmountPerStep * dt);
         }
     }
 

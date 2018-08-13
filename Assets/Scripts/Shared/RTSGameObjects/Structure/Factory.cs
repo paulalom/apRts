@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Consumer))]
-[RequireComponent(typeof(Producer))]
 public class Factory : Structure
 {
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
@@ -14,14 +12,21 @@ public class Factory : Structure
     public override void MyAwake()
     {
         storage = GetComponent<Storage>();
-        producer = GetComponent<Producer>();
-        consumer = GetComponent<Consumer>();
-        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
-
         foreach (Type t in defaultCanContain)
         {
             storage.canContain.Add(t);
         }
+
+        // temp hack for under construction structures
+        if (constructionComponent != null)
+        {
+            return;
+        }
+
+        producer = GetComponent<Producer>();
+        consumer = GetComponent<Consumer>();
+        rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+
         foreach (Type t in defaultCanProduce)
         {
             producer.possibleProductions.Add(t);

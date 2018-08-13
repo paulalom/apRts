@@ -3,7 +3,11 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConstructionOrder : Order {
+// This feels super redundant to construction order... but adding this functionality to join order was being a big PITA
+// since the orderTarget is the structure and not the unit building it added a reverse order lookup and there was the possibility
+// that the original constructing unit had abandoned the project entirely.
+// Ill figure out a better way next time I revisit this code. For now this works.
+public class ResumeConstructionOrder : Order {
 
     Producer producer;
     Consumer consumer;
@@ -20,14 +24,13 @@ public class ConstructionOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit)
     {
-        Type typeToBuild = orderData.items[0].Key;
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
-        newStructure = (Structure)producer.ProduceStructureToWorld(orderData.items[0].Key);
-        newStructure.constructionComponent.constructionTimeRemaining = producer.productionTime[typeToBuild];
+        newStructure = (Structure)orderData.target;
+
         performingUnit.GetComponent<Worker>().unitUnderConstruction = newStructure;
-        
-        producer.GiveNeededItems(typeToBuild, newStructure.storage);
+
+        producer.GiveNeededItems(newStructure.GetType(), newStructure.storage);
         orderData.isJoinable = true;
         return true;
     }
@@ -66,15 +69,14 @@ public class ConstructionOrder : Order {
         return true;
     }
 
-    // magic performingUnit.transform.position for construction placement validation until we get some targeted structure placement
     public override OrderValidationResult Validate(RTSGameObject performingUnit)
     {
         Producer producer = performingUnit.GetComponent<Producer>();
-        Type newStructureType = orderData.items[0].Key;
+        Type newStructureType = orderData.target.GetType();
         Structure newStructurePrefab = rtsGameObjectManager.prefabs[newStructureType.ToString()].GetComponent<Structure>();
 
         if (producer.ValidateNewProductionRequest(newStructureType, 1)
-            && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, performingUnit.transform.position))
+            && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, orderData.targetPosition))
         {
             return OrderValidationResult.Success;
         }
@@ -83,12 +85,12 @@ public class ConstructionOrder : Order {
             return OrderValidationResult.Failure;
         }
     }
-    
+
     public override void OnCancel(RTSGameObject performingUnit, GameManager gameManager)
     {
         Worker worker = performingUnit.GetComponent<Worker>();
         if (worker != null && worker.unitUnderConstruction != null)
-        {   
+        {
             worker.unitUnderConstruction = null;
         }
     }

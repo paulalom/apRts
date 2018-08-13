@@ -8,7 +8,6 @@ public class Producer : MyMonoBehaviour {
     
     private Storage storage;
     public int productionLevel;
-    public Type currentProductionType;
     public HashSet<Type> possibleProductions = new HashSet<Type>();
     public Dictionary<Type, int> productionTime = new Dictionary<Type, int>();
     public Dictionary<Type, int> productionQuantity = new Dictionary<Type, int>();
@@ -39,37 +38,11 @@ public class Producer : MyMonoBehaviour {
         }
     }
 
-    public void SetProductionTarget(Type type)
+    public bool ProduceToStorage(Type typeToProduce)
     {
-        currentProductionType = type;
-    }
-
-    public int GetQuantityToProduce()
-    {
-        int qtyToProduce = 1;
-
-        if (currentProductionType == null)
+        int qtyToProduce = productionQuantity[typeToProduce];
+        if (storage.freeSpace >= qtyToProduce && (storage.AddItem(typeToProduce, qtyToProduce) > 0)) //todo: qty * objectSize
         {
-            throw new System.Exception("Exception trying to produce with nothing queued");
-        }       
-
-        try {
-            qtyToProduce = productionQuantity[currentProductionType];
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Probably productionQuantity doesnt contain: " + currentProductionType);
-        }
-
-        return qtyToProduce;
-    }
-
-    public bool ProduceToStorage()
-    {
-        int qtyToProduce = GetQuantityToProduce();
-        if (storage.freeSpace >= qtyToProduce && (storage.AddItem(currentProductionType, qtyToProduce) > 0)) //todo: qty * objectSize
-        {
-            currentProductionType = null;
             return true;
         }
         else
@@ -78,21 +51,16 @@ public class Producer : MyMonoBehaviour {
         }
     }
 
-    public List<RTSGameObject> ProduceUnitsToWorld()
+    public List<RTSGameObject> ProduceUnitsToWorld(Type typeToProduce)
     {
-        int qtyToProduce = GetQuantityToProduce();
-        List<RTSGameObject> newUnits = rtsGameObjectManager.SpawnUnitsAround(currentProductionType, qtyToProduce, gameObject);
-        if (newUnits.Count > 0)
-        {
-            currentProductionType = null;
-        }
+        int qtyToProduce = productionQuantity[typeToProduce];
+        List<RTSGameObject> newUnits = rtsGameObjectManager.SpawnUnitsAround(typeToProduce, qtyToProduce, gameObject);
         return newUnits;
     }
 
-    public RTSGameObject ProduceStructureToWorld()
+    public RTSGameObject ProduceStructureToWorld(Type typeToProduce)
     {
-        RTSGameObject newUnit = rtsGameObjectManager.StartNewStructure(currentProductionType, gameObject);
-        currentProductionType = null;
+        RTSGameObject newUnit = rtsGameObjectManager.StartNewStructure(typeToProduce, gameObject);
         return newUnit;
     }
 
@@ -136,15 +104,12 @@ public class Producer : MyMonoBehaviour {
         return refundItems;
     }
 
-    public void CancelProduction(float timeSpentOnProduction)
+    public void CancelProduction(Type typeToCancel, float timeSpentOnProduction)
     {
-        if (currentProductionType != null)
-        {
-            Debug.Log("Cancelling production.. time spent: " + timeSpentOnProduction);
-            Dictionary<Type, int> refundItems = GetFractionOfProductionCost(currentProductionType, timeSpentOnProduction);
-            Debug.Log("Cancelling production.. refundItems = " + refundItems);
-            storage.AddItems(refundItems);
-        }
+        Debug.Log("Cancelling production.. time spent: " + timeSpentOnProduction);
+        Dictionary<Type, int> refundItems = GetFractionOfProductionCost(typeToCancel, timeSpentOnProduction);
+        Debug.Log("Cancelling production.. refundItems = " + refundItems);
+        storage.AddItems(refundItems);
     }
 
     public bool HasResourcesForProduction(Type type, int quantity)
@@ -175,29 +140,13 @@ public class Producer : MyMonoBehaviour {
         }
         return false;
     }
-
-    public Dictionary<Type, int> GetAvailableResourcesForProduction(Type type)
-    {
-        Dictionary<Type, int> availableResources = new Dictionary<Type, int>();
-        foreach (KeyValuePair<Type, int> cost in productionCost[type])
-        {
-            if (storage.HasItem(cost.Key, cost.Value))
-            {
-                Dictionary<Type, int> storageItems = storage.GetItems();
-                int availableQty = (storageItems.ContainsKey(cost.Key) ? storageItems[cost.Key] : 0);
-                availableQty = Mathf.Min(cost.Value, availableQty);
-                availableResources.Add(cost.Key, availableQty);
-            }
-        }
-        return availableResources;
-    }
-
+    
     public List<MyPair<Type, int>> GetMissingResourcesForProduction(Type type)
     {
         List<MyPair<Type, int>> missingResources = new List<MyPair<Type, int>>();
         foreach (KeyValuePair<Type, int> cost in productionCost[type])
         {
-            if (!storage.HasItem(cost.Key, cost.Value))
+            if (storage.GetItemCount(cost.Key, cost.Value) == 0)
             {
                 Dictionary<Type, int> storageItems = storage.GetItems();
                 int missingQty = cost.Value - (storageItems.ContainsKey(cost.Key) ? storageItems[cost.Key] : 0);
@@ -206,7 +155,7 @@ public class Producer : MyMonoBehaviour {
         }
         return missingResources;
     }
-
+    
     public Type GetFirstProducableItemFromList(List<Type> items)
     {
         foreach (Type item in items)
@@ -217,5 +166,19 @@ public class Producer : MyMonoBehaviour {
             }
         }
         return null;
+    }
+    
+    public void GiveNeededItems(Type typeToBuild, Storage targetStorage)
+    {
+        Dictionary<Type, int> items = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> requiredItem in productionCost[typeToBuild])
+        {
+            int numItemsToTake = storage.GetItemCount(requiredItem.Key, requiredItem.Value);
+            numItemsToTake = numItemsToTake < requiredItem.Value ? numItemsToTake : requiredItem.Value;
+
+            // internals handle checking for 0 as well as we would
+            int addedItems = targetStorage.AddItem(requiredItem.Key, numItemsToTake, false);
+            storage.TakeItem(requiredItem.Key, addedItems);
+        }
     }
 }

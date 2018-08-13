@@ -4,11 +4,11 @@ using System.Collections;
 // Todo: Outline on the text to make it easier to read. This should be good enough for now though
 public class FloatingText : MonoBehaviour {
     
-    public float duration = 5000; // text on screen for 5s
-    private float leftRightinterval = 750; // text moves left to right in this number of ms
-    private float distToTop = 10; // distance the text travels in the y direction
-    private float startTime;
-    private float lastDirectionChange;
+    public long duration = 5000; // text on screen for 5s
+    private long leftRightinterval = 750; // text moves left to right in this number of ms
+    private long distToTop = 10; // distance the text travels in the y direction
+    private long startTime;
+    private long lastDirectionChange;
     private bool directionLeft = true;
     public TextMesh textMesh;
     UIManager uiManager;
@@ -38,7 +38,7 @@ public class FloatingText : MonoBehaviour {
             lastDirectionChange = StepManager.gameTime;
         }
 
-        float speed = distToTop / duration;
+        float speed = distToTop / (float)duration;
         int dt = StepManager.GetDeltaStep();
         float dy = speed * dt;
         // I want text to wave left and right but i would need to do trig and whatnot or use some other method of positioning (eg. GUI.Label), so thats TODO

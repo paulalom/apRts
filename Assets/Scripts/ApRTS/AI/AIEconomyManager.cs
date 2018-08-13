@@ -27,7 +27,7 @@ public class AIEconomyManager {
         productionFacilities.productionTargets.Clear();
         foreach(RTSGameObject productionFacility in productionFacilities.productionFacilities)
         {
-            if (productionFacility.currentOrderPhase != OrderPhase.Idle)
+            if (!productionFacility.IsIdle)
             {
                 continue;
             }
@@ -57,7 +57,7 @@ public class AIEconomyManager {
         foreach (KeyValuePair<RTSGameObject, Type> productionTarget in productionFacilities.productionTargets)
         {
             constructionCommands.Add(new MyPair<List<long>, Command>(
-                new List<long>() { productionTarget.Key.uid },
+                new List<long>() { productionTarget.Key.unitId },
                 CommandFactory.GetCommandFromOrder(OrderFactory.BuildConstructionOrder(new List<MyPair<Type, int>>() {
                     new MyPair<Type, int>(productionTarget.Value, 1) }))));
             

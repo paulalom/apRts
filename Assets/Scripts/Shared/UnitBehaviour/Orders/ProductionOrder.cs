@@ -7,25 +7,35 @@ public class ProductionOrder : Order {
 
     Producer producer;
     Consumer consumer;
+    Type currentProductionType;
 
-    public override bool GetInRange(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
+    public override void Initilize(RTSGameObject performingUnit)
     {
-        return true; // Production orders are stationary
+        base.Initilize(performingUnit);
+        orderData.target = initiatingUnit;
+        currentProductionType = orderData.items[0].Key;
     }
 
-    public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool Activate(RTSGameObject performingUnit)
     {
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
-        producer.SetProductionTarget(orderData.items[0].Key);
-        orderData.remainingChannelTime = producer.productionTime[orderData.items[0].Key];
+        orderData.remainingChannelTime = producer.productionTime[currentProductionType];
+
+        orderData.isJoinable = true;
         return true;
     }
 
-    // Foreach unit assigned to order
-    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
+    // take necessary resources from joining units
+    public override void Join(RTSGameObject performingUnit)
     {
-        Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(producer.currentProductionType, orderData.remainingChannelTime);
+        base.Join(performingUnit);
+    }
+
+    // Foreach unit assigned to order
+    public override bool Channel(RTSGameObject performingUnit, int dt)
+    {
+        Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(currentProductionType, orderData.remainingChannelTime);
         if (consumer.Operate(performingUnit.storage, productionCosts))
         {
             ChannelForTime(dt);
@@ -34,15 +44,17 @@ public class ProductionOrder : Order {
         return IsFinishedChanneling();
     }
 
-    public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool FinishChannel(RTSGameObject performingUnit)
     {
-        if (performingUnit.storage.canContain.Contains(producer.currentProductionType))
+        base.FinishChannel(performingUnit);
+
+        if (performingUnit.storage.canContain.Contains(currentProductionType))
         {
-            return producer.ProduceToStorage();
+            return producer.ProduceToStorage(currentProductionType);
         }
         else
         {
-            return producer.ProduceUnitsToWorld().Count > 0;
+            return producer.ProduceUnitsToWorld(currentProductionType).Count > 0;
         }
     }
 
@@ -58,14 +70,9 @@ public class ProductionOrder : Order {
         }
     }
 
-    public override void OnQueue(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override void OnCancel(RTSGameObject performingUnit, GameManager gameManager)
     {
-        base.OnQueue(performingUnit, rtsGameObjectManager);
-    }
-
-    public override void OnCancel(RTSGameObject performingUnit, GameManager gameManager, RTSGameObjectManager rtsGameObjectManager)
-    {
-        float totalChannelTime = producer.productionTime[producer.currentProductionType] - orderData.remainingChannelTime;
-        producer.CancelProduction(totalChannelTime);
+        float totalChannelTime = producer.productionTime[currentProductionType] - orderData.remainingChannelTime;
+        producer.CancelProduction(currentProductionType, totalChannelTime);
     }
 }

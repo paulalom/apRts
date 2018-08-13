@@ -3,7 +3,7 @@ using System.Collections;
 
 public class TakeOrder : Order {
 
-    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
+    public override bool Channel(RTSGameObject performingUnit, int dt)
     {
         if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.target.transform.position, orderData.orderRange))
         {
@@ -16,7 +16,7 @@ public class TakeOrder : Order {
         }
     }
 
-    public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool FinishChannel(RTSGameObject performingUnit)
     {
         rtsGameObjectManager.TakeItems(performingUnit, orderData.target, orderData.items);
         return true;

@@ -69,12 +69,12 @@ public class AIManager
 
     void SubscribeToIdleEvents(RTSGameObject idleUnit)
     {
-        idleUnit.onUnitOrderPhaseChange.AddListener(OnOrderPhaseChangeEvent);
+        idleUnit.onIdleStatusChange.AddListener(OnIdleStatusChange);
     }
 
-    void OnOrderPhaseChangeEvent(RTSGameObject unit, OrderPhase unitOrderPhase)
+    void OnIdleStatusChange(RTSGameObject unit, bool isIdle)
     {
-        if (unitOrderPhase == OrderPhase.Idle && !playerManager.PlayerSelectedUnits.Contains(unit.uid))
+        if (isIdle && !playerManager.PlayerSelectedUnits.Contains(unit.unitId))
         {
             if (!SetNewPlanForUnit(unit))
             {
@@ -113,7 +113,7 @@ public class AIManager
         foreach (Order order in planOrders)
         {
             Command command = CommandFactory.GetCommandFromOrder(order);
-            List<long> unitIds = new List<long>() { unit.uid };
+            List<long> unitIds = new List<long>() { unit.unitId };
             MyPair<List<long>, Command> commandUnitPair = new MyPair<List<long>, Command>(unitIds, command);
 
             commands.Add(commandUnitPair);
@@ -124,11 +124,13 @@ public class AIManager
         }
         else if(commands[0].Value.getOrder == OrderBuilderFunction.NewConstructionOrder)
         {// construction orders queue, not set
-            commands[0].Value.clearExistingOrders = false;
+            commands[0].Value.queueOrderInsteadOfClearing = true;
+            commands[0].Value.queueOrderAtFront = Input.GetKey(Setting.addOrderToFrontOfQueue);
         }
         else
         {
-            commands[0].Value.clearExistingOrders = true;
+            commands[0].Value.queueOrderInsteadOfClearing = false;
+            commands[0].Value.queueOrderAtFront = Input.GetKey(Setting.addOrderToFrontOfQueue);
         }
         commandManager.AddCommands(commands);
         return true;

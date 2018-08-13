@@ -7,6 +7,7 @@ public class Ability : MyMonoBehaviour {
     public Vector3 targetPosition;
     public int range;
     public int cooldown;
+    public bool isJoinable = false;
 
     public override string ToString()
     {
@@ -20,7 +21,7 @@ public class Ability : MyMonoBehaviour {
     public string ToNetString()
     {
         return GetType().ToString() + "-" + 
-            target.uid.ToString() + "-" + 
+            target.unitId.ToString() + "-" + 
             targetPosition.x + "," + targetPosition.y + "," + targetPosition.z + "-" + 
             range.ToString() + "-" + 
             cooldown.ToString();

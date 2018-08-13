@@ -46,6 +46,8 @@ public abstract class GameManager : MonoBehaviour {
         commandManager = GameObject.Find("NetworkedCommandManager").GetComponent<NetworkedCommandManager>();
         buttonManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
         menuManager = GameObject.Find("MenuManager").GetComponent<MenuManager>();
+        Order.orderManager = orderManager;
+        Order.rtsGameObjectManager = rtsGameObjectManager;
     }
 
     // Use this for initialization
@@ -60,7 +62,7 @@ public abstract class GameManager : MonoBehaviour {
 
     protected void StepGame(int dt)
     {
-        commandManager.ProcessCommandsForStep(StepManager.CurrentStep, this);
+        ProcessCommandsForStep(StepManager.CurrentStep);
         foreach (MyMonoBehaviour obj in allObjects)
         {
             obj.MyUpdate();
@@ -77,8 +79,29 @@ public abstract class GameManager : MonoBehaviour {
         rtsGameObjectManager.HandleUnitCreation();
         rtsGameObjectManager.HandleUnitDestruction();
     }
-    
-    
+
+    // Note that new order validation happens only after network instead of 
+    // before network on clients and after network on server
+    // this will result in invalid orders such as constructing harvesting stations outside of resource range to be sent to server when they could be discarded
+    public void ProcessCommandsForStep(long step)
+    {
+        foreach (MyPair<List<long>, Command> command in commandManager.GetCommandsForStep(step))
+        {
+            Command comm = command.Value;
+
+            Order order = Command.GetDefaultOrderFunction(comm.getOrder, this).Invoke();
+            if (order != null)
+            {
+                if (comm.overrideDefaultOrderData)
+                {
+                    order.orderData = comm.orderData;
+                }
+                
+                ProcessOrder(command.Key, command.Value, order);
+            }
+        }
+    }
+
     // Assumes order is not null
     public void ProcessOrder(List<long> unitIds, Command command, Order order)
     {
@@ -90,7 +113,7 @@ public abstract class GameManager : MonoBehaviour {
             units.Add(unit);
         }
         Dictionary<RTSGameObject, Order> orders = BuildOrdersForUnits(units, command.orderData.target, command.orderData.targetPosition, order);
-        AddOrdersToUnits(orders, command.clearExistingOrders);
+        AddOrdersToUnits(orders, command.queueOrderInsteadOfClearing, command.queueOrderAtFront);
         prevKeyClicked = KeyCode.None;
     }
 
@@ -132,31 +155,17 @@ public abstract class GameManager : MonoBehaviour {
         }
     }
 
-    protected void AddOrdersToUnits(Dictionary<RTSGameObject, Order> orders, bool clearExistingOrders)
+    protected void AddOrdersToUnits(Dictionary<RTSGameObject, Order> orders, bool queueOrdersInsteadOfClearing, bool queueOrdersAtFront)
     {
-        if (clearExistingOrders)
+        if (queueOrdersInsteadOfClearing || queueOrdersAtFront)
+        {
+            orderManager.QueueOrders(orders, queueOrdersAtFront);
+        }
+        else
         {
             orderManager.SetOrders(orders);
         }
-        else
-        {
-            orderManager.QueueOrders(orders);
-        }
     }
-
-    protected void AddOrderToUnit(Order order, RTSGameObject unit, bool queueToggleEnabled)
-    {
-        if (queueToggleEnabled)
-        {
-            orderManager.QueueOrder(unit, order);
-        }
-        else
-        {
-            orderManager.SetOrder(unit, order);
-        }
-    }
-
-
     
     public void SetUpPlayer(int playerId, World world)
     {
@@ -223,7 +232,8 @@ public abstract class GameManager : MonoBehaviour {
                     Command command = new Command() { orderData = order.orderData };
                     command.getOrder = OrderBuilderFunction.NewConstructionOrder;
                     command.overrideDefaultOrderData = true;
-                    command.clearExistingOrders = false;
+                    command.queueOrderInsteadOfClearing = true;
+                    command.queueOrderAtFront = Input.GetKey(Setting.addOrderToFrontOfQueue);
                     commandManager.AddCommand(command, unitIds);
                 }
                 else
@@ -232,7 +242,8 @@ public abstract class GameManager : MonoBehaviour {
                     Command command = new Command() { orderData = order.orderData };
                     command.getOrder = OrderBuilderFunction.NewProductionOrder;
                     command.overrideDefaultOrderData = true;
-                    command.clearExistingOrders = false;
+                    command.queueOrderInsteadOfClearing = true;
+                    command.queueOrderAtFront = Input.GetKey(Setting.addOrderToFrontOfQueue);
                     commandManager.AddCommand(command, unitIds);
                 }
             }

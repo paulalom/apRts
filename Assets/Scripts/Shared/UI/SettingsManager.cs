@@ -11,9 +11,10 @@ public class Setting
     public List<KeyCode> keyModifiers = new List<KeyCode>(); // setting will only fire if all of these are held
     public List<KeyCode> keyExclusions = new List<KeyCode>(); // setting will not fire if any of these are held
     public Func<KeyCode, bool> checkActivationFunction = Input.GetKeyUp;
-
+    
     // when this key is down, we will queue orders instead of set
-    public static KeyCode dontClearExistingOrdersToggle = KeyCode.LeftShift; 
+    public static KeyCode queueOrderInsteadOfClearing = KeyCode.LeftShift;
+    public static KeyCode addOrderToFrontOfQueue = KeyCode.LeftAlt;
 
     // The only thing that happens when key is pressed
     public Action action = delegate { };
@@ -46,11 +47,11 @@ public class SettingsManager : MyMonoBehaviour
         defaultInputSettings.Add(new Setting() { key = KeyCode.F, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewFollowOrder); }});
         defaultInputSettings.Add(new Setting() { key = KeyCode.T, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCheatRaiseTerrainOrder); } });
         defaultInputSettings.Add(new Setting() { key = KeyCode.Q, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCheatSpawnFactoryOrder); } });
-                
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, action = InputActions.OnActionButtonRelease });
-        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, action = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewMoveOrder); } });
+        
         defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, checkActivationFunction = Input.GetKeyDown, action = InputActions.OnActionButtonPress });
         defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, checkActivationFunction = Input.GetKeyDown, action = InputActions.OnMoveButtonPress });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse0, action = InputActions.OnActionButtonRelease });
+        defaultInputSettings.Add(new Setting() { key = KeyCode.Mouse1, action = InputActions.OnMoveButtonRelease });
 
         for (int i = 0; i < 10; i++)
         {

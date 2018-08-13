@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class OrderManager : MyMonoBehaviour {
-    
-    public Dictionary<RTSGameObject, List<Order>> orders;
+
     List<RTSGameObject> completedOrders;
+    public Dictionary<RTSGameObject, List<Order>> orders;
+
     RTSGameObjectManager rtsGameObjectManager;
     GameManager gameManager;
     UIManager uiManager;
@@ -28,24 +29,30 @@ public class OrderManager : MyMonoBehaviour {
             {
                 Order order = orders[unit][0];
 
-                switch (unit.currentOrderPhase)
+                switch (order.Phase)
                 {
-                    case OrderPhase.Idle:
-                        unit.currentOrderPhase++;
-                        break;
                     case OrderPhase.GetInRange:
-                        unit.currentOrderPhase += (order.GetInRange(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        order.Phase += (order.GetInRange(unit, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Activate:
-                        unit.currentOrderPhase += (order.Activate(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        order.Phase += (order.Activate(unit) == true) ? 1 : 0;
                         break;
                     case OrderPhase.Channel:
-                        unit.currentOrderPhase += (order.Channel(unit, rtsGameObjectManager, dt) == true) ? 1 : 0;
+                        order.Phase += (order.Channel(unit, dt) == true) ? 1 : 0;
                         break;
                     case OrderPhase.FinishChannel:
-                        unit.currentOrderPhase += (order.FinishChannel(unit, rtsGameObjectManager) == true) ? 1 : 0;
+                        order.Phase += (order.FinishChannel(unit) == true) ? 1 : 0;
                         break;
-                    default:
+                    case OrderPhase.Complete:
+                        order.Complete(unit);
+                        // "Completion" event triggers need to fire in the same phase as completedOrders.Add
+                        // otherwise potential for single frame exceptions with joining not yet cleaned up orders.
+                        if (!(order is JoinOrder))
+                        {
+                            completedOrders.Add(unit);
+                        }
+                        break;
+                    default: // cleanup phase
                         completedOrders.Add(unit);
                         break;
                 }
@@ -60,7 +67,6 @@ public class OrderManager : MyMonoBehaviour {
             Order completedOrder = orders[completer][0];
             if (completedOrder.orderData.repeatOnComplete)
             {
-                completer.currentOrderPhase = OrderPhase.GetInRange;
                 unitOrders.Add(completedOrder);
             }
             CompleteOrder(completer);
@@ -70,11 +76,17 @@ public class OrderManager : MyMonoBehaviour {
 
     public void CompleteOrder(RTSGameObject unit)
     {
-        orders[unit].RemoveAt(0);
-        if (orders[unit].Count == 0)
+        List<Order> unitOrders = orders[unit];
+        unitOrders.RemoveAt(0);
+        if (unitOrders.Count == 0)
         {
             orders.Remove(unit);
-            unit.currentOrderPhase = OrderPhase.Idle;
+            unit.IsIdle = true;
+        }
+        else
+        {
+            // We need to always set the orderPhase for the case when an order was interrupted mid-channel
+            unitOrders[0].Phase = OrderPhase.GetInRange;
         }
     }
 
@@ -140,7 +152,7 @@ public class OrderManager : MyMonoBehaviour {
             if (ValidateOrder(unit, order))
             {
                 CancelOrders(unit);
-                QueueOrder(unit, order, false);
+                QueueOrder(unit, order, false, false);
                 return true;
             }
             else {
@@ -150,24 +162,38 @@ public class OrderManager : MyMonoBehaviour {
         else
         {
             CancelOrders(unit);
-            QueueOrder(unit, order, false);
+            QueueOrder(unit, order, false, false);
             return true;
         }
     }
 
-    public bool QueueOrder(RTSGameObject unit, Order order, bool validateOrder = true)
+    // NOTE: validate:false should only be used if Initilize is called first (as is the case with SetOrder)
+    // If you want a cheat, make a new order that always returns true
+    public bool QueueOrder(RTSGameObject unit, Order order, bool insertAtfront = false, bool validateOrder = true)
     {
+        order.initiatingUnit = unit;
         if (!orders.ContainsKey(unit))
         {
             orders.Add(unit, new List<Order>());
-            unit.currentOrderPhase = OrderPhase.GetInRange;
         }
         if (validateOrder)
         {
             if (ValidateOrder(unit, order))
             {
-                orders[unit].Add(order);
-                order.OnQueue(unit, rtsGameObjectManager);
+                if (insertAtfront)
+                {
+                    if (orders[unit].Count > 0)
+                    {
+                        orders[unit][0].OnPausedEvent.Invoke(order);
+                    }
+                    orders[unit].Insert(0, order);
+                }
+                else
+                {
+                    orders[unit].Add(order);
+                }
+                order.Initilize(unit);
+                order.OnQueue();
                 return true;
             }
             else
@@ -177,17 +203,29 @@ public class OrderManager : MyMonoBehaviour {
         }
         else
         {
-            orders[unit].Add(order);
-            order.OnQueue(unit, rtsGameObjectManager);
+            if (insertAtfront)
+            {
+                if (orders[unit].Count > 0)
+                {
+                    orders[unit][0].OnPausedEvent.Invoke(order);
+                }
+                orders[unit].Insert(0, order);
+            }
+            else
+            {
+                orders[unit].Add(order);
+            }
+            order.Initilize(unit);
+            order.OnQueue();
             return true;
         }
     }
 
-    public void QueueOrders(Dictionary<RTSGameObject, Order> orders)
+    public void QueueOrders(Dictionary<RTSGameObject, Order> orders, bool insertAtFront)
     {
         foreach (KeyValuePair<RTSGameObject, Order> unitOrderPair in orders)
         {
-            QueueOrder(unitOrderPair.Key, unitOrderPair.Value);
+            QueueOrder(unitOrderPair.Key, unitOrderPair.Value, insertAtFront);
         }
     }
 
@@ -216,7 +254,7 @@ public class OrderManager : MyMonoBehaviour {
         {
             foreach (Order order in orders[unit])
             {
-                order.OnCancel(unit, gameManager, rtsGameObjectManager);
+                order.OnCancel(unit, gameManager);
             }
             orders[unit].Clear();
         }

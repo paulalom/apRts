@@ -112,7 +112,7 @@ public class MenuManager : MyMonoBehaviour {
                         Command command = new Command() { orderData = order.orderData };
                         command.getOrder = OrderBuilderFunction.NewGiveOrder;
                         command.overrideDefaultOrderData = true;
-                        gameManager.commandManager.AddCommand(command, new List<long>() { sourceUnit.uid });
+                        gameManager.commandManager.AddCommand(command, new List<long>() { sourceUnit.unitId });
                     }
                     // Destination is a transporter
                     else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
@@ -122,7 +122,7 @@ public class MenuManager : MyMonoBehaviour {
                         Command command = new Command() { orderData = order.orderData };
                         command.getOrder = OrderBuilderFunction.NewTakeOrder;
                         command.overrideDefaultOrderData = true;
-                        gameManager.commandManager.AddCommand(command, new List<long>() { unit.uid });
+                        gameManager.commandManager.AddCommand(command, new List<long>() { unit.unitId });
                     }
                     else
                     {

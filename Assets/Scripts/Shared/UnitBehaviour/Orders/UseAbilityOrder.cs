@@ -15,7 +15,7 @@ public class UseAbilityOrder : Order {
         orderData.ability = o.orderData.ability;
         orderData.remainingChannelTime = o.orderData.remainingChannelTime;
     }
-    public override bool Activate(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool Activate(RTSGameObject performingUnit)
     {
         rtsGameObjectManager.UseAbility(performingUnit, orderData.target, orderData.targetPosition, orderData.ability);
         return true;

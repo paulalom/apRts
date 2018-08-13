@@ -201,7 +201,7 @@ public class Storage : MyMonoBehaviour
     {
         foreach (KeyValuePair<Type, int> item in hasItems)
         {
-            if (!HasItem(item.Key, item.Value))
+            if (GetItemCount(item.Key, item.Value) == 0)
             {
                 return false;
             }
@@ -213,7 +213,7 @@ public class Storage : MyMonoBehaviour
     {
         foreach (MyPair<Type, int> item in hasItems)
         {
-            if (!HasItem(item.Key, item.Value))
+            if (GetItemCount(item.Key, item.Value) == 0)
             {
                 return false;
             }
@@ -221,9 +221,9 @@ public class Storage : MyMonoBehaviour
         return true;
     }
 
-    public bool HasItem(Type type, int quantity)
+    public int GetItemCount(Type type, int quantity)
     {
-        return items.ContainsKey(type) && items[type] >= quantity;
+        return items.ContainsKey(type) ? items[type] : 0;
     }
 
     public List<MyPair<Type, int>> GetItemsInInventoryInOrder(List<MyPair<Type, int>> itemsToGet)

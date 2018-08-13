@@ -7,7 +7,7 @@ using System.Collections;
 /// </summary>
 public class PatrolOrder : Order {
 
-    public override bool Channel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager, int dt)
+    public override bool Channel(RTSGameObject performingUnit, int dt)
     {
         if (rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, orderData.targetPosition, orderData.orderRange))
         {
@@ -20,12 +20,12 @@ public class PatrolOrder : Order {
         }
     }
 
-    public override bool FinishChannel(RTSGameObject performingUnit, RTSGameObjectManager rtsGameObjectManager)
+    public override bool FinishChannel(RTSGameObject performingUnit)
     {
         Vector3 tempOrderIssuePosition = orderData.targetPosition;
         orderData.targetPosition = orderData.orderIssuedPosition;
         orderData.orderIssuedPosition = tempOrderIssuePosition;
-        performingUnit.currentOrderPhase = OrderPhase.Activate;
+        _phase = OrderPhase.Activate;
         return true;
     }
 

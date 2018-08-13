@@ -16,6 +16,8 @@ public enum OrderBuilderFunction
     NewCancelOrder,
     NewProductionOrder,
     NewConstructionOrder,
+    NewResumeConstructionOrder,
+    NewJoinOrder,
     NewHarvestOrder,
     NewPatrolOrder,
     NewGuardOrder,
@@ -30,24 +32,14 @@ public enum OrderBuilderFunction
 
 public class Command
 {
-    public bool clearExistingOrders = true, smartCast = false, overrideDefaultOrderData = false;
+    public bool queueOrderInsteadOfClearing = true, queueOrderAtFront = false, smartCast = false, overrideDefaultOrderData = false;
     public OrderData orderData = new OrderData();
     public OrderBuilderFunction getOrder = OrderBuilderFunction.None;
 
-    /*
-    public override string ToString()
-    {
-        return "clrExOrd: " + (clearExistingOrders ? "1|" : "0|") +
-               "SmCst: " + (smartCast ? "1|" : "0|") +
-               "ovridDefOrdDat: " + (overrideDefaultOrderData ? "1|" : "0|") +
-                orderData.ToString() + "|" +
-                action.ToString() + "|" +
-                getOrder.ToString();
-    }*/
-
     public string ToNetString()
     {
-        return (clearExistingOrders ? "1|" : "0|") +
+        return (queueOrderInsteadOfClearing ? "1|" : "0|") +
+                (queueOrderAtFront ?  "1|" : "0|") +
                 (smartCast ? "1|" : "0|") +
                 (overrideDefaultOrderData ? "1|" : "0|") +
                 orderData.ToNetString() + "|" +
@@ -59,16 +51,17 @@ public class Command
         Command command = new Command();
         string[] commandComponents = commandString.Split('|');
 
-        command.clearExistingOrders = commandComponents[0] == "1";
-        command.smartCast = commandComponents[1] == "1";
-        command.overrideDefaultOrderData = commandComponents[2] == "1";
-        command.orderData = OrderData.FromString(commandComponents[3], playerManager);
-        command.getOrder = (OrderBuilderFunction)Enum.Parse(typeof(OrderBuilderFunction), commandComponents[4]);
+        command.queueOrderInsteadOfClearing = commandComponents[0] == "1";
+        command.queueOrderAtFront = commandComponents[1] == "1";
+        command.smartCast = commandComponents[2] == "1";
+        command.overrideDefaultOrderData = commandComponents[3] == "1";
+        command.orderData = OrderData.FromString(commandComponents[4], playerManager);
+        command.getOrder = (OrderBuilderFunction)Enum.Parse(typeof(OrderBuilderFunction), commandComponents[5]);
 
         return command;
     }
 
-    public static Func<Order> GetNextDefaultOrderFunction(OrderBuilderFunction orderFunction, GameManager gameManager)
+    public static Func<Order> GetDefaultOrderFunction(OrderBuilderFunction orderFunction, GameManager gameManager)
     {
         switch (orderFunction)
         {
@@ -80,6 +73,10 @@ public class Command
                 return OrderFactory.GetDefaultProductionOrder;
             case OrderBuilderFunction.NewConstructionOrder:
                 return OrderFactory.GetDefaultConstructionOrder;
+            case OrderBuilderFunction.NewResumeConstructionOrder:
+                return OrderFactory.GetDefaultResumeConstructionOrder;
+            case OrderBuilderFunction.NewJoinOrder:
+                return OrderFactory.GetDefaultJoinOrder;
             case OrderBuilderFunction.NewHarvestOrder:
                 return OrderFactory.GetDefaultHarvestOrder;
             case OrderBuilderFunction.NewPatrolOrder:

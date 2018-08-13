@@ -44,8 +44,8 @@ public class Worker : MyMonoBehaviour
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Wood), 100);
         producer.productionCost[typeof(PowerPlant)].Add(typeof(Tool), 15);
 
-        producer.productionTime[typeof(Factory)] = 3;
-        producer.productionTime[typeof(HarvestingStation)] = 3;
-        producer.productionTime[typeof(PowerPlant)] = 3;
+        producer.productionTime[typeof(Factory)] = 3000;
+        producer.productionTime[typeof(HarvestingStation)] = 3000;
+        producer.productionTime[typeof(PowerPlant)] = 3000;
     }
 }

@@ -51,25 +51,7 @@ public class NetworkedCommandManager : ICommandManager{
 
         return unitCommandPair;
     }
-
-    public override void ProcessCommandsForStep(long step, GameManager gameManager)
-    {
-        foreach (MyPair<List<long>, Command> command in GetCommandsForStep(step))
-        {
-            Command comm = command.Value;
-
-            Order order = Command.GetNextDefaultOrderFunction(comm.getOrder, gameManager).Invoke();
-            if (order != null)
-            {
-                if (comm.overrideDefaultOrderData)
-                {
-                    order.orderData = comm.orderData;
-                }
-                gameManager.ProcessOrder(command.Key, command.Value, order);
-            }
-        }
-    }
-
+    
     public override List<MyPair<List<long>, Command>> GetCommandsForStep(long step)
     {
         return netStateManager.localCommands.GetCommandsForStep(step);

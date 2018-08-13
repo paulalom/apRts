@@ -71,30 +71,35 @@ public class ButtonManager : MyMonoBehaviour {
             }
 
             Producer producer = unit.GetComponent<Producer>();
-            if (producer != null && producer.currentProductionType != null)
+            
+            if (producer != null && orderManager.orders.ContainsKey(unit))
             {
-                Type currentProduction = producer.currentProductionType;
-                
-                int qtyToProduce = GetSameProductionOrderCount(unit, currentProduction);
-                icon = new GUIStyle();
-                icon.normal.background = UIManager.icons[currentProduction];
-                icon.normal.textColor = Color.red;
-                button = new Rect(menu.width - 50, menu.y + 5, 40, 40);
-                
-                GUIStyle progressBarBackStyle = new GUIStyle();
-                progressBarBackStyle.normal.background = progressBarBackTex;
-                Rect progressBarBack = new Rect(menu.width - 48, menu.y + 37, 36, 5);
-                GUIStyle progressBarFrontStyle = new GUIStyle();
-                progressBarFrontStyle.normal.background = progressBarFrontTex;
-                Rect progressBarFront = new Rect(menu.width - 46, menu.y + 38, 34 *(producer.productionTime[currentProduction] - producer.timeLeftToProduce)/producer.productionTime[currentProduction], 3);
-
-                if (GUI.Button(button, qtyToProduce.ToString(), icon) 
-                    || GUI.Button(progressBarBack, "", progressBarBackStyle) 
-                    || GUI.Button(progressBarFront, "", progressBarFrontStyle))
+                List<Order> orders = orderManager.orders[unit];
+                if (orders != null && orders.Count > 0 && orders[0] is ProductionOrder)
                 {
-                    Command command = new Command();
-                    command.getOrder = OrderBuilderFunction.NewCancelOrder;
-                    gameManager.commandManager.AddCommand(command, new List<long>() { unit.uid });
+                    Type currentProduction = orders[0].orderData.items[0].Key;
+
+                    int qtyToProduce = GetSameProductionOrderCount(unit, currentProduction);
+                    icon = new GUIStyle();
+                    icon.normal.background = UIManager.icons[currentProduction];
+                    icon.normal.textColor = Color.red;
+                    button = new Rect(menu.width - 50, menu.y + 5, 40, 40);
+
+                    GUIStyle progressBarBackStyle = new GUIStyle();
+                    progressBarBackStyle.normal.background = progressBarBackTex;
+                    Rect progressBarBack = new Rect(menu.width - 48, menu.y + 37, 36, 5);
+                    GUIStyle progressBarFrontStyle = new GUIStyle();
+                    progressBarFrontStyle.normal.background = progressBarFrontTex;
+                    Rect progressBarFront = new Rect(menu.width - 46, menu.y + 38, 34 * (producer.productionTime[currentProduction] - producer.timeLeftToProduce) / producer.productionTime[currentProduction], 3);
+
+                    if (GUI.Button(button, qtyToProduce.ToString(), icon)
+                        || GUI.Button(progressBarBack, "", progressBarBackStyle)
+                        || GUI.Button(progressBarFront, "", progressBarFrontStyle))
+                    {
+                        Command command = new Command();
+                        command.getOrder = OrderBuilderFunction.NewCancelOrder;
+                        gameManager.commandManager.AddCommand(command, new List<long>() { unit.unitId });
+                    }
                 }
             }
 

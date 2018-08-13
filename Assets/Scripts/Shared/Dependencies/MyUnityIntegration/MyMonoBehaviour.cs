@@ -2,7 +2,7 @@
 using System.Collections;
 
 public abstract class MyMonoBehaviour : MonoBehaviour {
-
+    
     void Start()
     {
         MyStart();

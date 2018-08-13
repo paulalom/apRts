@@ -19,25 +19,28 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     public World world;
     public Vector3 prevPositionForHeightMapCheck;
     public List<Defense> InOrderDefenses;
-    public long uid;
+    public long unitId;
     public int ownerId;
     public int kills = 0;
     public float flyHeight = 0;
     float lastIdleTime;
     float updateIdleInterval = 5000;
-    public OrderPhase currentOrderPhase = OrderPhase.Idle;
-    public OrderPhase CurrentOrderPhase { get { return currentOrderPhase; } set
+    bool _isIdle = false;
+    public bool IsIdle { get { return _isIdle; } set
         {
-            if (value != OrderPhase.Idle)
+            if (value != _isIdle)
             {
-                currentOrderPhase = value;
-                onUnitOrderPhaseChange.Invoke(this, value);
+                _isIdle = value;
+                onIdleStatusChange.Invoke(this, _isIdle);
             }
         }
     }
     
-    public class OrderPhaseChangeEvent : UnityEvent<RTSGameObject, OrderPhase> { }
-    public OrderPhaseChangeEvent onUnitOrderPhaseChange = new OrderPhaseChangeEvent();
+    public class OnIdleStatusChangeEvent : UnityEvent<RTSGameObject, bool> { }
+    public OnIdleStatusChangeEvent onIdleStatusChange = new OnIdleStatusChangeEvent();
+
+    public class OnUnitChangeEvent : UnityEvent { }
+    public OnUnitChangeEvent onDestroyed = new OnUnitChangeEvent();
     
     public override void MyStart()
     {
@@ -74,9 +77,9 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
 
     protected void DefaultUpdate()
     {
-        if (currentOrderPhase == OrderPhase.Idle && lastIdleTime + updateIdleInterval < StepManager.gameTime)
+        if (IsIdle && lastIdleTime + updateIdleInterval < StepManager.gameTime)
         {
-            onUnitOrderPhaseChange.Invoke(this, currentOrderPhase);
+            onIdleStatusChange.Invoke(this, IsIdle);
             lastIdleTime = StepManager.gameTime;
         }
     }
@@ -111,7 +114,9 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     
     void OnTriggerStay(Collider other)
     {
-        if (mover != null && rtsGameObjectManager != null && !(other.GetComponent<RTSGameObject>() is Projectile))
+        if (mover != null && rtsGameObjectManager != null 
+            && !(other.GetComponent<RTSGameObject>() is Projectile)
+            && (other.GetComponent<Mover>() == null || unitId < other.GetComponent<RTSGameObject>().unitId)) // only one should push.. will still be weird
         {
             Vector2 dpos = new Vector2(transform.position.x, transform.position.z)
                 - new Vector2(other.transform.position.x, other.transform.position.z);

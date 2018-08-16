@@ -16,7 +16,7 @@ public class HarvestingStation : Structure {
             storage.canContain.Add(t);
         }
         // temp hack for under construction structures
-        if (constructionComponent != null)
+        if (constructionInfo != null)
         {
             return;
         }

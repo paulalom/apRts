@@ -8,6 +8,7 @@ public class ConstructionOrder : Order {
     Producer producer;
     Consumer consumer;
     Structure newStructure;
+    ConstructionInfo conInfo; // convenience reference
 
     public override void Initilize(RTSGameObject performingUnit)
     {
@@ -26,37 +27,46 @@ public class ConstructionOrder : Order {
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
         newStructure = (Structure)producer.ProduceStructureToWorld(orderData.items[0].Key);
-        newStructure.constructionComponent.constructionTimeRemaining = producer.productionTime[typeToBuild];
-        
-        producer.GiveNeededItems(typeToBuild, newStructure.storage);
+        conInfo = newStructure.constructionInfo;
+        conInfo.constructionTimeRemaining = producer.productionTime[typeToBuild];
+
+        conInfo.totalRequiredItems = new Dictionary<Type, int>(producer.productionCost[typeToBuild]);
+        conInfo.itemsUsedInConstruction = new Dictionary<Type, int>();
+        foreach (Type type in conInfo.totalRequiredItems.Keys)
+        {
+            conInfo.itemsUsedInConstruction.Add(type, 0);
+        }
+        producer.GiveNeededItems(typeToBuild, conInfo.storage, conInfo.GetRemainingItemsNeeded());
         orderData.isJoinable = true;
         return true;
     }
 
     public override void Join(RTSGameObject performingUnit)
     {
-        producer.GiveNeededItems(newStructure.GetType(), newStructure.storage);
+        producer.GiveNeededItems(newStructure.GetType(), conInfo.storage, conInfo.GetRemainingItemsNeeded());
     }
 
     // Foreach unit assigned to order
     public override bool Channel(RTSGameObject performingUnit, int dt)
     {
         // may be many builders
-        if (newStructure.constructionComponent.constructionTimeRemaining <= 0)
+        if (conInfo.constructionTimeRemaining <= 0)
         {
             return true;
         }
 
-        Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(newStructure.GetType(), newStructure.constructionComponent.constructionTimeRemaining);
-        if (consumer.Operate(newStructure.storage, productionCosts))
+        Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(newStructure.GetType(), conInfo.constructionTimeRemaining);
+        if (performingUnit.GetComponent<Consumer>().Operate(newStructure.storage, productionCosts))
         {
-            newStructure.constructionComponent.constructionTimeRemaining -= dt;
+            conInfo.constructionTimeRemaining -= dt;
+            conInfo.RecordItemsUsedInConstruction(productionCosts);
         }
-        return newStructure.constructionComponent.constructionTimeRemaining <= 0;
+        return conInfo.constructionTimeRemaining <= 0;
     }
 
     public override bool FinishChannel(RTSGameObject performingUnit)
     {
+        base.FinishChannel(performingUnit);
         newStructure.CompleteConstruction(rtsGameObjectManager);
         return true;
     }

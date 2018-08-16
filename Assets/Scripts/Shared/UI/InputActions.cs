@@ -102,7 +102,7 @@ namespace Assets.Scripts.Shared.UI
         internal static void OnMoveButtonRelease()
         {
             RTSGameObject clickedObject = GetClickedRTSGameObject();
-            if (clickedObject != null && clickedObject is Structure && clickedObject.GetComponent<ConstructionComponent>() != null)
+            if (clickedObject != null && clickedObject is Structure && clickedObject.GetComponent<ConstructionInfo>() != null)
             {
                 List<RTSGameObject> selectedUnits = gameManager.playerManager.GetOrderableSelectedUnits();
                 if (!selectedUnits.Any(x => x.GetComponent<Worker>() == null))

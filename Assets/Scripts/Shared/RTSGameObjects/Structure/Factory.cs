@@ -18,7 +18,7 @@ public class Factory : Structure
         }
 
         // temp hack for under construction structures
-        if (constructionComponent != null)
+        if (constructionInfo != null)
         {
             return;
         }

@@ -95,12 +95,21 @@ public class JoinOrder : Order {
 
     public override bool Channel(RTSGameObject performingUnit, int dt)
     {
-        return joinedOrder.Channel(performingUnit, dt);
+        if (joinedOrder.Channel(performingUnit, dt))
+        {
+            isJoined = false;
+            return true;
+        }
+        else
+        {
+            return false;
+        }        
     }
 
     public override bool FinishChannel(RTSGameObject performingUnit)
     {
-        return base.FinishChannel(performingUnit);
+        isJoined = false;
+        return false;
     }
 
     public override OrderValidationResult Validate(RTSGameObject performingUnit)
@@ -108,13 +117,22 @@ public class JoinOrder : Order {
         // we can always join a unit (other than ourselves), but it might not do anything until the unit we're joining does something
         return orderData.target != null && !(orderData.target is ResourceDeposit) && orderData.target != performingUnit ? OrderValidationResult.Success : OrderValidationResult.InvalidTarget; 
     }
-    
+
     public override void Initilize(RTSGameObject performingUnit)
     {
+        Order targetOrder = null;
+        if (orderManager.orders.ContainsKey(orderData.target)){
+            targetOrder = orderManager.orders[orderData.target][0];
+        }
+        Initilize(performingUnit, targetOrder);
+    }
+
+    public void Initilize(RTSGameObject performingUnit, Order targetOrder)
+    {
         base.Initilize(performingUnit);
-        if (orderManager.orders.ContainsKey(orderData.target)) // orders never contains an empty list
+        if (targetOrder != null) // orders never contains an empty list
         {
-            joinedOrder = orderManager.orders[orderData.target][0];
+            joinedOrder = targetOrder;
             joinedOrder.OnPausedEvent.AddListener(OnJoinedOrderPaused);
             joinedOrder.OnCompletionEvent.AddListener(OnJoinedOrderCompleted);
 
@@ -163,13 +181,13 @@ public class JoinOrder : Order {
     private void OnJoinedOrderPaused(Order newOrder)
     {
         UnjoinCurrentOrder();
-        Initilize(initiatingUnit);
+        Initilize(initiatingUnit, newOrder);
     }
 
     private void OnJoinedOrderCompleted(Order nextOrder)
     {
         UnjoinCurrentOrder();
-        Initilize(initiatingUnit);
+        Initilize(initiatingUnit, nextOrder);
     }
 
     void UnjoinCurrentOrder()

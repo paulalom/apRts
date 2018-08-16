@@ -36,12 +36,16 @@ public class Storage : MyMonoBehaviour
     public virtual bool AddItems(Dictionary<Type, int> items)
     {
         Dictionary<Type, int> itemsAdded = new Dictionary<Type, int>();
-        foreach (KeyValuePair<Type, int> kvp in items)
+        foreach (KeyValuePair<Type, int> item in items)
         {
-            int qtyAdded = AddItemInternal(kvp.Key, kvp.Value, true);
-            if (qtyAdded == kvp.Value)
+            if (item.Value == 0)
             {
-                itemsAdded.Add(kvp.Key, kvp.Value);
+                continue;
+            }
+            int qtyAdded = AddItemInternal(item.Key, item.Value, true);
+            if (qtyAdded == item.Value)
+            {
+                itemsAdded.Add(item.Key, item.Value);
             }
             else
             {
@@ -54,8 +58,11 @@ public class Storage : MyMonoBehaviour
                 return false;
             }
         }
-        onStorageAddEvent.Invoke(itemsAdded);
-        onStorageChangedEvent.Invoke();
+        if (itemsAdded.Count > 0)
+        {
+            onStorageAddEvent.Invoke(itemsAdded);
+            onStorageChangedEvent.Invoke();
+        }
         return true;
     }
 
@@ -119,6 +126,10 @@ public class Storage : MyMonoBehaviour
             {
                 numItemsToTake = items[kvp.Key];
             }
+            if (numItemsToTake == 0)
+            {
+                continue;
+            }
             int qtyTaken = TakeItemInternal(kvp.Key, numItemsToTake, true);
             if (qtyTaken == numItemsToTake)
             {
@@ -134,8 +145,11 @@ public class Storage : MyMonoBehaviour
                 return false;
             }
         }
-        onStorageTakeEvent.Invoke(itemsTaken);
-        onStorageChangedEvent.Invoke();
+        if (itemsTaken.Count > 0)
+        {
+            onStorageTakeEvent.Invoke(itemsTaken);
+            onStorageChangedEvent.Invoke();
+        }
         return true;
     }
 
@@ -201,7 +215,7 @@ public class Storage : MyMonoBehaviour
     {
         foreach (KeyValuePair<Type, int> item in hasItems)
         {
-            if (GetItemCount(item.Key, item.Value) == 0)
+            if (GetItemCount(item.Key) == 0)
             {
                 return false;
             }
@@ -213,7 +227,7 @@ public class Storage : MyMonoBehaviour
     {
         foreach (MyPair<Type, int> item in hasItems)
         {
-            if (GetItemCount(item.Key, item.Value) == 0)
+            if (GetItemCount(item.Key) == 0)
             {
                 return false;
             }
@@ -221,7 +235,7 @@ public class Storage : MyMonoBehaviour
         return true;
     }
 
-    public int GetItemCount(Type type, int quantity)
+    public int GetItemCount(Type type)
     {
         return items.ContainsKey(type) ? items[type] : 0;
     }

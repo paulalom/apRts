@@ -169,17 +169,18 @@ public class OrderManager : MyMonoBehaviour {
 
     // NOTE: validate:false should only be used if Initilize is called first (as is the case with SetOrder)
     // If you want a cheat, make a new order that always returns true
+    // Also note that we assume orders[unit] is never empty. Take care when refactoring.
     public bool QueueOrder(RTSGameObject unit, Order order, bool insertAtfront = false, bool validateOrder = true)
     {
         order.initiatingUnit = unit;
-        if (!orders.ContainsKey(unit))
-        {
-            orders.Add(unit, new List<Order>());
-        }
         if (validateOrder)
         {
             if (ValidateOrder(unit, order))
             {
+                if (!orders.ContainsKey(unit))
+                {
+                    orders.Add(unit, new List<Order>());
+                }
                 if (insertAtfront)
                 {
                     if (orders[unit].Count > 0)
@@ -194,6 +195,7 @@ public class OrderManager : MyMonoBehaviour {
                 }
                 order.Initilize(unit);
                 order.OnQueue();
+                unit.IsIdle = false;
                 return true;
             }
             else
@@ -203,6 +205,11 @@ public class OrderManager : MyMonoBehaviour {
         }
         else
         {
+            if (!orders.ContainsKey(unit))
+            {
+                orders.Add(unit, new List<Order>());
+            }
+
             if (insertAtfront)
             {
                 if (orders[unit].Count > 0)
@@ -217,6 +224,7 @@ public class OrderManager : MyMonoBehaviour {
             }
             order.Initilize(unit);
             order.OnQueue();
+            unit.IsIdle = false;
             return true;
         }
     }
@@ -256,7 +264,7 @@ public class OrderManager : MyMonoBehaviour {
             {
                 order.OnCancel(unit, gameManager);
             }
-            orders[unit].Clear();
+            orders.Remove(unit);
         }
     }
 }

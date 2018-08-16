@@ -146,7 +146,7 @@ public class Producer : MyMonoBehaviour {
         List<MyPair<Type, int>> missingResources = new List<MyPair<Type, int>>();
         foreach (KeyValuePair<Type, int> cost in productionCost[type])
         {
-            if (storage.GetItemCount(cost.Key, cost.Value) == 0)
+            if (storage.GetItemCount(cost.Key) == 0)
             {
                 Dictionary<Type, int> storageItems = storage.GetItems();
                 int missingQty = cost.Value - (storageItems.ContainsKey(cost.Key) ? storageItems[cost.Key] : 0);
@@ -168,17 +168,17 @@ public class Producer : MyMonoBehaviour {
         return null;
     }
     
-    public void GiveNeededItems(Type typeToBuild, Storage targetStorage)
+    public void GiveNeededItems(Type typeToBuild, Storage targetStorage, Dictionary<Type, int> requiredItems)
     {
-        Dictionary<Type, int> items = new Dictionary<Type, int>();
-        foreach (KeyValuePair<Type, int> requiredItem in productionCost[typeToBuild])
+        List<Type> itemTypes = new List<Type>(requiredItems.Keys);
+        foreach (Type type in itemTypes)
         {
-            int numItemsToTake = storage.GetItemCount(requiredItem.Key, requiredItem.Value);
-            numItemsToTake = numItemsToTake < requiredItem.Value ? numItemsToTake : requiredItem.Value;
+            int numItemsAvailable = storage.GetItemCount(type);
+            int numItemsToTake = Math.Min(numItemsAvailable, requiredItems[type]);
 
             // internals handle checking for 0 as well as we would
-            int addedItems = targetStorage.AddItem(requiredItem.Key, numItemsToTake, false);
-            storage.TakeItem(requiredItem.Key, addedItems);
+            int addedItems = targetStorage.AddItem(type, numItemsToTake, false);
+            storage.TakeItem(type, addedItems);
         }
     }
 }

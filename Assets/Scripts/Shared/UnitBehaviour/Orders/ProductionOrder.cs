@@ -31,12 +31,18 @@ public class ProductionOrder : Order {
     // take necessary resources from joining units
     public override void Join(RTSGameObject performingUnit)
     {
-        base.Join(performingUnit);
+        producer.GiveNeededItems(currentProductionType, initiatingUnit.storage, producer.productionCost[currentProductionType]);
     }
 
     // Foreach unit assigned to order
     public override bool Channel(RTSGameObject performingUnit, int dt)
     {
+        // may be many builders
+        if (IsFinishedChanneling())
+        {
+            return true;
+        }
+
         Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(currentProductionType, orderData.remainingChannelTime);
         if (consumer.Operate(performingUnit.storage, productionCosts))
         {

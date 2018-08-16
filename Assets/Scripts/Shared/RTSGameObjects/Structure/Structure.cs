@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Structure : RTSGameObject {
 
-    public ConstructionComponent constructionComponent;
+    public ConstructionInfo constructionInfo;
 
     public void DemolishStructure(string reason, GameManager gameManager, RTSGameObjectManager rtsGameObjectManager)
     {

@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-// Step size is currently 1 second
 public class StepManager : MyMonoBehaviour {
     
     // Fixme: need to adjust order system and whatnot to scale movement etc with fixedTimeStep

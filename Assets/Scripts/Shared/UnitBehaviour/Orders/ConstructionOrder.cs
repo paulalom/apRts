@@ -36,14 +36,15 @@ public class ConstructionOrder : Order {
         {
             conInfo.itemsUsedInConstruction.Add(type, 0);
         }
-        producer.GiveNeededItems(typeToBuild, conInfo.storage, conInfo.GetRemainingItemsNeeded());
+        producer.GiveItems(conInfo.storage, conInfo.GetRemainingItemsNeeded());
         orderData.isJoinable = true;
         return true;
     }
 
     public override void Join(RTSGameObject performingUnit)
     {
-        producer.GiveNeededItems(newStructure.GetType(), conInfo.storage, conInfo.GetRemainingItemsNeeded());
+        Producer joiningProducer = performingUnit.GetComponent<Producer>();
+        joiningProducer.GiveItems(conInfo.storage, conInfo.GetRemainingItemsNeeded());
     }
 
     // Foreach unit assigned to order

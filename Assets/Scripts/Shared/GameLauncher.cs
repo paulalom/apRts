@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class GameLauncher : MonoBehaviour {
 
+    void Awake()
+    {
+        //Screen.SetResolution(800, 600, false);
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 60;
+    }
+
     public void LaunchMainServer()
     {
         new SceneLoader().LoadSceneNum(3);

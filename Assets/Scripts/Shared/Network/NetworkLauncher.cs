@@ -31,6 +31,7 @@ public class NetworkLauncher : MonoBehaviour {
 
     public void StartServer()
     {
+        netStateManager.isServer = true;
         transportManager.StartServer();
         transportManager.OnClientConnected.AddListener(netStateManager.OnClientConnected);
         transportManager.OnClientDisconnected.AddListener(netStateManager.OnClientDisconnected);

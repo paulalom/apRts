@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+// Neutral is player 0
 public class PlayerManager : MyMonoBehaviour {
 
     public List<Player> players = new List<Player>();
@@ -13,11 +14,6 @@ public class PlayerManager : MyMonoBehaviour {
     public int numAIPlayers;
     public int numHumanPlayers = 0;
     
-    // Neutral is player 0
-    public Dictionary<long, RTSGameObject> PlayerUnits { get { return ActivePlayer.units; } }
-    public AIManager AiManager { get { return ActivePlayer.aiManager; } }
-    public List<long> PlayerSelectedUnits { get { return ActivePlayer.selectedUnits; } }
-    public UnityEvent OnPlayerSelectionChange { get { return ActivePlayer.onSelectionChange; } set { ActivePlayer.onSelectionChange = value; } }
     private Player _activePlayer = new Player();
     private int _activePlayerId;
     public Player ActivePlayer
@@ -27,11 +23,6 @@ public class PlayerManager : MyMonoBehaviour {
     public int ActivePlayerId
     {
         get { return _activePlayerId; }
-        set
-        {
-            _activePlayerId = value;
-            _activePlayer = players[_activePlayerId];
-        }
     }
     
     // Temp UI display of resource totals
@@ -39,7 +30,7 @@ public class PlayerManager : MyMonoBehaviour {
 
     public void InitNeutralPlayer()
     {
-        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.commandManager);
+        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.selectionManager, gameManager.commandManager);
         Player player = new Player(this, aiManager, true);
         player.name = "Neutral";
         players.Add(player);
@@ -55,7 +46,7 @@ public class PlayerManager : MyMonoBehaviour {
 
     public void InitPlayer(int networkClientId, bool isHuman)
     {
-        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.commandManager);
+        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.selectionManager, gameManager.commandManager);
         Player player = new Player(this, aiManager, true);
         player.name = player + players.Count.ToString();
         player.isHuman = isHuman;
@@ -73,7 +64,8 @@ public class PlayerManager : MyMonoBehaviour {
             InitPlayer(networkClientIds[i - numAIPlayers], true);
         }
         
-        ActivePlayerId = players.Count - 1;
+        _activePlayerId = players.Count - 1;
+        _activePlayer = players[_activePlayerId];
     }
 
     public override void MyUpdate()
@@ -84,75 +76,25 @@ public class PlayerManager : MyMonoBehaviour {
         }
     }
 
-    public List<RTSGameObject> GetPlayerSelectedUnits()
-    {
-        List<RTSGameObject> units = new List<RTSGameObject>();
-        foreach (long id in _activePlayer.selectedUnits)
-        {
-            units.Add(RTSGameObjectManager.allUnits[id]);
-        }
-        return units;
-    }
-
-    public RTSGameObject GetUnit(long unitId)
-    {
-        if (RTSGameObjectManager.allUnits.ContainsKey(unitId))
-        {
-            return RTSGameObjectManager.allUnits[unitId];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public List<RTSGameObject> GetUnits(List<long> unitIds)
-    {
-        List<RTSGameObject> units = new List<RTSGameObject>();
-        foreach(long id in unitIds)
-        {
-            RTSGameObject unit = GetUnit(id);
-            if (unit != null)
-            {
-                units.Add(unit);
-            }
-        }
-        return units;
-    }
-
-    // no null return, send a new RTSGameObject instead
-    public RTSGameObject GetUnitOrDefault(long unitId)
-    {
-
-        if (RTSGameObjectManager.allUnits.ContainsKey(unitId))
-        {
-            return RTSGameObjectManager.allUnits[unitId];
-        }
-        else
-        {
-            return new RTSGameObject() { ownerId = -1 };
-        }
-    }
-
-    public int GetNumUnits(Type type, int playerId)
+    public int GetNumUnitsForPlayer(Type type, int playerId)
     {
         return players[playerId].units.Count(i => i.GetType() == type);
     }
 
-    public int GetNumUnits(string type, int playerId)
+    public int GetNumUnitsForPlayer(string type, int playerId)
     {
         return players[playerId].units.Count(i => i.GetType().ToString() == type);
     }
 
-    public int GetNumUnits(int playerId)
+    public int GetNumUnitsForPlayer(int playerId)
     {
         return players[playerId].units.Count;
     }
 
-    public void AddUnit(RTSGameObject unit, int playerId)
+    public void AddUnitForPlayer(RTSGameObject unit, int playerId)
     {
         Player player = players[playerId];
-        player.units.Add(unit.unitId, unit);
+        player.units.Add(unit);
     }
     
     // We should store these lists (nonneutral, enemyUnits etc..) and maintain them rather than building them each time.
@@ -163,7 +105,7 @@ public class PlayerManager : MyMonoBehaviour {
         {
             if (player.name != "Neutral")
             {
-                units.AddRange(player.units.Values);
+                units.AddRange(player.units);
             }
         }
         return units;
@@ -175,35 +117,14 @@ public class PlayerManager : MyMonoBehaviour {
         HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
         foreach (Player player in players)
         {
-            foreach (RTSGameObject unit in player.units.Values)
+            foreach (RTSGameObject unit in player.units)
             {
                 units.Add(unit);
             }
         }
         return units;
     }
-
-    public List<long> GetOrderableSelectedUnitIds()
-    {
-        List<long> unitIds = new List<long>();
-        foreach (long id in PlayerSelectedUnits.Where(x => GetUnitOrDefault(x).ownerId == ActivePlayerId))
-        {
-            unitIds.Add(id);
-        }
-        return unitIds;
-    }
-
-    public List<RTSGameObject> GetOrderableSelectedUnits()
-    {
-        List<RTSGameObject> units = new List<RTSGameObject>();
-        foreach (RTSGameObject unit in GetPlayerSelectedUnits().Where(x => x.ownerId == ActivePlayerId))
-        {
-            units.Add(unit);
-        }
-        
-        return units;
-    }
-
+    
     public HashSet<RTSGameObject> GetEnemyUnits(RTSGameObject unitToSearch)
     {
         HashSet<RTSGameObject> units = new HashSet<RTSGameObject>();
@@ -211,7 +132,7 @@ public class PlayerManager : MyMonoBehaviour {
         {
             if (player.name != "Neutral" && players[unitToSearch.ownerId] != player)
             {
-                foreach (RTSGameObject unit in player.units.Values)
+                foreach (RTSGameObject unit in player.units)
                 {
                     units.Add(unit);
                 }
@@ -220,7 +141,7 @@ public class PlayerManager : MyMonoBehaviour {
         return units;
     }
 
-    public Dictionary<long, RTSGameObject> GetNeutralUnits()
+    public List<RTSGameObject> GetNeutralUnits()
     {
         return players[0].units;
     }

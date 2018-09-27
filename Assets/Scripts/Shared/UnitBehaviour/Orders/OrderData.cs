@@ -35,7 +35,7 @@ public class OrderData {
         return orderDataString;
     }
 
-    public static OrderData FromString(string orderData, PlayerManager playerManager)
+    public static OrderData FromString(string orderData, RTSGameObjectManager rtsGameObjectManager)
     {
         OrderData outOData = new OrderData();
         string[] orderDataComponents = orderData.Split('~');
@@ -56,7 +56,7 @@ public class OrderData {
         outOData.orderRange = float.Parse(orderDataComponents[3]);
         outOData.remainingChannelTime = int.Parse(orderDataComponents[4]);
         outOData.repeatOnComplete = bool.Parse(orderDataComponents[5]);
-        outOData.target = orderDataComponents[6] == "" ? null : playerManager.GetUnit(long.Parse(orderDataComponents[6]));
+        outOData.target = orderDataComponents[6] == "" ? null : rtsGameObjectManager.GetUnit(long.Parse(orderDataComponents[6]));
         outOData.targetPosition = targetPosition;
 
         return outOData;

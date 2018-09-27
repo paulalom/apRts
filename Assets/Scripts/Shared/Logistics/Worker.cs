@@ -10,7 +10,7 @@ public class Worker : MyMonoBehaviour
 {
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car) };
     static Type[] defaultCanProduce = new Type[] { typeof(Factory), typeof(HarvestingStation), typeof(PowerPlant) };
-    
+
     public void SetDefaultStorageSettings(Storage storage)
     {
         foreach (Type t in defaultCanContain)

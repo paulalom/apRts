@@ -25,28 +25,7 @@ public class Consumer : MyMonoBehaviour {
     {
         if (StepManager.gameTime - lastUpkeepTaken > upkeepInterval)
         {
-            return storage.TakeItems(operationCosts);
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    public bool Operate(Storage storage, Dictionary<Type, int> externalConsumptionCosts)
-    {
-        Dictionary<Type, int> costs = new Dictionary<Type, int>();
-        foreach (KeyValuePair<Type, int> cost in externalConsumptionCosts)
-        {
-            costs.Add(cost.Key, cost.Value);
-        }
-        if (StepManager.gameTime - lastUpkeepTaken > upkeepInterval)
-        {
-            foreach (KeyValuePair<Type, int> cost in operationCosts)
-            {
-                costs.Add(cost.Key, cost.Value);
-            }
-            if (storage.HasItems(costs))
+            if (storage.TakeItems(operationCosts))
             {
                 lastUpkeepTaken = StepManager.gameTime;
             }
@@ -55,6 +34,36 @@ public class Consumer : MyMonoBehaviour {
                 return false;
             }
         }
-        return storage.TakeItems(costs);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Run a tick of production, consuming external costs from productionStorage and upkeepCosts from internal storage.
+    /// </summary>
+    /// <param name="productionStorage"></param>
+    /// <param name="externalConsumptionCosts"></param>
+    /// <returns></returns>
+    public bool Operate(Storage productionStorage, Dictionary<Type, int> externalConsumptionCosts)
+    {
+        // need to check so we dont take operating costs unless we're going to succeed in taking production costs
+        if (productionStorage.HasItems(externalConsumptionCosts))
+        {
+            return Operate() && productionStorage.TakeItems(externalConsumptionCosts);
+        }
+        else
+        {
+            return false;
+        }        
+    }
+
+    public Dictionary<Type, int> GetOperatingCostsForTimespan (int timeInMs)
+    {
+        Dictionary<Type, int> costs = new Dictionary<Type, int>();
+        foreach (KeyValuePair<Type, int> cost in operationCosts)
+        {
+            costs.Add(cost.Key, (int)(cost.Value * timeInMs / (float)upkeepInterval) + 1);
+        }
+        return costs;
     }
 }

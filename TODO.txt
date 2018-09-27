@@ -1,0 +1,74 @@
+This is not an ordered or an exhaustive list.
+
+Draw archetecture diagrams for all of the good reasons
+Refactor everything into more ECS/data oriented design
+Continue decoupling from unity as needed. Prefer decoupling over coupling where reasonable
+
+Redo Terrain generation to be more suitable to RTS 
+	- Random polygon tiles w/ noise?
+		- Redo safezones
+	- Discrete heights
+Continue Subsystem work
+	- Allow for damage, repair, and positioning of subsystems
+	- Generic hardpoints on entities
+Large Unit System (extension of subsystems)
+	- Allow transport units to contain other units
+	- Use Hardpoints to place unit at point on transport
+	- Unit can shoot, take damage from position on transport
+Logtistics networks
+	- Transports + Nodes
+		- Tracked Transports (eg. trains, planes on a virtual track)
+		- Free Transports (eg. trucks, free-flying cargo planes), 
+		- Logistic Network nodes (stationary storage objects)
+Power networks
+	- Relay objects, consuming structures (civilian buildings, defense buildings, etc.)
+Commander Ability Structure
+	- Hero/empire categories
+	- Something more nuanced than a tree
+		- Allow for taking points into either category
+		- Doesnt penalize hybrids
+Political System
+	- Chat/Messaging
+	- Trade
+	- Contracts/missions issued by players to players or neutral mercs
+Planetary System
+	- Discrete world system 
+		- Launch to orbit
+			- Takes some time, fuel
+			- Teleports unit to other "zone" (eg. on planet, in solar system, interplanetary space)
+	- Player Start Location Selection (which planet, star, sector)
+		- Will need ever expanding number of planets (new players, respawning players)
+			- Events/hostile species could reclaim sections of space to reduce rate of expansion
+Information Systems
+	- Fog of war
+	- Comm/Order range/delay? between "zone"s? 
+		- Probably not, likely tedious to micro
+		- Maybe some sort of expedition system allowed to explore
+			- Cheap+Expendable, but doesnt return information until unit returns from region
+AI
+	- Configurable management of Player's objects to reduce micro requirements
+	- Manage player while offline
+		- Needs to be good enough to not be a significant disadvantage
+		- Other solutions can assist (eg. defense cheating while offline, natural defense advantage)
+	- Manage Non-Player units/factions
+Game Content
+	- Story, Races + Units, Events
+UI
+	- Command bar
+		- Radar
+		- Selection Display
+			- Single Unit Status
+			- Multi-Unit Status
+		- Command Grid (buttons for abilities)
+			- Hotkeys
+	- Resource Bar
+		- What should it desplay? No global resources
+			- Commander Resources?
+			- Curernt selection Resources?
+	- Unit Hover Info
+		- Various Health+Energy bars
+			- Setting to make these persist, enabled by default?
+		- Inventory?
+		- Overlay damage info onto unit 
+			- 2d Icon? Or tint various parts of unit according to health?
+		

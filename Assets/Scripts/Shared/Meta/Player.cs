@@ -12,9 +12,8 @@ public class Player {
     public int networkClientId;
     PlayerManager playerManager;
     public AIManager aiManager;
-    public UnityEvent onSelectionChange;
-    public List<long> selectedUnits = new List<long>();
-    public Dictionary<long, RTSGameObject> units = new Dictionary<long, RTSGameObject>();
+    public int selectedSubgroup = 0;
+    public List<RTSGameObject> units = new List<RTSGameObject>();
     public Dictionary<Type,int> resources = new Dictionary<Type, int>();
     public List<MyPair<long, MyPair<Type, int>>> incomeEventsLast30Seconds = new List<MyPair<long, MyPair<Type, int>>>(); // this should be linkedList to improve efficiency
     public Dictionary<Type, int> avgResourceIncomesLast30Seconds = new Dictionary<Type, int>(); 
@@ -42,7 +41,6 @@ public class Player {
         this.playerManager = playerManager;
         this.isHuman = isHuman;
         this.aiManager = aiManager;
-        onSelectionChange = new UnityEvent();
         onEconomicChange = new UnityEvent();
         onUnitCountIncrease = new OnUnitCountIncrease();
         onUnitCountDecrease = new OnUnitCountDecrease();

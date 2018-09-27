@@ -30,7 +30,6 @@ public class TransportManager : MonoBehaviour
     int messageSendDataLength;
     int messageSendChannelId;
     byte error;
-    public bool isServer = false;
     public bool isConnected = false;
     //public int lifetimeNumPlayersConnected = 1; //includes server
 
@@ -46,7 +45,6 @@ public class TransportManager : MonoBehaviour
 
     public void StartServer()
     {
-        isServer = true;
         isConnected = true;
         
         config = new ConnectionConfig();
@@ -92,11 +90,7 @@ public class TransportManager : MonoBehaviour
         ListenForSocketMessage();
     }
 
-    public void SendSocketMessage(string message)
-    {
-        SendSocketMessage(message, myReiliableChannelId);
-    }
-    public void SendSocketMessage(string message, int channelId)
+    void PrepareSocketMessage(string message, int channelId)
     {
         if (!isConnected)
         {
@@ -106,7 +100,41 @@ public class TransportManager : MonoBehaviour
         byte[] messageBytes = ConvertMessageFromStringToByte(message);
         LoadMessageIntoBuffer(messageBytes);
         messageSendChannelId = channelId;
-        SendMessageInBuffer();
+    }
+
+    /*public void SendSocketMessage(bool isServer, string message)
+    {
+        SendSocketMessage(isServer, message, myReiliableChannelId);
+    }
+    public void SendSocketMessage(bool isServer, string message, int channelId)
+    {
+        if (isServer)
+        {
+            SendSocketMessageToClients(message);
+        }
+        else
+        {
+            SendSocketMessageToServer(message);
+        }
+    }*/
+
+    public void SendSocketMessageToClients(string message)
+    {
+        SendSocketMessageToClients(message, myReiliableChannelId);
+    }
+    public void SendSocketMessageToServer(string message)
+    {
+        SendSocketMessageToServer(message, myReiliableChannelId);
+    }
+    public void SendSocketMessageToClients(string message, int channelId)
+    {
+        PrepareSocketMessage(message, channelId);
+        SendMessageInBufferToClients();
+    }
+    public void SendSocketMessageToServer(string message, int channelId)
+    {
+        PrepareSocketMessage(message, channelId);
+        SendMessageInBufferToServer();
     }
 
     byte[] ConvertMessageFromStringToByte(string message)
@@ -133,28 +161,25 @@ public class TransportManager : MonoBehaviour
     }
 
     // later we can improve this by limiting what info we send on messages which are command request responses
-    void SendMessageInBuffer()
+    void SendMessageInBufferToClients()
     {
-        if (isServer)
+        List<Thread> threads = new List<Thread>();
+        foreach (int clientConnectionId in connectedClients)
         {
-            List<Thread> threads = new List<Thread>();
-            foreach (int clientConnectionId in connectedClients)
-            {
-                NetworkTransport.Send(serverSocketId, clientConnectionId, messageSendChannelId, messageSendBuffer, messageSendBufferLength, out error);
-                if (error != 0)
-                {
-                    Debug.Log("Socket Send Error!: " + (NetworkError)error);
-                }
-            }
-        }
-        else
-        {
-            Debug.Log("client sending to " + clientConnectionId);
-            NetworkTransport.Send(clientSocketId, clientConnectionId, myReiliableChannelId, messageSendBuffer, messageSendBufferLength, out error);
+            NetworkTransport.Send(serverSocketId, clientConnectionId, messageSendChannelId, messageSendBuffer, messageSendBufferLength, out error);
             if (error != 0)
             {
                 Debug.Log("Socket Send Error!: " + (NetworkError)error);
             }
+        }
+    }
+    void SendMessageInBufferToServer()
+    {
+        Debug.Log("client sending to " + clientConnectionId);
+        NetworkTransport.Send(clientSocketId, clientConnectionId, myReiliableChannelId, messageSendBuffer, messageSendBufferLength, out error);
+        if (error != 0)
+        {
+            Debug.Log("Socket Send Error!: " + (NetworkError)error);
         }
     }
 

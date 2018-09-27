@@ -34,11 +34,11 @@ using UnityEngine.Events;
 public class JoinOrder : Order {
 
     public Order joinedOrder;
-    bool isJoined = false, waitingForOrder = false;
+    bool waitingForOrder = false;
 
     public override OrderPhase Phase {
         get {
-            if (isJoined)
+            if (isActivated)
             {
                 return joinedOrder.Phase;
             }
@@ -49,7 +49,7 @@ public class JoinOrder : Order {
         }
         set
         {
-            if (isJoined)
+            if (isActivated)
             {
                 joinedOrder.Phase = value;
             }
@@ -80,16 +80,15 @@ public class JoinOrder : Order {
 
     public override bool Activate(RTSGameObject performingUnit)
     {
+        // Don't activate/join until the joined order is active.
+        if (!joinedOrder.isActivated)
+        {
+            return false;
+        }
+        // Never call source activation, only join once per order. (otherwise re-init)
         if (isActivated) { return true; }
         base.Activate(performingUnit);
-        // already joined, activate is only ever called when we attempt to join, 
-        // and we never call the source order's activate function
-        if (isJoined)
-        {
-            return true;
-        }
         joinedOrder.Join(performingUnit);
-        isJoined = true;
         return true;
     }
 
@@ -97,7 +96,6 @@ public class JoinOrder : Order {
     {
         if (joinedOrder.Channel(performingUnit, dt))
         {
-            isJoined = false;
             return true;
         }
         else
@@ -108,7 +106,6 @@ public class JoinOrder : Order {
 
     public override bool FinishChannel(RTSGameObject performingUnit)
     {
-        isJoined = false;
         return false;
     }
 
@@ -129,6 +126,7 @@ public class JoinOrder : Order {
 
     public void Initilize(RTSGameObject performingUnit, Order targetOrder)
     {
+        isActivated = false;
         base.Initilize(performingUnit);
         if (targetOrder != null) // orders never contains an empty list
         {
@@ -193,9 +191,20 @@ public class JoinOrder : Order {
     void UnjoinCurrentOrder()
     {
         joinedOrder.OnPausedEvent.RemoveListener(OnJoinedOrderPaused);
-        orderData.target.onDestroyed.RemoveListener(OnTargetDestroyed);
+        if (orderData.target != null) // fixme, unjoin shouldnt be called if there is no target.. thats the unit we're joined to
+        {
+            orderData.target.onDestroyed.RemoveListener(OnTargetDestroyed);
+        }
+        // Turn off production animation if next order isnt a production order
+        if (joinedOrder is ProductionOrder)
+        {
+            Order nextOrder = orderManager.GetOrderForUnit(orderData.target, 1);
+            if (nextOrder == null || !(nextOrder is ProductionOrder && nextOrder.orderData.targetPosition == Vector3.zero))
+            {
+                ((ProductionOrder)joinedOrder).SetConstructionHardpointActivity(initiatingUnit.GetComponent<Producer>(), false);
+            }
+        }
         joinedOrder.OnCompletionEvent.RemoveListener(OnJoinedOrderCompleted);
-        isJoined = false;
     }
 
     public override void OnCancel(RTSGameObject performingUnit, GameManager gameManager)

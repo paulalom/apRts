@@ -46,7 +46,7 @@ public class Command
                 ((int)getOrder).ToString();
     }
 
-    public static Command FromNetString(string commandString, PlayerManager playerManager)
+    public static Command FromNetString(string commandString, RTSGameObjectManager rtsGameObjectManager)
     {
         Command command = new Command();
         string[] commandComponents = commandString.Split('|');
@@ -55,7 +55,7 @@ public class Command
         command.queueOrderAtFront = commandComponents[1] == "1";
         command.smartCast = commandComponents[2] == "1";
         command.overrideDefaultOrderData = commandComponents[3] == "1";
-        command.orderData = OrderData.FromString(commandComponents[4], playerManager);
+        command.orderData = OrderData.FromString(commandComponents[4], rtsGameObjectManager);
         command.getOrder = (OrderBuilderFunction)Enum.Parse(typeof(OrderBuilderFunction), commandComponents[5]);
 
         return command;

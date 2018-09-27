@@ -32,14 +32,14 @@ public class ResumeConstructionOrder : Order {
         newStructure = (Structure)orderData.target;
         conInfo = newStructure.constructionInfo;
 
-        producer.GiveNeededItems(newStructure.GetType(), conInfo.storage, conInfo.GetRemainingItemsNeeded());
+        producer.GiveItems(conInfo.storage, conInfo.GetRemainingItemsNeeded());
         orderData.isJoinable = true;
         return true;
     }
 
     public override void Join(RTSGameObject performingUnit)
     {
-        producer.GiveNeededItems(newStructure.GetType(), conInfo.storage, conInfo.GetRemainingItemsNeeded());
+        producer.GiveItems(conInfo.storage, conInfo.GetRemainingItemsNeeded());
     }
 
     // Foreach unit assigned to order

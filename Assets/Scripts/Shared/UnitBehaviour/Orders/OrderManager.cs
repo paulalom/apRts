@@ -267,4 +267,16 @@ public class OrderManager : MyMonoBehaviour {
             orders.Remove(unit);
         }
     }
+
+    public Order GetOrderForUnit(RTSGameObject unit, int orderIndex)
+    {
+        if (orders.ContainsKey(unit) && orders[unit].Count > orderIndex)
+        {
+            return orders[unit][orderIndex];
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

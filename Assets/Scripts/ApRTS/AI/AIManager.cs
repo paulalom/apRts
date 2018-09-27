@@ -8,6 +8,7 @@ public class AIManager
 {
     RTSGameObjectManager rtsGameObjectManager;
     PlayerManager playerManager;
+    SelectionManager selectionManager;
     NetworkedCommandManager commandManager;
 
     // Internal managers
@@ -17,10 +18,11 @@ public class AIManager
     AIMilitaryManager militaryManager;
 
     // Use this for initialization
-    public AIManager(RTSGameObjectManager rtsGameObjectManager, PlayerManager playerManager, NetworkedCommandManager commandManager)
+    public AIManager(RTSGameObjectManager rtsGameObjectManager, PlayerManager playerManager, SelectionManager selectionManager, NetworkedCommandManager commandManager)
     {
         this.rtsGameObjectManager = rtsGameObjectManager;
         this.playerManager = playerManager;
+        this.selectionManager = selectionManager;
         this.commandManager = commandManager;
         rtsGameObjectManager.onUnitCreated.AddListener(SubscribeToIdleEvents);
     }
@@ -74,7 +76,7 @@ public class AIManager
 
     void OnIdleStatusChange(RTSGameObject unit, bool isIdle)
     {
-        if (isIdle && !playerManager.PlayerSelectedUnits.Contains(unit.unitId))
+        if (isIdle && !selectionManager.selectedUnits.Contains(unit))
         {
             if (!SetNewPlanForUnit(unit))
             {

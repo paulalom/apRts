@@ -18,6 +18,7 @@ public class UIManager : MyMonoBehaviour {
     public SelectionManager selectionManager;
     public RTSCamera mainCamera;
     public GameManager gameManager;
+    public UIBarManager uiBarManager;
 
     public List<FloatingText> floatingText;
 
@@ -27,9 +28,11 @@ public class UIManager : MyMonoBehaviour {
         buttonManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
         menuManager = GameObject.Find("MenuManager").GetComponent<MenuManager>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        uiBarManager = GameObject.Find("UIBarManager").GetComponent<UIBarManager>();
         InputActions.gameManager = gameManager;
         InputActions.menuManager = menuManager;
         InputActions.selectionManager = selectionManager;
+        InputActions.uiManager = this;
 
         floatingText = new List<FloatingText>();
         icons = new Dictionary<Type, Texture2D>();
@@ -47,6 +50,7 @@ public class UIManager : MyMonoBehaviour {
 
     public override void MyStart()
     {
+        base.MyStart();
         RTSGameObjectManager rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         floatingTextPrefab = rtsGameObjectManager.prefabs["FloatingText"];
     }
@@ -127,5 +131,22 @@ public class UIManager : MyMonoBehaviour {
             }
         }
         return true;
+    }
+
+
+    public void IncrementSelectionSubgroup()
+    {
+        selectionManager.IncrementSelectionSubgroup();
+        uiBarManager.UpdateSubselectionCategory();
+    }
+    public void DecrementSelectionSubgroup()
+    {
+        selectionManager.DecrementSelectionSubgroup();
+        uiBarManager.UpdateSubselectionCategory();
+    }
+    public void SetSelectionSubgroup(int groupId)
+    {
+        selectionManager.SetSelectionSubgroup(groupId);
+        uiBarManager.UpdateSubselectionCategory();
     }
 }

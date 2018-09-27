@@ -8,20 +8,10 @@ public class NetworkedCommandManager : ICommandManager{
     public NetworkStateManager netStateManager;
     CommandQueue nonNetworkedCommandQueue = new CommandQueue(); // non game affecting ui commands
     
-    public override void AddCommand(Command command)
-    {
-        MyPair<List<long>, Command> unitCommandPair = BuildUnitCommandPair(command);
-        long stepToRunCommands = StepManager.CurrentStep + StepManager.numStepsToDelayInputProcessing;
-
-        netStateManager.AddCommand(stepToRunCommands, unitCommandPair);
-    }
-
     public override void AddCommand(Command command, List<long> unitIds)
     {
+        MyPair<List<long>, Command> unitCommandPair = BuildUnitCommandPair(command, unitIds);
         long stepToRunCommands = StepManager.CurrentStep + StepManager.numStepsToDelayInputProcessing;
-        MyPair<List<long>, Command> unitCommandPair = new MyPair<List<long>, Command>();
-        unitCommandPair.Key = unitIds;
-        unitCommandPair.Value = command;
 
         netStateManager.AddCommand(stepToRunCommands, unitCommandPair);
     }
@@ -35,19 +25,17 @@ public class NetworkedCommandManager : ICommandManager{
         }
     }
 
-    public override void AddNonNetworkedCommand(Command command)
+    public override void AddNonNetworkedCommand(Command command, List<long> unitIds)
     {
-        MyPair<List<long>, Command> unitCommandPair = BuildUnitCommandPair(command);
+        MyPair<List<long>, Command> unitCommandPair = BuildUnitCommandPair(command, unitIds);
         nonNetworkedCommandQueue.AddCommand(StepManager.CurrentStep, unitCommandPair);
     }
     
-    MyPair<List<long>, Command> BuildUnitCommandPair(Command command)
+    MyPair<List<long>, Command> BuildUnitCommandPair(Command command, List<long> unitIds)
     {
-        List<long> units;
         MyPair<List<long>, Command> unitCommandPair;
-        
-        units = playerManager.GetOrderableSelectedUnitIds();
-        unitCommandPair = new MyPair<List<long>, Command>(units, command);
+
+        unitCommandPair = new MyPair<List<long>, Command>(unitIds, command);
 
         return unitCommandPair;
     }

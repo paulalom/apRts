@@ -11,6 +11,7 @@ namespace Assets.Scripts.Shared.UI
         public static GameManager gameManager;
         public static MenuManager menuManager;
         public static SelectionManager selectionManager;
+        public static UIManager uiManager;
 
         public static void IssueCommand(int orderTypeId, bool overrideDefaultOrderData = false)
         {
@@ -29,7 +30,8 @@ namespace Assets.Scripts.Shared.UI
                 command.orderData.target = hit.collider.GetComponent<RTSGameObject>();
             }
 
-            gameManager.commandManager.AddCommand(command);
+            List<long> unitIds = selectionManager.GetOrderableSelectedUnits().Select(x => x.unitId).ToList();
+            gameManager.commandManager.AddCommand(command, unitIds);
         }
 
         internal static void OnActionButtonPress()
@@ -104,7 +106,7 @@ namespace Assets.Scripts.Shared.UI
             RTSGameObject clickedObject = GetClickedRTSGameObject();
             if (clickedObject != null && clickedObject is Structure && clickedObject.GetComponent<ConstructionInfo>() != null)
             {
-                List<RTSGameObject> selectedUnits = gameManager.playerManager.GetOrderableSelectedUnits();
+                List<RTSGameObject> selectedUnits = selectionManager.GetOrderableSelectedUnits();
                 if (!selectedUnits.Any(x => x.GetComponent<Worker>() == null))
                 {
                     IssueCommand((int)OrderBuilderFunction.NewResumeConstructionOrder, true);
@@ -112,7 +114,7 @@ namespace Assets.Scripts.Shared.UI
             }
             else if (clickedObject != null)
             {
-                List<RTSGameObject> selectedUnits = gameManager.playerManager.GetOrderableSelectedUnits();
+                List<RTSGameObject> selectedUnits = selectionManager.GetOrderableSelectedUnits();
                 if (!selectedUnits.Any(x => x.GetComponent<Mover>() == null))
                 {
                     IssueCommand((int)OrderBuilderFunction.NewJoinOrder, true);
@@ -122,6 +124,19 @@ namespace Assets.Scripts.Shared.UI
             {
                 IssueCommand((int)OrderBuilderFunction.NewMoveOrder);
             }
+        }
+
+        public static void IncrementSelectionSubgroup()
+        {
+            uiManager.IncrementSelectionSubgroup();
+        }
+        public static void DecrementSelectionSubgroup()
+        {
+            uiManager.DecrementSelectionSubgroup();
+        }
+        public static void SetSelectionSubgroup(int groupId)
+        {
+            uiManager.SetSelectionSubgroup(groupId);
         }
     }
 }

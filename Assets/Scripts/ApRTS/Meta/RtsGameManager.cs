@@ -11,7 +11,6 @@ namespace Assets.Scripts.ApRTS.Meta
         public override void Awake()
         {
             base.Awake();
-            debug = true;
             Debug.Log("Start time: " + DateTime.Now);
 
             WorldSettings worldSettings = worldManager.GetWorldSettings(worldManager.numWorlds);
@@ -22,10 +21,8 @@ namespace Assets.Scripts.ApRTS.Meta
             commandManager.playerManager = playerManager;
 
             LoadingScreenManager.SetLoadingProgress(0.05f);
-
-            //QualitySettings.vSyncCount = 0;
-            //Application.targetFrameRate = 120;
         }
+
 
         // Input happens on a unity timeframe
         protected void Update()
@@ -50,10 +47,13 @@ namespace Assets.Scripts.ApRTS.Meta
         {
             while (true)
             {
-                realTimeSinceLastStep += (int)(Time.deltaTime * 1000);
-                int stepDt = StepManager.GetDeltaStep();
-                
-                while (stepDt < realTimeSinceLastStep && StepManager.CurrentStep <= netStateManager.serverStep)
+                stepTimer.Stop();
+                realTimeSinceLastStep += (int)stepTimer.ElapsedMilliseconds;
+                stepTimer.Reset();
+                stepTimer.Start();
+
+                int stepDt = StepManager.fixedStepTimeSize;
+                while (stepDt < realTimeSinceLastStep && (netStateManager.isServer || StepManager.CurrentStep < netStateManager.serverStep))
                 {
                     StepGame(stepDt);
                     realTimeSinceLastStep -= stepDt;
@@ -61,6 +61,15 @@ namespace Assets.Scripts.ApRTS.Meta
                     StepManager.Step();
                     yield return new WaitForEndOfFrame();
                 }
+                /*
+                if (StepManager.CurrentStep == netStateManager.serverStep)
+                {
+                    //realTimeSinceLastStep = 0; // Don't let the client accumulate time ahead of the server.. may be unnecessary
+                }
+                if (StepManager.CurrentStep % 50 == 0)
+                {
+                    Debug.Log("Time: " + DateTime.Now.TimeOfDay + ", Step: " + StepManager.CurrentStep + ", SStep: " + netStateManager.serverStep + ", rtsls: " + realTimeSinceLastStep);
+                }*/
                 yield return null;
             }
         }

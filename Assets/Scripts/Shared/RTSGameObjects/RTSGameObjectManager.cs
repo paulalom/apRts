@@ -14,6 +14,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     GameManager gameManager;
     TerrainManager terrainManager;
     PlayerManager playerManager;
+    SelectionManager selectionManager;
     OrderManager orderManager;
 
     public static Dictionary<long, RTSGameObject> allUnits = new Dictionary<long, RTSGameObject>();
@@ -32,6 +33,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
+        selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
         prefabs = new Dictionary<string, GameObject>();
         
         for (int i = 0; i < InspectorPrefabTypes.Length; i++)
@@ -55,7 +57,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         {
             foreach (RTSGameObject unit in unitCreationQueue)
             {
-                playerManager.AddUnit(unit, unit.ownerId);
+                playerManager.AddUnitForPlayer(unit, unit.ownerId);
                 allUnits.Add(unit.unitId, unit);
                 SnapToTerrainHeight(unit, unit.world);
             }
@@ -67,8 +69,8 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     {
         foreach (RTSGameObject unit in unitDestructionQueue)
         {
-            playerManager.ActivePlayer.selectedUnits.Remove(unit.unitId);
-            playerManager.players[unit.ownerId].units.Remove(unit.unitId);
+            selectionManager.selectedUnits.Remove(unit);
+            playerManager.players[unit.ownerId].units.Remove(unit);
             allUnits.Remove(unit.unitId);
             if (!(unit is Projectile))
             {
@@ -151,7 +153,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             color = Color.green;
             name = "ForstDeposit";
         }
-        name += playerManager.GetNumUnits(0);
+        name += playerManager.GetNumUnitsForPlayer(0);
         return NewDeposit(name, color, type, items, position, world);
     }
     
@@ -234,7 +236,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         GameObject newUnit = Instantiate(prefabs[type],
             position,
             Quaternion.identity) as GameObject;
-        newUnit.name = type.ToString() + playerManager.GetNumUnits(type, ownerId);
+        newUnit.name = type.ToString() + playerManager.GetNumUnitsForPlayer(type, ownerId);
 
         return BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
     }
@@ -433,7 +435,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
 
     public void CheatSpawnFactory(Vector3 position, int ownerId)
     {
-        SpawnUnit(typeof(Factory), position, ownerId, playerManager.ActivePlayer.units.FirstOrDefault().Value.gameObject, playerManager.activeWorld);
+        SpawnUnit(typeof(Factory), position, ownerId, playerManager.ActivePlayer.units.FirstOrDefault().gameObject, playerManager.activeWorld);
     }
 
     public void DestroyUnit(RTSGameObject unit)
@@ -558,7 +560,49 @@ public class RTSGameObjectManager : MyMonoBehaviour {
 
     Vector3 GetPositionToSpawn(GameObject producer, Type typeToSpawn)
     {
-        return new Vector3(producer.transform.position.x + producer.transform.localScale.x / 2 + prefabs[typeToSpawn.ToString()].transform.localScale.x / 2 + 1,
-                producer.transform.position.y, producer.transform.position.z);
+        return new Vector3(producer.transform.position.x,
+                producer.transform.position.y, 
+                producer.transform.position.z + producer.transform.localScale.z / 2 
+                + prefabs[typeToSpawn.ToString()].transform.localScale.z / 2 + 1);
+    }
+
+    public RTSGameObject GetUnit(long unitId)
+    {
+        if (allUnits.ContainsKey(unitId))
+        {
+            return allUnits[unitId];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public List<RTSGameObject> GetUnits(List<long> unitIds)
+    {
+        List<RTSGameObject> units = new List<RTSGameObject>();
+        foreach (long id in unitIds)
+        {
+            RTSGameObject unit = GetUnit(id);
+            if (unit != null)
+            {
+                units.Add(unit);
+            }
+        }
+        return units;
+    }
+
+    // no null return, send a new RTSGameObject instead
+    public RTSGameObject GetUnitOrDefault(long unitId)
+    {
+
+        if (allUnits.ContainsKey(unitId))
+        {
+            return allUnits[unitId];
+        }
+        else
+        {
+            return new RTSGameObject() { ownerId = -1 };
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using System;
 
 public class SelectionManager : MyMonoBehaviour {
 
@@ -13,12 +15,21 @@ public class SelectionManager : MyMonoBehaviour {
     public Vector3 mouseDown;
     public const int maxSelectedUnits = 100;
     public bool menuClicked = false;
+    public List<RTSGameObject> selectedUnits = new List<RTSGameObject>();
+    public int selectionSubgroup = -1;
+    public int numSelectionSubgroups = 0;
+
+    public class OnSelectionChangeEvent : UnityEvent { };
+    public OnSelectionChangeEvent onSelectionChange = new OnSelectionChangeEvent();
+    public OnSelectionChangeEvent onSelectionSubgroupChange = new OnSelectionChangeEvent();
+
 
     public override void MyAwake()
     {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         mouseDown = mouseDownVectorSentinel;
+        onSelectionChange.AddListener(UpdateSelectionSubgroupCount);
     }
 
     void OnGUI()
@@ -32,8 +43,6 @@ public class SelectionManager : MyMonoBehaviour {
 
     public void CheckSingleSelectionEvent(RTSGameObject objectClicked)
     {
-        List<RTSGameObject> selectedUnits = playerManager.GetPlayerSelectedUnits();
-                
         // Select one
         if (objectClicked != null && !(objectClicked is Projectile))// && selectableTypes.Contains(objectClicked.GetType()))
         {
@@ -44,7 +53,11 @@ public class SelectionManager : MyMonoBehaviour {
                     unit.selected = false;
                     unit.selectionCircle.enabled = false;
                 }
-                playerManager.PlayerSelectedUnits.Clear();
+                if (selectedUnits.Count() > 0)
+                {
+                    selectedUnits.Clear();
+                    onSelectionChange.Invoke();
+                }
             }
             if (!objectClicked.selected)
             {
@@ -118,7 +131,7 @@ public class SelectionManager : MyMonoBehaviour {
                 continue;
             }
             bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
-            bool previouslySelected = playerManager.GetPlayerSelectedUnits().Contains(unit);
+            bool previouslySelected = selectedUnits.Contains(unit);
 
             if (Input.GetKey(KeyCode.LeftShift))
             {
@@ -148,33 +161,75 @@ public class SelectionManager : MyMonoBehaviour {
         return false;
     }
 
+    public List<RTSGameObject> GetOrderableSelectedUnits()
+    {
+        List<RTSGameObject> units = new List<RTSGameObject>();
+        foreach (RTSGameObject unit in selectedUnits.Where(x => x.ownerId == playerManager.ActivePlayerId))
+        {
+            units.Add(unit);
+        }
+        return units;
+    }
+
     public void Select(RTSGameObject obj, bool select)
     {
         if (select)
         {
-            playerManager.PlayerSelectedUnits.Add(obj.unitId);
+            selectedUnits.Add(obj);
         }
         else
         {
-            playerManager.PlayerSelectedUnits.Remove(obj.unitId);
+            selectedUnits.Remove(obj);
         }
         obj.selected = select;
         obj.selectionCircle.enabled = select;
-        playerManager.OnPlayerSelectionChange.Invoke();
+        onSelectionChange.Invoke();
     }
 
     public void SetSelectionToUnit(RTSGameObject newlySelectedUnit)
     {
-        foreach(RTSGameObject previouslySelectedUnit in playerManager.GetPlayerSelectedUnits())
+        foreach(RTSGameObject previouslySelectedUnit in selectedUnits)
         {
             previouslySelectedUnit.selected = false;
             previouslySelectedUnit.selectionCircle.enabled = false;
         }
-        playerManager.PlayerSelectedUnits.Clear();
+        selectedUnits.Clear();
 
-        playerManager.PlayerSelectedUnits.Add(newlySelectedUnit.unitId);
+        selectedUnits.Add(newlySelectedUnit);
         newlySelectedUnit.selected = true;
         newlySelectedUnit.selectionCircle.enabled = true;
-        playerManager.OnPlayerSelectionChange.Invoke();
+        onSelectionChange.Invoke();
+    }
+
+    public void IncrementSelectionSubgroup()
+    {
+        selectionSubgroup = selectionSubgroup >= numSelectionSubgroups - 1 ? 0 : selectionSubgroup + 1;       
+    }
+    public void DecrementSelectionSubgroup()
+    {
+        selectionSubgroup = selectionSubgroup <= 0 ? numSelectionSubgroups - 1 : selectionSubgroup - 1;
+    }
+    public void SetSelectionSubgroup(int groupId)
+    {
+        selectionSubgroup = Math.Max(Math.Min(groupId, 0), numSelectionSubgroups - 1);
+    }
+
+    void UpdateSelectionSubgroupCount()
+    {
+        int newNumSelectionSubgroups = selectedUnits.Select(x => x.GetType()).Distinct().Count();
+        if (newNumSelectionSubgroups != numSelectionSubgroups)
+        {
+            numSelectionSubgroups = newNumSelectionSubgroups;
+
+            if (selectionSubgroup >= numSelectionSubgroups) // numSelectedSubgroups has decreased, adjust selectionSubgroup accordingly
+            {
+                selectionSubgroup = numSelectionSubgroups - 1; // -1 when 0 subgroups
+            }
+            else if (selectionSubgroup <= -1 && numSelectionSubgroups > 0)
+            {
+                selectionSubgroup = 0;
+            }
+            onSelectionSubgroupChange.Invoke();
+        }
     }
 }

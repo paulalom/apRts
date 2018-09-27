@@ -7,6 +7,7 @@ public class ProductionOrder : Order {
 
     Producer producer;
     Consumer consumer;
+    Storage storage; // Joiners shouldnt use their own storage
     Type currentProductionType;
 
     public override void Initilize(RTSGameObject performingUnit)
@@ -22,7 +23,9 @@ public class ProductionOrder : Order {
         base.Activate(performingUnit);
         producer = performingUnit.GetComponent<Producer>();
         consumer = performingUnit.GetComponent<Consumer>();
+        storage = performingUnit.GetComponent<Storage>();
         orderData.remainingChannelTime = producer.productionTime[currentProductionType];
+        SetConstructionHardpointActivity(producer, true);
 
         orderData.isJoinable = true;
         return true;
@@ -31,7 +34,10 @@ public class ProductionOrder : Order {
     // take necessary resources from joining units
     public override void Join(RTSGameObject performingUnit)
     {
-        producer.GiveNeededItems(currentProductionType, initiatingUnit.storage, producer.productionCost[currentProductionType]);
+        Producer joiningProducer = performingUnit.GetComponent<Producer>();
+        joiningProducer.GiveItems(storage, producer.productionCost[currentProductionType]);
+        joiningProducer.GiveItems(storage, consumer.GetOperatingCostsForTimespan(orderData.remainingChannelTime));
+        SetConstructionHardpointActivity(joiningProducer, true);
     }
 
     // Foreach unit assigned to order
@@ -42,9 +48,11 @@ public class ProductionOrder : Order {
         {
             return true;
         }
+        Consumer performingConsumer = performingUnit.GetComponent<Consumer>();
+        Producer performingProducer = performingUnit.GetComponent<Producer>();
 
         Dictionary<Type, int> productionCosts = producer.GetCostForProductionStep(currentProductionType, orderData.remainingChannelTime);
-        if (consumer.Operate(performingUnit.storage, productionCosts))
+        if (performingConsumer.Operate(storage, productionCosts))
         {
             ChannelForTime(dt);
             producer.timeLeftToProduce = orderData.remainingChannelTime; // temporary for GUI to work
@@ -52,9 +60,44 @@ public class ProductionOrder : Order {
         return IsFinishedChanneling();
     }
 
+    public void SetConstructionHardpointActivity(Producer producer, bool active)
+    {
+        List<GameObject> hardPoints;
+        if (producer == this.producer)
+        {
+            hardPoints = producer.constructionSubsystem.internalConstructionHardpoints;
+        }
+        else
+        {
+            hardPoints = producer.constructionSubsystem.externalConstructionHardpoints;
+        }
+
+        if (active)
+        {
+            foreach(GameObject hardPoint in hardPoints)
+            {
+                var ps = hardPoint.GetComponentInChildren<ParticleSystem>();
+                if (!ps.isPlaying){
+                    ps.Play();
+                }
+            }
+        }
+        else
+        {
+            hardPoints.ForEach(x => x.GetComponentInChildren<ParticleSystem>().Stop());
+        }
+    }
+
     public override bool FinishChannel(RTSGameObject performingUnit)
     {
         base.FinishChannel(performingUnit);
+
+        // turn off production animation if next order isn't also production
+        Order nextOrder = orderManager.GetOrderForUnit(performingUnit, 1);
+        if (nextOrder == null || !(nextOrder is ProductionOrder && nextOrder.orderData.targetPosition == Vector3.zero))
+        {
+            SetConstructionHardpointActivity(producer, false);
+        }
 
         if (performingUnit.storage.canContain.Contains(currentProductionType))
         {
@@ -82,5 +125,11 @@ public class ProductionOrder : Order {
     {
         float totalChannelTime = producer.productionTime[currentProductionType] - orderData.remainingChannelTime;
         producer.CancelProduction(currentProductionType, totalChannelTime);
+        // turn off production animation if next order isn't also production
+        Order nextOrder = orderManager.GetOrderForUnit(performingUnit, 1);
+        if (nextOrder == null || !(nextOrder is ProductionOrder && nextOrder.orderData.targetPosition == Vector3.zero))
+        {
+            SetConstructionHardpointActivity(producer, false);
+        }
     }
 }

@@ -19,6 +19,7 @@ public class NetworkStateManager : IStateManager{
     public Dictionary<int, List<string>> recievedMessages = new Dictionary<int, List<string>>();
     public CommandQueue localCommands = new CommandQueue();
 
+    public bool isServer = false;
     public long serverStep;
     public long clientStep { get { return StepManager.CurrentStep; } }
     public long nextRtsGoUid = 0;
@@ -97,7 +98,7 @@ public class NetworkStateManager : IStateManager{
 
     public override void Step()
     {
-        if (transportManager.isServer)
+        if (isServer)
         {
             serverStep++;
             SendStep(transportManager.myUnreliableChannelId);
@@ -107,23 +108,27 @@ public class NetworkStateManager : IStateManager{
     // Server sends step to clients
     void SendStep(int channelId)
     {
-        transportManager.SendSocketMessage(((int)MessageIds.StepMessage).ToString() + serverStep, channelId);
+        transportManager.SendSocketMessageToClients(((int)MessageIds.StepMessage).ToString() + serverStep, channelId);
     }
 
     // Clients receive step message
     void ParseStepMessage(string message)
     {
-        serverStep = long.Parse(message);
+        if (!isServer) // this hides a problem... server sends step too frequently, client falls behind
+        {               // going to want some assumption of server continuing at expected rate with only periodic (250-500ms) step# sync
+                        // command requests should still be validated and correctly executed even if serverStep is out of sync
+            serverStep = long.Parse(message);
+        }
     }
 
     // Client requests
     void SendPlayerIdsRequest()
     {
-        if (transportManager.isServer)
+        if (isServer)
         {
             return; // Server doesn't need the count
         }
-        transportManager.SendSocketMessage(((int)MessageIds.PlayerIdsMessage).ToString() + messageRequestSuffixCharacter);
+        transportManager.SendSocketMessageToServer(((int)MessageIds.PlayerIdsMessage).ToString() + messageRequestSuffixCharacter);
     }
     
     // Server receives
@@ -141,14 +146,14 @@ public class NetworkStateManager : IStateManager{
             playerIds[i] = transportManager.connectedClients[i].ToString();
         }
         string message = string.Join(messageSeparatorChar.ToString(), playerIds);
-        transportManager.SendSocketMessage(((int)MessageIds.PlayerIdsMessage).ToString() + message);
+        transportManager.SendSocketMessageToClients(((int)MessageIds.PlayerIdsMessage).ToString() + message);
     }
 
     // Client receives
     void ParsePlayerIdsMessage(string message)
     {
         Debug.Log("PlayerIds received: " + message);
-        if (!transportManager.isServer) // Server doesnt need
+        if (!isServer) // Server doesnt need
         {
             int prevPlayerCount = transportManager.connectedClients.Count;
             string[] playerIds = message.Split(messageSeparatorChar);
@@ -186,7 +191,7 @@ public class NetworkStateManager : IStateManager{
         string unitIdsString = string.Join(messageSeparatorChar.ToString(), unitStrings.ToArray());
         string message = string.Join(messageVariableSeparatorChar.ToString(), new string[] { unitIdsString, commandString, step.ToString() });
         message = ((int)MessageIds.CommandMessage) + message + messageRequestSuffixCharacter;
-        transportManager.SendSocketMessage(message);
+        transportManager.SendSocketMessageToServer(message);
     }
 
     // Server receives client command request
@@ -210,7 +215,7 @@ public class NetworkStateManager : IStateManager{
     // Server responds to client command request
     void SendCommand(string message)
     {
-        transportManager.SendSocketMessage((int)MessageIds.CommandMessage + message);
+        transportManager.SendSocketMessageToClients((int)MessageIds.CommandMessage + message);
     }
 
     // Client received command from server
@@ -221,7 +226,7 @@ public class NetworkStateManager : IStateManager{
         string commandString = commandComponents[1];
         string step = commandComponents[2];
         List<long> unitIds = new List<long>();
-        Command command = Command.FromNetString(commandString, playerManager);
+        Command command = Command.FromNetString(commandString, gameManager.rtsGameObjectManager);
         if (unitIdsString != "")
         {
             foreach (string unitId in unitIdsString.Split(messageSeparatorChar))

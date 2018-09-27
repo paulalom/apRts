@@ -6,7 +6,6 @@ using System.Collections.Generic;
 public class ButtonManager : MyMonoBehaviour {
 
     public GameManager gameManager;
-    public PlayerManager playerManager;
     public SelectionManager selectionManager;
     public UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
@@ -14,28 +13,27 @@ public class ButtonManager : MyMonoBehaviour {
     
     public override void MyAwake()
     {
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
         orderManager = GameObject.Find("OrderManager").GetComponent<OrderManager>();
     }
 
     void OnGUI()
     {
-        if(playerManager == null || gameManager == null || selectionManager == null || uiManager == null)
-        {
-            return;
-        }
         GUI.depth = 10;
 
         int i = 0;
         int j;
         int itemCount = 0;
-        int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
+        int numInvsToDraw = Math.Min(selectionManager.selectedUnits.Count, 10);
 
         GUIStyle icon;
         Rect button;
         RTSGameObject newSelectedUnit = null;
 
         // This might be spawning a button for each selected unit... we should fix that (in addition to everything else in this function)
-        foreach (RTSGameObject unit in playerManager.GetPlayerSelectedUnits())
+        foreach (RTSGameObject unit in selectionManager.selectedUnits)
         {
             j = 1;
             Rect menu = new Rect(10, 250 + i * 55 - numInvsToDraw * 10, 400, 50);

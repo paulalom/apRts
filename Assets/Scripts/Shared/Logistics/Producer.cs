@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,6 +14,7 @@ public class Producer : MyMonoBehaviour {
     public Dictionary<Type, int> productionQuantity = new Dictionary<Type, int>();
     public Dictionary<Type, Dictionary<Type, int>> productionCost = new Dictionary<Type, Dictionary<Type, int>>();
     RTSGameObjectManager rtsGameObjectManager;
+    public ConstructionSubsystem constructionSubsystem; // I dont like that this is here, need to move to proper ECS
 
     public class OnProductionBeginEvent : UnityEvent<RTSGameObject> { }
     public OnProductionBeginEvent onProductionBeginEvent = new OnProductionBeginEvent();
@@ -35,6 +37,14 @@ public class Producer : MyMonoBehaviour {
             {
                 productionQuantity.Add(type, 1); // default
             }
+        }
+
+        IEnumerable<GameObject> hardPoints = constructionSubsystem.externalConstructionHardpoints
+            .Union(constructionSubsystem.internalConstructionHardpoints);
+        foreach (GameObject hardPoint in hardPoints)
+        {
+            hardPoint.GetComponentInChildren<ParticleSystem>().Stop();
+            hardPoint.GetComponentInChildren<ParticleSystem>().Clear();
         }
     }
 
@@ -87,7 +97,10 @@ public class Producer : MyMonoBehaviour {
             int itemCost = (int)costPerStep +
                 (int)(costPerStepDecimalPortion * (stepsSinceStart)) - (int)(costPerStepDecimalPortion * (stepsSinceStart - 1));
 
-            itemCosts.Add(cost.Key, itemCost);
+            if (itemCost != 0)
+            {
+                itemCosts.Add(cost.Key, itemCost);
+            }
         }
         return itemCosts;
     }
@@ -168,7 +181,7 @@ public class Producer : MyMonoBehaviour {
         return null;
     }
     
-    public void GiveNeededItems(Type typeToBuild, Storage targetStorage, Dictionary<Type, int> requiredItems)
+    public void GiveItems(Storage targetStorage, Dictionary<Type, int> requiredItems)
     {
         List<Type> itemTypes = new List<Type>(requiredItems.Keys);
         foreach (Type type in itemTypes)

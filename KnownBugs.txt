@@ -1,0 +1,6 @@
+Bugs that I dont wan't to "quick fix" (ie hide) or prioritize right now.
+Not an exhaustive or ordered list.
+
+NullReferenceException: local multiplayer join order p2 joins p1 factory... 
+	JoinOrder L157... orderData.target.onIdleStatusChange.AddListener(OnTargetIdleStatusChange);
+	OrderData.target is liklely null, though no reason why it should be (join order requires targeting)

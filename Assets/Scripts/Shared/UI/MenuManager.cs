@@ -87,9 +87,9 @@ public class MenuManager : MyMonoBehaviour {
     void drawInventoryMenus()
     {
         int i = 0;
-        int numInvsToDraw = Math.Min(playerManager.PlayerSelectedUnits.Count, 10);
+        int numInvsToDraw = Math.Min(selectionManager.selectedUnits.Count, 10);
         
-        foreach (RTSGameObject unit in playerManager.GetPlayerSelectedUnits())
+        foreach (RTSGameObject unit in selectionManager.selectedUnits)
         {
             GUIStyle container = new GUIStyle();
             container.normal.background = menuGraphic;

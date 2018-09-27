@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System.Diagnostics;
 
 public abstract class GameManager : MonoBehaviour {
 
@@ -16,12 +17,13 @@ public abstract class GameManager : MonoBehaviour {
     public MenuManager menuManager;
     public PlayerManager playerManager;
     public SettingsManager settingsManager;
+    public SelectionManager selectionManager;
     public WorldManager worldManager;
     public NetworkStateManager netStateManager;
     public NetworkedCommandManager commandManager;
     protected KeyCode prevKeyClicked;
-    
-    public bool debug;
+
+    protected Stopwatch stepTimer = new Stopwatch();
     protected int realTimeSinceLastStep; // time in ms
     //public HashSet<Type> selectableTypes = new HashSet<Type>() { typeof(Commander), typeof(Worker), typeof(HarvestingStation), typeof(Tank), typeof(Factory), typeof(PowerPlant) };
 
@@ -35,6 +37,7 @@ public abstract class GameManager : MonoBehaviour {
             DestroyImmediate(this);
             throw new Exception("Warning: Game not started from start menu scene");
         }
+        allObjects = new List<MyMonoBehaviour>(); // clean out any instances added before this game started
         mainCamera = GameObject.Find("MainCamera").GetComponent<RTSCamera>();
         terrainManager = GameObject.Find("TerrainManager").GetComponent<TerrainManager>();
         orderManager = GameObject.Find("OrderManager").GetComponent<OrderManager>();
@@ -42,6 +45,7 @@ public abstract class GameManager : MonoBehaviour {
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         playerManager = GameObject.Find("PlayerManager").GetComponent<PlayerManager>();
         settingsManager = GameObject.Find("SettingsManager").GetComponent<SettingsManager>();
+        selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
         worldManager = GameObject.Find("WorldManager").GetComponent<WorldManager>();
         commandManager = GameObject.Find("NetworkedCommandManager").GetComponent<NetworkedCommandManager>();
         buttonManager = GameObject.Find("ButtonManager").GetComponent<ButtonManager>();
@@ -108,7 +112,7 @@ public abstract class GameManager : MonoBehaviour {
         List<RTSGameObject> units = new List<RTSGameObject>();
         foreach(long unitId in unitIds)
         {
-            RTSGameObject unit = playerManager.GetUnit(unitId);
+            RTSGameObject unit = rtsGameObjectManager.GetUnit(unitId);
             if (unit == null) { continue; }
             units.Add(unit);
         }
@@ -176,7 +180,7 @@ public abstract class GameManager : MonoBehaviour {
 
         AddStartingItems(player, commander);
         SetStartingCamera(player, startLocation, world);
-        playerManager.AiManager.SetUpPlayerAIManagers(player);
+        playerManager.ActivePlayer.aiManager.SetUpPlayerAIManagers(player);
     }
 
     protected void AddStartingItems(Player player, RTSGameObject commander)
@@ -211,18 +215,19 @@ public abstract class GameManager : MonoBehaviour {
     
     public void ProduceFromMenu(Type type, int quantity)
     {
-        List<long> unitIds = playerManager.GetOrderableSelectedUnitIds();
+        List<RTSGameObject> selectedUnits = selectionManager.GetOrderableSelectedUnits();
+        List<long> unitIds = selectedUnits.Select(x => x.unitId).ToList();
 
         List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() {
                     new MyPair<Type,int>(type, quantity) };
 
-        foreach (RTSGameObject unit in playerManager.GetUnits(unitIds))
+        foreach (RTSGameObject unit in selectedUnits)
         {
             Producer producer = unit.GetComponent<Producer>();
             Mover mover = unit.GetComponent<Mover>();
             if (producer != null && mover != null)
             {
-                playerManager.AiManager.SetNewPlanForUnit(unit, new ConstructionPlan(playerManager.AiManager, rtsGameObjectManager) { thingsToBuild = items });
+                playerManager.ActivePlayer.aiManager.SetNewPlanForUnit(unit, new ConstructionPlan(playerManager.ActivePlayer.aiManager, rtsGameObjectManager) { thingsToBuild = items });
             }
             else if (producer != null)
             {

@@ -77,7 +77,7 @@ public class ConstructionOrder : Order {
     {
         Producer producer = performingUnit.GetComponent<Producer>();
         Type newStructureType = orderData.items[0].Key;
-        Structure newStructurePrefab = rtsGameObjectManager.prefabs[newStructureType.ToString()].GetComponent<Structure>();
+        Structure newStructurePrefab = rtsGameObjectManager.unitPrefabs[newStructureType.ToString()].GetComponent<Structure>();
 
         if (producer.ValidateNewProductionRequest(newStructureType, 1)
             && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, performingUnit.transform.position))

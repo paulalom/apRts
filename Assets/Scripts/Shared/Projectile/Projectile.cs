@@ -6,12 +6,10 @@ using System.Collections;
 public class Projectile : RTSGameObject {
     
     public RTSGameObject parent;
-    public RTSGameObject rtsGo;
     
 	public override void MyStart() {
         mover = GetComponent<Mover>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
-        rtsGo = GetComponent<RTSGameObject>();
     }
 	
 	public override void MyUpdate() {

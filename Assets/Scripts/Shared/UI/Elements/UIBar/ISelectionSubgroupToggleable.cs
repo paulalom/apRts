@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+
 interface ISelectionSubgroupToggleable
 {
-    void SetSelectionSubgroup(int categoryId);
-    void ClearSelectionSubgroup();
+    void SetSelectionSubgroup(List<Type> subgroups, int index);
 }

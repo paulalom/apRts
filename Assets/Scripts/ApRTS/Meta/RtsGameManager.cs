@@ -53,13 +53,12 @@ namespace Assets.Scripts.ApRTS.Meta
                 stepTimer.Start();
 
                 int stepDt = StepManager.fixedStepTimeSize;
-                while (stepDt < realTimeSinceLastStep && (netStateManager.isServer || StepManager.CurrentStep < netStateManager.serverStep))
+                while (stepDt < realTimeSinceLastStep || (StepManager.CurrentStep < netStateManager.serverStep && !netStateManager.isServer))
                 {
                     StepGame(stepDt);
                     realTimeSinceLastStep -= stepDt;
                     netStateManager.Step();
                     StepManager.Step();
-                    yield return new WaitForEndOfFrame();
                 }
                 /*
                 if (StepManager.CurrentStep == netStateManager.serverStep)

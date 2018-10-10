@@ -8,8 +8,12 @@ using UnityEngine.Events;
 //All of the manager classes could probaby be static
 public class RTSGameObjectManager : MyMonoBehaviour {
 
-    public GameObject[] InspectorPrefabTypes;
-    public Dictionary<string, GameObject> prefabs;
+    public GameObject[] InspectorPrefabUnitTypes;
+    public GameObject[] InspectorPrefabNonUnitTypes;
+    public GameObject[] InspectorPrefabModelTypes;
+    public Dictionary<string, GameObject> unitPrefabs;
+    public Dictionary<string, GameObject> nonUnitPrefabs;
+    public Dictionary<string, GameObject> modelPrefabs;
     public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     GameManager gameManager;
     TerrainManager terrainManager;
@@ -34,14 +38,25 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
-        prefabs = new Dictionary<string, GameObject>();
-        
-        for (int i = 0; i < InspectorPrefabTypes.Length; i++)
+        unitPrefabs = new Dictionary<string, GameObject>();
+        nonUnitPrefabs = new Dictionary<string, GameObject>();
+        modelPrefabs = new Dictionary<string, GameObject>();
+
+        if (modelPrefabs.Count != unitPrefabs.Count)
         {
-            prefabs.Add(InspectorPrefabTypes[i].name, InspectorPrefabTypes[i]);
+            throw new Exception("Modelprefab/prefab count mismatch, please check RTSGameObjectManager");
         }
-        //collisionAvoidanceManager.MyStart();
-    }
+        for (int i = 0; i < InspectorPrefabUnitTypes.Length; i++)
+        {
+            unitPrefabs.Add(InspectorPrefabUnitTypes[i].name, InspectorPrefabUnitTypes[i]);
+            modelPrefabs.Add(InspectorPrefabModelTypes[i].name, InspectorPrefabModelTypes[i]);
+        }
+        for (int i = 0; i < InspectorPrefabNonUnitTypes.Length; i++)
+        {
+            nonUnitPrefabs.Add(InspectorPrefabNonUnitTypes[i].name, InspectorPrefabNonUnitTypes[i]);
+        }
+            //collisionAvoidanceManager.MyStart();
+        }
     
     public void UpdateAll(HashSet<RTSGameObject> units, List<RTSGameObject> nonNeutralUnits, int dt)
     {
@@ -84,7 +99,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
                 Explode explosion = unit.GetComponent<Explode>();
                 if (explosion != null)
                 {
-                    GameObject go = Instantiate(prefabs["Explosion"],
+                    GameObject go = Instantiate(nonUnitPrefabs["Explosion"],
                                                         unit.transform.position,
                                                         Quaternion.identity) as GameObject;
                     go.name = "Explosion xyz: " + unit.transform.position.x + ", " + unit.transform.position.y + ", " + unit.transform.position.z;
@@ -194,7 +209,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     {
         RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
         
-        if (!prefabs.ContainsKey(type.ToString()))
+        if (!unitPrefabs.ContainsKey(type.ToString()))
         {
             throw new Exception("Attempting to spawn type: " + type + " which does not exist in prefab list");
         }
@@ -208,7 +223,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         RTSGameObject rtsGo = producer.GetComponent<RTSGameObject>();
         List<RTSGameObject> newUnits = new List<RTSGameObject>();
 
-        if (!prefabs.ContainsKey(type.ToString()))
+        if (!unitPrefabs.ContainsKey(type.ToString()))
         {
             throw new ArgumentException("Attempting to spawn type: " + type + " which does not exist in prefab list");
         }
@@ -233,22 +248,39 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     
     public RTSGameObject SpawnUnit(string type, Vector3 position, int ownerId, GameObject producer, World world)
     {
-        GameObject newUnit = Instantiate(prefabs[type],
+        GameObject prefab = GetPrefab(type);
+        GameObject newUnit = Instantiate(prefab,
             position,
             Quaternion.identity) as GameObject;
         newUnit.name = type.ToString() + playerManager.GetNumUnitsForPlayer(type, ownerId);
 
-        return BuildNewRTSGameObject(newUnit, type, ownerId, producer, world);
+        return BuildNewRTSGameObject(newUnit, ownerId, producer, world);
     }
 
-    public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, string requestedType, int ownerId, GameObject producer, World world)
+    GameObject GetPrefab(string type)
+    {
+        if (unitPrefabs.ContainsKey(type))
+        {
+            return unitPrefabs[type];
+        }
+        if (nonUnitPrefabs.ContainsKey(type))
+        {
+            return nonUnitPrefabs[type];
+        }
+        if (modelPrefabs.ContainsKey(type))
+        {
+            return modelPrefabs[type];
+        }
+        throw new Exception("Attempting to instantiate type not in prefabs: " + type);
+    }
+
+    public RTSGameObject BuildNewRTSGameObject(GameObject newUnit, int ownerId, GameObject producer, World world)
     {
         RTSGameObject rtsGo = newUnit.GetComponent<RTSGameObject>();
         Storage storage = newUnit.GetComponent<Storage>();
         
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
-        rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
         rtsGo.unitId = gameManager.netStateManager.GetNextUID();
 
         if (storage != null)
@@ -258,7 +290,11 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         }
         if (rtsGo.flagRenderer == null)
         {
-            rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
+            rtsGo.flagRenderer = newUnit.GetComponent<Renderer>();
+            if (rtsGo.flagRenderer == null)
+            {
+                rtsGo.flagRenderer = newUnit.GetComponentInChildren<Renderer>();
+            }
         }
         switch (ownerId)
         {
@@ -563,7 +599,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         return new Vector3(producer.transform.position.x,
                 producer.transform.position.y, 
                 producer.transform.position.z + producer.transform.localScale.z / 2 
-                + prefabs[typeToSpawn.ToString()].transform.localScale.z / 2 + 1);
+                + unitPrefabs[typeToSpawn.ToString()].transform.localScale.z / 2 + 1);
     }
 
     public RTSGameObject GetUnit(long unitId)

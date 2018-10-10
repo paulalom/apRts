@@ -14,10 +14,10 @@ public class BasicCannonProjectile : Projectile
         {
             otherRtsGo = other.GetComponentInParent<RTSGameObject>();
         }
-        if ((otherRtsGo == null || otherRtsGo.ownerId != rtsGo.ownerId) 
-            && orderManager.orders.ContainsKey(rtsGo))
+        if ((otherRtsGo == null || otherRtsGo.ownerId != ownerId) 
+            && orderManager.orders.ContainsKey(this))
         {
-            orderManager.orders[rtsGo][0].orderData.targetPosition = transform.position;
+            orderManager.orders[this][0].orderData.targetPosition = transform.position;
         }
     }
 

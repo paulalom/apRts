@@ -55,8 +55,6 @@ public class TransportManager : MonoBehaviour
 
         // Connect to ourselves as a client
         clientConnectionId = NetworkTransport.Connect(serverSocketId, serverIpAddress, serverSocketPort, 0, out error);
-        //Thread.Sleep(3000);
-        // this crashes unity for some reason
         //serverConnectionId = NetworkTransport.Connect(socketId, serverIpAddress, socketPort, 0, out error);
     }
 

@@ -70,7 +70,7 @@ public class ResumeConstructionOrder : Order {
     {
         Producer producer = performingUnit.GetComponent<Producer>();
         Type newStructureType = orderData.target.GetType();
-        Structure newStructurePrefab = rtsGameObjectManager.prefabs[newStructureType.ToString()].GetComponent<Structure>();
+        Structure newStructurePrefab = rtsGameObjectManager.unitPrefabs[newStructureType.ToString()].GetComponent<Structure>();
 
         if (producer.ValidateNewProductionRequest(newStructureType, 1)
             && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, orderData.targetPosition))

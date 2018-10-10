@@ -4,6 +4,12 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
+public enum CommandMenuType
+{
+    UnitConstruction,
+    ResourceConstruction   
+}
+
 namespace Assets.Scripts.Shared.UI
 {
     public static class InputActions
@@ -72,6 +78,16 @@ namespace Assets.Scripts.Shared.UI
             return objectClicked;
         }
 
+        internal static void StartConstruction(Type type)
+        {
+            gameManager.ProduceFromMenu(type);
+        }
+
+        internal static void ClickCommandGrid(int row, int column)
+        {
+            uiManager.ClickCommandGrid(row, column);
+        }
+
         internal static void RaiseCamera()
         {
             gameManager.mainCamera.RaiseCamera();
@@ -134,9 +150,10 @@ namespace Assets.Scripts.Shared.UI
         {
             uiManager.DecrementSelectionSubgroup();
         }
-        public static void SetSelectionSubgroup(int groupId)
+
+        internal static void OpenCommandMenuForType(CommandMenuType menuType, Type unitType)
         {
-            uiManager.SetSelectionSubgroup(groupId);
+            uiManager.SetCommandGrid(unitType.ToString() + menuType.ToString());
         }
     }
 }

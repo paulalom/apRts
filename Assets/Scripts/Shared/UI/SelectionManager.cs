@@ -16,12 +16,13 @@ public class SelectionManager : MyMonoBehaviour {
     public const int maxSelectedUnits = 100;
     public bool menuClicked = false;
     public List<RTSGameObject> selectedUnits = new List<RTSGameObject>();
+    public List<Type> selectionSubgroups = new List<Type>();
     public int selectionSubgroup = -1;
-    public int numSelectionSubgroups = 0;
 
     public class OnSelectionChangeEvent : UnityEvent { };
     public OnSelectionChangeEvent onSelectionChange = new OnSelectionChangeEvent();
-    public OnSelectionChangeEvent onSelectionSubgroupChange = new OnSelectionChangeEvent();
+    public class OnSelectionSubgroupChangeEvent : UnityEvent<List<Type>, int> { };
+    public OnSelectionSubgroupChangeEvent onSelectionSubgroupChange = new OnSelectionSubgroupChangeEvent();
 
 
     public override void MyAwake()
@@ -29,7 +30,7 @@ public class SelectionManager : MyMonoBehaviour {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         mouseDown = mouseDownVectorSentinel;
-        onSelectionChange.AddListener(UpdateSelectionSubgroupCount);
+        onSelectionChange.AddListener(UpdateSelectionSubgroups);
     }
 
     void OnGUI()
@@ -41,32 +42,31 @@ public class SelectionManager : MyMonoBehaviour {
         }
     }
 
+    // Select one
     public void CheckSingleSelectionEvent(RTSGameObject objectClicked)
     {
-        // Select one
         if (objectClicked != null && !(objectClicked is Projectile))// && selectableTypes.Contains(objectClicked.GetType()))
         {
             if (!Input.GetKey(KeyCode.LeftShift))
             {
-                foreach (RTSGameObject unit in selectedUnits)
-                {
-                    unit.selected = false;
-                    unit.selectionCircle.enabled = false;
-                }
                 if (selectedUnits.Count() > 0)
                 {
+                    foreach (RTSGameObject unit in selectedUnits)
+                    {
+                        unit.selected = false;
+                        unit.selectionCircle.enabled = false;
+                    }
                     selectedUnits.Clear();
-                    onSelectionChange.Invoke();
                 }
             }
             if (!objectClicked.selected)
             {
                 Select(objectClicked, true);
             }
+            onSelectionChange.Invoke();
         }
     }
 
-    // Selection needs to be reworked/refactored, i copied a tutorial and have been hacking at it
     public void CheckBoxSelectionEvent()
     {
         if (Input.GetMouseButtonUp(0))
@@ -104,6 +104,26 @@ public class SelectionManager : MyMonoBehaviour {
 
     public void CheckSelected(HashSet<RTSGameObject> units)
     {
+        HashSet<RTSGameObject> previousSelectedUnits = new HashSet<RTSGameObject>(selectedUnits);
+        HashSet<RTSGameObject> unitsInSelectionBox = GetUnitsInSelectionBox(units);
+
+        bool selectingFriendlyUnitsOnly = DoesUnitListContainFriendlies(unitsInSelectionBox);
+        bool additiveSelection = Input.GetKey(KeyCode.LeftShift); // get from setting manager
+        bool selectionChanged = false;
+
+        if (!additiveSelection) {
+            selectionChanged = UnselectUnitsNotInSelectionBox(previousSelectedUnits, unitsInSelectionBox);
+        }
+
+        selectionChanged = SelectUnitsInSelectionBox(unitsInSelectionBox, previousSelectedUnits, selectingFriendlyUnitsOnly) || selectionChanged;
+        
+        if (selectionChanged) {
+            onSelectionChange.Invoke();
+        }
+    }
+
+    HashSet<RTSGameObject> GetUnitsInSelectionBox(HashSet<RTSGameObject> units)
+    {
         HashSet<RTSGameObject> unitsInSelectionBox = new HashSet<RTSGameObject>();
         foreach (RTSGameObject unit in units)
         {
@@ -121,32 +141,40 @@ public class SelectionManager : MyMonoBehaviour {
                 break;
             }
         }
+        return unitsInSelectionBox;
+    }
 
-        bool selectingFriendlyUnitsOnly = DoesUnitListContainFriendlies(unitsInSelectionBox);
+    bool UnselectUnitsNotInSelectionBox(HashSet<RTSGameObject> previouslySelectedUnits, HashSet<RTSGameObject> unitsInSelectionBox) {
+        bool selectionChanged = false;
+        foreach (RTSGameObject unit in previouslySelectedUnits)
+        {
+            if (!unitsInSelectionBox.Contains(unit))
+            {
+                Select(unit, false);
+                selectionChanged = true;
+            }
+        }
+        return selectionChanged;
+    }
 
-        foreach (RTSGameObject unit in units)
+    bool SelectUnitsInSelectionBox(HashSet<RTSGameObject> unitsInSelectionBox, HashSet<RTSGameObject> previouslySelectedUnits, bool selectingFriendlyUnitsOnly)
+    {
+        bool selectionChanged = false;
+        foreach (RTSGameObject unit in unitsInSelectionBox.Except(previouslySelectedUnits))
         {
             if (unit is Projectile)
             {
                 continue;
             }
-            bool selected = unitsInSelectionBox.Contains(unit) && (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
-            bool previouslySelected = selectedUnits.Contains(unit);
+            bool shouldSelectUnit = (selectingFriendlyUnitsOnly ? unit.ownerId == playerManager.ActivePlayerId : true);
 
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                selected = selected || previouslySelected;
-            }
-
-            if (selected && !previouslySelected)
+            if (shouldSelectUnit)
             {
                 Select(unit, true);
-            }
-            else if (!selected)
-            {
-                Select(unit, false);
+                selectionChanged = true;
             }
         }
+        return selectionChanged;
     }
 
     bool DoesUnitListContainFriendlies(HashSet<RTSGameObject> units)
@@ -183,7 +211,6 @@ public class SelectionManager : MyMonoBehaviour {
         }
         obj.selected = select;
         obj.selectionCircle.enabled = select;
-        onSelectionChange.Invoke();
     }
 
     public void SetSelectionToUnit(RTSGameObject newlySelectedUnit)
@@ -203,33 +230,31 @@ public class SelectionManager : MyMonoBehaviour {
 
     public void IncrementSelectionSubgroup()
     {
-        selectionSubgroup = selectionSubgroup >= numSelectionSubgroups - 1 ? 0 : selectionSubgroup + 1;       
+        selectionSubgroup = selectionSubgroup >= selectionSubgroups.Count - 1 ? 0 : selectionSubgroup + 1;
+        onSelectionSubgroupChange.Invoke(selectionSubgroups, selectionSubgroup);
     }
     public void DecrementSelectionSubgroup()
     {
-        selectionSubgroup = selectionSubgroup <= 0 ? numSelectionSubgroups - 1 : selectionSubgroup - 1;
+        selectionSubgroup = selectionSubgroup <= 0 ? selectionSubgroups.Count - 1 : selectionSubgroup - 1;
+        onSelectionSubgroupChange.Invoke(selectionSubgroups, selectionSubgroup);
     }
     public void SetSelectionSubgroup(int groupId)
     {
-        selectionSubgroup = Math.Max(Math.Min(groupId, 0), numSelectionSubgroups - 1);
+        selectionSubgroup = Math.Max(Math.Min(groupId, 0), selectionSubgroups.Count - 1);
+        onSelectionSubgroupChange.Invoke(selectionSubgroups, selectionSubgroup);
     }
 
-    void UpdateSelectionSubgroupCount()
+    void UpdateSelectionSubgroups()
     {
-        int newNumSelectionSubgroups = selectedUnits.Select(x => x.GetType()).Distinct().Count();
-        if (newNumSelectionSubgroups != numSelectionSubgroups)
-        {
-            numSelectionSubgroups = newNumSelectionSubgroups;
+        int prevSelectionSubgroupsCount = selectionSubgroups.Count;
+        List<Type> newSelectionSubgroups = selectedUnits.Select(x => x.GetType()).Distinct().ToList();
+        selectionSubgroups = newSelectionSubgroups;
 
-            if (selectionSubgroup >= numSelectionSubgroups) // numSelectedSubgroups has decreased, adjust selectionSubgroup accordingly
-            {
-                selectionSubgroup = numSelectionSubgroups - 1; // -1 when 0 subgroups
-            }
-            else if (selectionSubgroup <= -1 && numSelectionSubgroups > 0)
-            {
-                selectionSubgroup = 0;
-            }
-            onSelectionSubgroupChange.Invoke();
-        }
+        // Clamp SelectionSubgroup to subgroups.count
+        selectionSubgroup = selectionSubgroup == -1 ? 0 : selectionSubgroup;
+        selectionSubgroup = Math.Min(selectionSubgroup, selectionSubgroups.Count - 1); // set to -1 when subgroup count is 0
+
+        onSelectionSubgroupChange.Invoke(selectionSubgroups, selectionSubgroup);
     }
+
 }

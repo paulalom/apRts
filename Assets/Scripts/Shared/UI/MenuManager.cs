@@ -40,11 +40,12 @@ public class MenuManager : MyMonoBehaviour {
     
     void OnGUI()
     {
-        /*
-        if (playerManager == null || gameManager == null || selectionManager == null)
+        // If we didnt load the start scene, do nothing
+        if (LoadingScreenManager.GetInstance() == null)
         {
             return;
-        }*/
+        }
+
         GUI.depth = 100; // Smaller is closer. Buttons need < menus
         DrawConstructionMenu();
         drawInventoryMenus();
@@ -74,7 +75,7 @@ public class MenuManager : MyMonoBehaviour {
         for (int x = 0; x < menuTypes.Length; x++)
         {
             GUIStyle icon = new GUIStyle();
-            icon.normal.background = UIManager.icons[menuTypes[x]];
+            icon.normal.background = UIManager.icons[menuTypes[x].ToString()];
             Rect button = new Rect(menu.x + 10 + 5 * x + 40 * x, menu.y + 5, 40, 40);
             if (GUI.Button(button, (x+1).ToString(), icon))
             {

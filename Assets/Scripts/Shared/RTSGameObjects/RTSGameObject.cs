@@ -112,6 +112,7 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
         }
     }
 
+    /* // cant use this because unity collision detection is nondeterministic... will need to implement my own
     void OnTriggerStay(Collider other)
     {
         if (mover != null && rtsGameObjectManager != null
@@ -143,4 +144,5 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
             //mover.SetVelocity2D(Vector2.zero);
         }
     }
+    */
 }

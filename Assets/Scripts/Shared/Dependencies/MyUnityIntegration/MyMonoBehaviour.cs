@@ -3,15 +3,23 @@ using System.Collections;
 
 public abstract class MyMonoBehaviour : MonoBehaviour {
     
-    void Start()
-    {
-        MyStart();
-        GameManager.RegisterObject(this);
-    }
-
     void Awake()
     {
-        MyAwake();
+        // If we didnt load the start scene, do nothing
+        if (LoadingScreenManager.GetInstance() != null)
+        {
+            MyAwake();
+        }
+    }
+
+    void Start()
+    {
+        // If we didnt load the start scene, do nothing
+        if (LoadingScreenManager.GetInstance() != null)
+        {
+            MyStart();
+            GameManager.RegisterObject(this);
+        }
     }
 
     public virtual void MyAwake() { }

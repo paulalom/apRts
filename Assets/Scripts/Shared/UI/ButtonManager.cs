@@ -46,7 +46,7 @@ public class ButtonManager : MyMonoBehaviour {
             foreach (KeyValuePair<Type, int> item in unitStorage.GetItems())
             {
                 icon = new GUIStyle();
-                icon.normal.background = UIManager.icons[item.Key];
+                icon.normal.background = UIManager.icons[item.Key.ToString()];
                 icon.normal.textColor = Color.red;
                 button = new Rect(menu.x + 10 + 45 * j, menu.y + 5, 40, 40);
                 if (GUI.Button(button, item.Value.ToString(), icon))
@@ -59,7 +59,7 @@ public class ButtonManager : MyMonoBehaviour {
                 itemCount += item.Value;
             }
             icon = new GUIStyle();
-            icon.normal.background = UIManager.icons[unit.GetType()];
+            icon.normal.background = UIManager.icons[unit.GetType().ToString()];
             icon.normal.textColor = Color.red;
             button = new Rect(menu.x + 10, menu.y + 5, 40, 40);
             if (GUI.Button(button, itemCount + "/\n" + unitStorage.size, icon))
@@ -79,7 +79,7 @@ public class ButtonManager : MyMonoBehaviour {
 
                     int qtyToProduce = GetSameProductionOrderCount(unit, currentProduction);
                     icon = new GUIStyle();
-                    icon.normal.background = UIManager.icons[currentProduction];
+                    icon.normal.background = UIManager.icons[currentProduction.ToString()];
                     icon.normal.textColor = Color.red;
                     button = new Rect(menu.width - 50, menu.y + 5, 40, 40);
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,27 +7,22 @@ public class UIBarManager : MyMonoBehaviour {
 
     public UIBar uiBar;
     public SelectionManager selectionManager;
+    public UIBarCommandGrid commandGrid;
     
     public override void MyStart () {
         base.MyStart();
         selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
-        selectionManager.onSelectionSubgroupChange.AddListener(UpdateSubselectionCategory);
-	}
+        selectionManager.onSelectionSubgroupChange.AddListener(UpdateSelectionSubgroup);
+        selectionManager.onSelectionSubgroupChange.AddListener(commandGrid.OnSelectionSubgroupChange);
+    }
 	
 	public override void MyUpdate () {
         UpdateBarComponents(selectionManager.selectedUnits);
     }
 
-    public void UpdateSubselectionCategory()
+    public void UpdateSelectionSubgroup(List<Type> subgroups, int index)
     {
-        if (selectionManager.numSelectionSubgroups == 0)
-        {
-            ClearSelectionSubgroup();
-        }
-        else
-        {
-            SetSelectionSubgroup(selectionManager.selectionSubgroup);
-        }
+        SetSelectionSubgroup(subgroups, index);
     }
 
     void UpdateBarComponents(List<RTSGameObject> selectedUnits)
@@ -37,24 +33,13 @@ public class UIBarManager : MyMonoBehaviour {
         }
     }
 
-    void SetSelectionSubgroup(int categoryId)
+    void SetSelectionSubgroup(List<Type> subgroups, int index)
     {
         foreach (UIBarComponent barComponent in uiBar.barComponents)
         {
             if (barComponent is ISelectionSubgroupToggleable)
             {
-                ((ISelectionSubgroupToggleable)barComponent).SetSelectionSubgroup(categoryId);
-            }
-        }
-    }
-
-    void ClearSelectionSubgroup()
-    {
-        foreach (UIBarComponent barComponent in uiBar.barComponents)
-        {
-            if (barComponent is ISelectionSubgroupToggleable)
-            {
-                ((ISelectionSubgroupToggleable)barComponent).ClearSelectionSubgroup();
+                ((ISelectionSubgroupToggleable)barComponent).SetSelectionSubgroup(subgroups, index);
             }
         }
     }

@@ -8,8 +8,9 @@ using Assets.Scripts.Shared.UI;
 
 public class UIManager : MyMonoBehaviour {
 
-    public Type[] typesWithIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool), typeof(Car), typeof(Commander), typeof(ConstructionSphere), typeof(Tank), typeof(HarvestingStation), typeof(Factory), typeof(ResourceDeposit) };
-    public static Dictionary<Type, Texture2D> icons = new Dictionary<Type, Texture2D>();
+    public Type[] typesWithIcons = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone), typeof(Paper), typeof(Tool),
+                                                typeof(Commander), typeof(ConstructionSphere), typeof(Tank), typeof(HarvestingStation), typeof(Factory), typeof(ResourceDeposit)};
+    public static Dictionary<string, Texture2D> icons = new Dictionary<string, Texture2D>();
     
     GameObject floatingTextPrefab;
     public LoadingScreen loadingScreen;
@@ -35,15 +36,19 @@ public class UIManager : MyMonoBehaviour {
         InputActions.uiManager = this;
 
         floatingText = new List<FloatingText>();
-        icons = new Dictionary<Type, Texture2D>();
+        icons = new Dictionary<string, Texture2D>();
 
         // Get menu icons
+        foreach (Texture2D icon in Resources.LoadAll<Texture2D>("MyAssets/Icons/"))
+        {
+            string iconName = icon.name.Substring(0, icon.name.Length - 4);
+            icons[iconName] = icon;
+        }
         foreach (Type type in typesWithIcons)
         {
-            icons[type] = Resources.Load<Texture2D>("MyAssets/Icons/" + type.ToString() + "Icon");
-            if (icons[type] == null)
+            if (!icons.ContainsKey(type.ToString()))
             {
-                icons[type] = Resources.Load<Texture2D>("MyAssets/Icons/None");
+                icons[type.ToString()] = icons["None"];
             }
         }
     }
@@ -52,26 +57,27 @@ public class UIManager : MyMonoBehaviour {
     {
         base.MyStart();
         RTSGameObjectManager rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
-        floatingTextPrefab = rtsGameObjectManager.prefabs["FloatingText"];
+        floatingTextPrefab = rtsGameObjectManager.nonUnitPrefabs["FloatingText"];
     }
 
     // ui cant init before objects are all set up because bad code and tight coupling... fix is todo
-    public IEnumerator InitUI(GameManager gm, PlayerManager pm, SelectionManager sm)
+    internal IEnumerator InitUI(GameManager gm, PlayerManager pm, SelectionManager sm)
     {
         return null;
     }
-   
-    public void RemoveText(FloatingText text)
+
+    internal void RemoveText(FloatingText text)
     {
         floatingText.Remove(text);
     }
 
-    public void CreateText(string text, Vector3 position, Color color, float scale = 1)
+    internal void CreateText(string text, Vector3 position, Color color, float scale = 1)
     {
         CreateText(text, position, scale);
         floatingText[floatingText.Count - 1].SetColor(color);
     }
-    public void CreateText(string text, Vector3 position, float scale = 1)
+
+    internal void CreateText(string text, Vector3 position, float scale = 1)
     {
         position.y += 5; // floating text starts above the object
         GameObject go = Instantiate(floatingTextPrefab,
@@ -87,7 +93,7 @@ public class UIManager : MyMonoBehaviour {
     }
 
 
-    public void HandleInput()
+    internal void HandleInput()
     {
         foreach (Setting setting in gameManager.settingsManager.inputSettings)
         {
@@ -134,19 +140,22 @@ public class UIManager : MyMonoBehaviour {
     }
 
 
-    public void IncrementSelectionSubgroup()
+    internal void IncrementSelectionSubgroup()
     {
         selectionManager.IncrementSelectionSubgroup();
-        uiBarManager.UpdateSubselectionCategory();
     }
-    public void DecrementSelectionSubgroup()
+    internal void DecrementSelectionSubgroup()
     {
         selectionManager.DecrementSelectionSubgroup();
-        uiBarManager.UpdateSubselectionCategory();
     }
-    public void SetSelectionSubgroup(int groupId)
+
+    internal void ClickCommandGrid(int row, int column)
     {
-        selectionManager.SetSelectionSubgroup(groupId);
-        uiBarManager.UpdateSubselectionCategory();
+        uiBarManager.commandGrid.ClickButton(row, column);
+    }
+
+    internal void SetCommandGrid(string gridVariantKey)
+    {
+        uiBarManager.commandGrid.SetCommandGrid(gridVariantKey);
     }
 }

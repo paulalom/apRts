@@ -38,14 +38,6 @@ public class Producer : MyMonoBehaviour {
                 productionQuantity.Add(type, 1); // default
             }
         }
-
-        IEnumerable<GameObject> hardPoints = constructionSubsystem.externalConstructionHardpoints
-            .Union(constructionSubsystem.internalConstructionHardpoints);
-        foreach (GameObject hardPoint in hardPoints)
-        {
-            hardPoint.GetComponentInChildren<ParticleSystem>().Stop();
-            hardPoint.GetComponentInChildren<ParticleSystem>().Clear();
-        }
     }
 
     public bool ProduceToStorage(Type typeToProduce)

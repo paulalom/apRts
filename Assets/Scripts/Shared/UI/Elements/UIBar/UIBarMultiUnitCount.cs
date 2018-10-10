@@ -42,14 +42,16 @@ public class UIBarMultiUnitCount : UIBarComponent, ISelectionSubgroupToggleable
         totalUnitCountTextField.text = "Total: " + selectedUnits.Count;
     }
 
-    public void SetSelectionSubgroup(int categoryId)
+    public void SetSelectionSubgroup(List<Type> subgroups, int index)
     {
-        rowHighlight.SetActive(true);
-        SetRowHighlightIndex(categoryId);
-    }
-
-    public void ClearSelectionSubgroup()
-    {
-        rowHighlight.SetActive(false);
+        if (subgroups.Count > 0)
+        {
+            rowHighlight.SetActive(true);
+            SetRowHighlightIndex(index);
+        }
+        else
+        {
+            rowHighlight.SetActive(false);
+        }
     }
 }

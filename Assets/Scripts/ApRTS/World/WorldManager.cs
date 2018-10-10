@@ -46,8 +46,8 @@ public class WorldManager : MyMonoBehaviour {
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
             sizeRating = 1, // WorldSettings.starterWorldSizeRating,
-            numStartLocations = 4, //WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 1.9f, // WorldSettings.starterWorldStartLocationSizeRating,
+            numStartLocations = 8, //WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 3f, // WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = 0 // WorldSettings.starterWorldAIPresenceRating
         };

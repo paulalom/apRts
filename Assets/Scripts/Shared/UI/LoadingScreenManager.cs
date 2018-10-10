@@ -14,6 +14,8 @@ using System.Collections.Generic;
 
 public class LoadingScreenManager : MonoBehaviour
 {
+    public GameObject canvas;
+
     [Header("Loading Visuals")]
     public List<Text> loadingText;
     public Image progressBar;
@@ -58,6 +60,7 @@ public class LoadingScreenManager : MonoBehaviour
         }
         instance = this;
         DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(canvas);
     }
 
     void Start()
@@ -101,7 +104,7 @@ public class LoadingScreenManager : MonoBehaviour
         {
             SceneManager.UnloadSceneAsync(currentScene.name);
         }
-        Destroy(gameObject);
+        Destroy(canvas);
     }
 
     private void StartOperation(int levelNum)

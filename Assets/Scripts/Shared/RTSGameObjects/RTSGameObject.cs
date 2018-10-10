@@ -19,6 +19,7 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     public World world;
     public Vector3 prevPositionForHeightMapCheck;
     public List<Defense> InOrderDefenses;
+    public List<FlowSystem> InOrderFlowSystemsWithStorage = new List<FlowSystem>();
     public long unitId;
     public int ownerId;
     public int kills = 0;

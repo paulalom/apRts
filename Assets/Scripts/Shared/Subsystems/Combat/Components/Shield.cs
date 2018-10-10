@@ -21,6 +21,7 @@ public class Shield : Defense, IActivatable
     {
         absorptionRatio = powerRatio;
         AdjustShieldAlpha(powerRatio);
+        currentHitPoints = powerRatio * maxHitPoints;
         if (powerRatio == 0)
         {
             Deactivate();

@@ -215,7 +215,7 @@ public abstract class GameManager : MonoBehaviour {
     
     public void ProduceFromMenu(Type type, int quantity)
     {
-        List<RTSGameObject> selectedUnits = selectionManager.GetOrderableSelectedUnits();
+        List<RTSGameObject> selectedUnits = selectionManager.GetOrderableSelectedUnitsFromCurrentSubgroup();
         List<long> unitIds = selectedUnits.Select(x => x.unitId).ToList();
 
         List<MyPair<Type, int>> items = new List<MyPair<Type, int>>() {

@@ -189,6 +189,17 @@ public class SelectionManager : MyMonoBehaviour {
         return false;
     }
 
+    public List<RTSGameObject> GetOrderableSelectedUnitsFromCurrentSubgroup()
+    {
+        List<RTSGameObject> units = new List<RTSGameObject>();
+        foreach (RTSGameObject unit in selectedUnits.Where(x => x.GetType() == selectionSubgroups[selectionSubgroup] 
+                                                               && x.ownerId == playerManager.ActivePlayerId))
+        {
+            units.Add(unit);
+        }
+        return units;
+    }
+
     public List<RTSGameObject> GetOrderableSelectedUnits()
     {
         List<RTSGameObject> units = new List<RTSGameObject>();

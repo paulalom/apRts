@@ -53,8 +53,8 @@ public class MenuManager : MyMonoBehaviour {
 
     void DrawConstructionMenu()
     {
-        drawMenu(constructionMenuRect);
-        drawMenuButtons(constructionMenuRect);
+        //drawMenu(constructionMenuRect);
+        //drawMenuButtons(constructionMenuRect);
     }
 
     void drawMenu(Rect menu)

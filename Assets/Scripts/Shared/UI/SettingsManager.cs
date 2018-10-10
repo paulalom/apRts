@@ -136,7 +136,7 @@ public class SettingsManager : MyMonoBehaviour
 
         Texture2D[] commanderUnitConstructionIcons = new Texture2D[numButtonsInCommandGrid];
         commanderUnitConstructionIcons[0] = UIManager.icons["Factory"];
-        commanderUnitConstructionIcons[1] = UIManager.icons["Power"]; // need powerplant icon
+        commanderUnitConstructionIcons[1] = UIManager.icons["PowerPlant"];
         commanderUnitConstructionIcons[2] = UIManager.icons["HarvestingStation"];
         icons.Add(commanderUnitConstructionIcons);
 

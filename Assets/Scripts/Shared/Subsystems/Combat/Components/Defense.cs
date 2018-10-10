@@ -7,6 +7,8 @@ public abstract class Defense : MyMonoBehaviour, IDamagable {
     public RTSGameObject owner;
     public bool isActive = true;
     public float absorptionRatio = 1;
+    public float currentHitPoints, maxHitPoints;
+
     public abstract void TakeDamage(float amount);
 }
 

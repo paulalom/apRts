@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ArmoredHull : Hull {
+public class Armor : Health {
     
 }

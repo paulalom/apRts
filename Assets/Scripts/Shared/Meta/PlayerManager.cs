@@ -8,9 +8,14 @@ using UnityEngine.UI;
 // Neutral is player 0
 public class PlayerManager : MyMonoBehaviour {
 
+    public class OnWorldChange : UnityEvent<World> { };
+    public OnWorldChange onWorldChangeEvent = new OnWorldChange();
     public List<Player> players = new List<Player>();
     public GameManager gameManager;
-    public World activeWorld;
+    public World ActiveWorld { get { return _activeWorld; }
+                               set { _activeWorld = value;
+                                     onWorldChangeEvent.Invoke(value); } }     
+    public World _activeWorld;
     public int numAIPlayers;
     public int numHumanPlayers = 0;
     

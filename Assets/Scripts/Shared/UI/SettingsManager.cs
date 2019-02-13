@@ -138,6 +138,7 @@ public class SettingsManager : MyMonoBehaviour
         commanderUnitConstructionIcons[0] = UIManager.icons["Factory"];
         commanderUnitConstructionIcons[1] = UIManager.icons["PowerPlant"];
         commanderUnitConstructionIcons[2] = UIManager.icons["HarvestingStation"];
+        commanderUnitConstructionIcons[8] = UIManager.icons["Back"];
         icons.Add(commanderUnitConstructionIcons);
 
         Texture2D[] FactoryIcons = new Texture2D[numButtonsInCommandGrid];
@@ -148,11 +149,13 @@ public class SettingsManager : MyMonoBehaviour
         Texture2D[] factoryUnitConstructionIcons = new Texture2D[numButtonsInCommandGrid];
         factoryUnitConstructionIcons[0] = UIManager.icons["ConstructionSphere"];
         factoryUnitConstructionIcons[1] = UIManager.icons["Tank"];
+        factoryUnitConstructionIcons[8] = UIManager.icons["Back"];
         icons.Add(factoryUnitConstructionIcons);
 
         Texture2D[] factoryResourceConstructionIcons = new Texture2D[numButtonsInCommandGrid];
         factoryResourceConstructionIcons[0] = UIManager.icons["Tool"];
         factoryResourceConstructionIcons[1] = UIManager.icons["Paper"];
+        factoryResourceConstructionIcons[8] = UIManager.icons["Back"];
         icons.Add(factoryResourceConstructionIcons);
 
         return icons;
@@ -167,28 +170,31 @@ public class SettingsManager : MyMonoBehaviour
         commanderActions[2] = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewUseAbilityOrder); };
         commanderActions[3] = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCheatRaiseTerrainOrder); };
         commanderActions[9] = delegate { InputActions.IssueCommand((int)OrderBuilderFunction.NewCancelOrder); };
-        commanderActions[10] = delegate { InputActions.OpenCommandMenuForType(CommandMenuType.UnitConstruction, typeof(Commander)); };
+        commanderActions[10] = delegate { InputActions.OpenCommandMenu(CommandMenuType.UnitConstruction, typeof(Commander)); };
         actions.Add(commanderActions);
 
         Action[] commanderUnitConstructionActions = new Action[numButtonsInCommandGrid];
         commanderUnitConstructionActions[0] = delegate { InputActions.StartConstruction(typeof(Factory)); };
         commanderUnitConstructionActions[1] = delegate { InputActions.StartConstruction(typeof(PowerPlant)); };
         commanderUnitConstructionActions[2] = delegate { InputActions.StartConstruction(typeof(HarvestingStation)); };
+        commanderUnitConstructionActions[8] = delegate { InputActions.CloseCommandMenu(typeof(Commander)); };
         actions.Add(commanderUnitConstructionActions);
 
         Action[] factoryActions = new Action[numButtonsInCommandGrid];
-        factoryActions[10] = delegate { InputActions.OpenCommandMenuForType(CommandMenuType.UnitConstruction, typeof(Factory)); };
-        factoryActions[11] = delegate { InputActions.OpenCommandMenuForType(CommandMenuType.ResourceConstruction, typeof(Factory)); };
+        factoryActions[10] = delegate { InputActions.OpenCommandMenu(CommandMenuType.UnitConstruction, typeof(Factory)); };
+        factoryActions[11] = delegate { InputActions.OpenCommandMenu(CommandMenuType.ResourceConstruction, typeof(Factory)); };
         actions.Add(factoryActions);
 
         Action[] factoryUnitConstructionActions = new Action[numButtonsInCommandGrid];
         factoryUnitConstructionActions[0] = delegate { InputActions.StartConstruction(typeof(ConstructionSphere)); };
         factoryUnitConstructionActions[1] = delegate { InputActions.StartConstruction(typeof(Tank)); };
+        factoryUnitConstructionActions[8] = delegate { InputActions.CloseCommandMenu(typeof(Factory)); };
         actions.Add(factoryUnitConstructionActions);
 
         Action[] factoryResourceConstructionActions = new Action[numButtonsInCommandGrid];
         factoryResourceConstructionActions[0] = delegate { InputActions.StartConstruction(typeof(Tool)); };
         factoryResourceConstructionActions[1] = delegate { InputActions.StartConstruction(typeof(Paper)); };
+        factoryResourceConstructionActions[8] = delegate { InputActions.CloseCommandMenu(typeof(Factory)); };
         actions.Add(factoryResourceConstructionActions);
 
         return actions;

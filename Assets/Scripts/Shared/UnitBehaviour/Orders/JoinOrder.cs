@@ -66,7 +66,7 @@ public class JoinOrder : Order {
         {
             Vector3 targetPos = orderData.target == null ? orderData.targetPosition : orderData.target.transform.position;
 
-            if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPos, orderData.orderRange + performingUnit.transform.localScale.magnitude))
+            if (!rtsGameObjectManager.lazyWithinDist(performingUnit.transform.position, targetPos, orderData.orderRange + performingUnit.transform.localScale.x))
             {
                 rtsGameObjectManager.SetUnitMoveTarget(performingUnit, new Vector2(targetPos.x, targetPos.z), dt);
             }

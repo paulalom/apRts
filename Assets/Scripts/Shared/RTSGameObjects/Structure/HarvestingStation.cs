@@ -6,7 +6,7 @@ public class HarvestingStation : Structure {
 
     static Type[] defaultCanContain = new Type[] { typeof(Iron), typeof(Wood), typeof(Coal), typeof(Stone) };
     Consumer consumer;
-    Harvester harvester;
+    public Harvester harvester;
 
     public override void MyAwake()
     {
@@ -44,6 +44,8 @@ public class HarvestingStation : Structure {
 
     public override bool ValidatePlacement(RTSGameObjectManager rtsGameObjectManager, Vector3 targetPosition)
     {
-        return Harvester.GetHarvestingTarget(rtsGameObjectManager, GetComponent<Collider>(), targetPosition, GetComponent<Harvester>().harvestingRange);
+        int layerMask = 1 << LayerMask.NameToLayer("Resource");
+        RTSGameObject nearestResource = rtsGameObjectManager.GetNearestComponentInRangeOfType(targetPosition, typeof(ResourceDeposit), harvester.harvestingRange, layerMask);
+        return nearestResource != null;
     }
 }

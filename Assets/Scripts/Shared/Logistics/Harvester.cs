@@ -47,7 +47,7 @@ public class Harvester : Transporter
         }
     }
     
-    public static ResourceDeposit GetHarvestingTarget(RTSGameObjectManager rtsGameObjectManager, Collider harvestingStationCollider, Vector3 position, float harvestingRange)
+    ResourceDeposit GetHarvestingTarget(RTSGameObjectManager rtsGameObjectManager, Collider harvestingStationCollider, Vector3 position, float harvestingRange)
     {
         int layerMask = LayerMask.NameToLayer("Resource");
         return (ResourceDeposit)(rtsGameObjectManager.GetNearestComponentInRange(harvestingStationCollider, position, harvestingRange, 1 << layerMask));

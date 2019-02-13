@@ -25,14 +25,14 @@ public class WorldManager : MyMonoBehaviour {
             LoadingScreenManager.SetLoadingProgress(.15f + 0.02f * i);
             yield return null;
         }
-        playerManager.activeWorld = GenerateWorld(worldSettings, terrainManager);
+        playerManager.ActiveWorld = GenerateWorld(worldSettings, terrainManager);
         LoadingScreenManager.SetLoadingProgress(0.85f);
         yield return null;
         numWorlds++;
-        mainCamera.world = playerManager.activeWorld;
+        mainCamera.world = playerManager.ActiveWorld;
         for (int i = 1; i < playerManager.players.Count; i++)
         {
-            gameManager.SetUpPlayer(i, playerManager.activeWorld);
+            gameManager.SetUpPlayer(i, playerManager.ActiveWorld);
         }
         LoadingScreenManager.SetLoadingProgress(0.99f);
         LoadingScreenManager.CompleteLoadingScreen();
@@ -42,12 +42,12 @@ public class WorldManager : MyMonoBehaviour {
     {
         return new WorldSettings()
         {
-            randomSeed = 4,
+            randomSeed = 8,
             resourceAbundanceRating = WorldSettings.starterWorldResourceAbundance,
             resourceQualityRating = WorldSettings.starterWorldResourceRarity,
             sizeRating = 1, // WorldSettings.starterWorldSizeRating,
-            numStartLocations = 8, //WorldSettings.starterWorldNumStartLocations,
-            startLocationSizeRating = 3f, // WorldSettings.starterWorldStartLocationSizeRating,
+            numStartLocations = 4, //WorldSettings.starterWorldNumStartLocations,
+            startLocationSizeRating = 4f, // WorldSettings.starterWorldStartLocationSizeRating,
             aiStrengthRating = WorldSettings.starterWorldAIStrengthRating,
             aiPresenceRating = 0 // WorldSettings.starterWorldAIPresenceRating
         };

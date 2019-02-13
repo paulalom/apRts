@@ -9,9 +9,10 @@ public class StatusBarContainer : MyMonoBehaviour
     /// <summary>
     /// 
     /// </summary>
-    /// <returns>Returns an array of StautsBar ordered visually from left to right, contained by this</returns>
+    /// <returns>Returns an array of StatusBar ordered visually from left to right, contained by this</returns>
     public StatusBar[] InstantiateStatusBars(string[] barTypes, float[] maxBarValues, GameObject statusBarPrefab)
     {
+        CleanupStatusBars();
         statusBars = new StatusBar[barTypes.Length];
 
         // Invert array so InOrder components are left to right
@@ -35,5 +36,14 @@ public class StatusBarContainer : MyMonoBehaviour
         }
 
         return statusBars;
+    }
+
+    public void CleanupStatusBars()
+    {
+        foreach(StatusBar bar in statusBars)
+        {
+            Destroy(bar.gameObject);
+        }
+        statusBars = new StatusBar[0];
     }
 }

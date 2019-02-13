@@ -15,11 +15,19 @@ Large Unit System (extension of subsystems)
 	- Allow transport units to contain other units
 	- Use Hardpoints to place unit at point on transport
 	- Unit can shoot, take damage from position on transport
-Logtistics networks
-	- Transports + Nodes
-		- Tracked Transports (eg. trains, planes on a virtual track)
-		- Free Transports (eg. trucks, free-flying cargo planes), 
-		- Logistic Network nodes (stationary storage objects)
+Empire Economy and Production
+	Cities, population with demands, produces income, manpower, goods
+		- Key nodes where cities can form, and they grow outwards as resources are available?
+		- Expands automatically or manually to nearby safe nodes
+		- Trades with neighbouring cities/military bases
+		- Fully AI Controlled?
+	Military bases
+		- More player control than with cities		
+	Logtistics networks
+		- Transports + Nodes
+			- Tracked Transports (eg. trains, planes on a virtual track)
+			- Free Transports (eg. trucks, free-flying cargo planes), 
+			- Logistic Network nodes (stationary storage objects)
 Power networks
 	- Relay objects, consuming structures (civilian buildings, defense buildings, etc.)
 Commander Ability Structure
@@ -53,6 +61,14 @@ AI
 	- Manage Non-Player units/factions
 Game Content
 	- Story, Races + Units, Events
+User Assist/Enjoyability
+	- Need ways to help slow players keep up. Strategy should be more about planning than executing
+	- Formation builder
+	- Want empires to expand as much as possible, don't want large gaps in universe
+		- Civilization (income structures, consumer goods, non-millitary industry) is ai only/mostly ai? 
+		- Manual expansion is micro-intensive
+		- Players will stop expanding if they think they have enough, but empire should never stop
+			
 UI
 	- Settings to filesystem instead of code
 	- Command bar

@@ -45,7 +45,7 @@ public class NetworkStateManager : IStateManager{
         if (isLocalInitilized)
         {
             playerManager.InitPlayer(clientId, true);
-            gameManager.SetUpPlayer(playerManager.players.Count - 1, playerManager.activeWorld);
+            gameManager.SetUpPlayer(playerManager.players.Count - 1, playerManager.ActiveWorld);
         }
     }
 
@@ -170,7 +170,7 @@ public class NetworkStateManager : IStateManager{
                 for (int i = prevPlayerCount; i < currentPlayerCount; i++)
                 {
                     playerManager.InitPlayer(transportManager.connectedClients[i], true);
-                    gameManager.SetUpPlayer(i + 1, playerManager.activeWorld); // players are 1 index based (neutral player is 0)
+                    gameManager.SetUpPlayer(i + 1, playerManager.ActiveWorld); // players are 1 index based (neutral player is 0)
                 }
             }
             else {

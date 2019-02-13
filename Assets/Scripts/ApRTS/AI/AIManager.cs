@@ -60,12 +60,12 @@ public class AIManager
     {
         if (!player.isHuman)
         {
-            AIStrategyManager strategyManagers = new AIStrategyManager(player, rtsGameObjectManager);
-            AIEconomyManager economicManagers = new AIEconomyManager(player);
-            AIMilitaryManager militaryManagers = new AIMilitaryManager(player);
-            AITacticsManager tacticsManagers = new AITacticsManager(player, economicManager, militaryManager);
+            strategyManager = new AIStrategyManager(player, rtsGameObjectManager);
+            economicManager = new AIEconomyManager(player);
+            militaryManager = new AIMilitaryManager(player);
+            tacticsManager = new AITacticsManager(player, economicManager, militaryManager);
             
-            commandManager.AddCommands(strategyManagers.GetStartCommands());
+            commandManager.AddCommands(strategyManager.GetStartCommands());
         }
     }
 

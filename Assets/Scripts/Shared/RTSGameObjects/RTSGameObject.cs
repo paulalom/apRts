@@ -40,7 +40,7 @@ public class RTSGameObject : MyMonoBehaviour, IDamagable
     public class OnIdleStatusChangeEvent : UnityEvent<RTSGameObject, bool> { }
     public OnIdleStatusChangeEvent onIdleStatusChange = new OnIdleStatusChangeEvent();
 
-    public class OnUnitChangeEvent : UnityEvent { }
+    public class OnUnitChangeEvent : UnityEvent<RTSGameObject> { }
     public OnUnitChangeEvent onDestroyed = new OnUnitChangeEvent();
     
     public override void MyStart()

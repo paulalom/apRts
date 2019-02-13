@@ -8,9 +8,9 @@ using UnityEngine.Events;
 //All of the manager classes could probaby be static
 public class RTSGameObjectManager : MyMonoBehaviour {
 
-    public GameObject[] InspectorPrefabUnitTypes;
-    public GameObject[] InspectorPrefabNonUnitTypes;
-    public GameObject[] InspectorPrefabModelTypes;
+    public GameObject[] editorUnitPrefabs;
+    public GameObject[] editorNonUnitPrefabs;
+    public GameObject[] editorModelPrefabs;
     public Dictionary<string, GameObject> unitPrefabs;
     public Dictionary<string, GameObject> nonUnitPrefabs;
     public Dictionary<string, GameObject> modelPrefabs;
@@ -46,14 +46,14 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         {
             throw new Exception("Modelprefab/prefab count mismatch, please check RTSGameObjectManager");
         }
-        for (int i = 0; i < InspectorPrefabUnitTypes.Length; i++)
+        for (int i = 0; i < editorUnitPrefabs.Length; i++)
         {
-            unitPrefabs.Add(InspectorPrefabUnitTypes[i].name, InspectorPrefabUnitTypes[i]);
-            modelPrefabs.Add(InspectorPrefabModelTypes[i].name, InspectorPrefabModelTypes[i]);
+            unitPrefabs.Add(editorUnitPrefabs[i].name, editorUnitPrefabs[i]);
+            modelPrefabs.Add(editorModelPrefabs[i].name, editorModelPrefabs[i]);
         }
-        for (int i = 0; i < InspectorPrefabNonUnitTypes.Length; i++)
+        for (int i = 0; i < editorNonUnitPrefabs.Length; i++)
         {
-            nonUnitPrefabs.Add(InspectorPrefabNonUnitTypes[i].name, InspectorPrefabNonUnitTypes[i]);
+            nonUnitPrefabs.Add(editorNonUnitPrefabs[i].name, editorNonUnitPrefabs[i]);
         }
             //collisionAvoidanceManager.MyStart();
         }
@@ -63,7 +63,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         //collisionAvoidanceManager.Update();
 
         MoveUnits(nonNeutralUnits);        
-        SnapToTerrain(nonNeutralUnits, playerManager.activeWorld);
+        SnapToTerrain(nonNeutralUnits, playerManager.ActiveWorld);
     }
 
     public void HandleUnitCreation()
@@ -325,6 +325,19 @@ public class RTSGameObjectManager : MyMonoBehaviour {
             default:
                 break;
         }
+        if (rtsGo is Factory)
+        {
+            var storage2 = rtsGo.GetComponent<Storage>();
+            storage.AddItems(new Dictionary<Type, int>()
+            {
+                { typeof(Wood), 1000 },
+                { typeof(Stone), 1000 },
+                { typeof(Coal), 1000 },
+                { typeof(Iron), 1000 },
+                { typeof(Paper), 1000 },
+                { typeof(Tool), 1000 }
+            });
+        }
         
         InsertRTSGameObjectIntoGame(rtsGo);
         if (!(rtsGo is Projectile))
@@ -464,20 +477,20 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         try
         { //Try catch to swallow exception. FixMe
           // only does raiseTerrain
-            terrainManager.ModifyTerrain(position, .003f, 20, playerManager.activeWorld);
+            terrainManager.ModifyTerrain(position, .003f, 20, playerManager.ActiveWorld);
         }
         catch (Exception e) { }
     }
 
     public void CheatSpawnFactory(Vector3 position, int ownerId)
     {
-        SpawnUnit(typeof(Factory), position, ownerId, playerManager.ActivePlayer.units.FirstOrDefault().gameObject, playerManager.activeWorld);
+        SpawnUnit(typeof(Factory), position, ownerId, playerManager.ActivePlayer.units.FirstOrDefault().gameObject, playerManager.ActiveWorld);
     }
 
     public void DestroyUnit(RTSGameObject unit)
     {
         unitDestructionQueue.Add(unit);
-        unit.onDestroyed.Invoke();
+        unit.onDestroyed.Invoke(unit);
     }
 
     public bool lazyWithinDist(Vector3 o1, Vector3 o2, float dist)
@@ -573,6 +586,39 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         foreach (Collider c in objectsInRange)
         {
             if (c == sourceCollider || (ComponentType != null && c.GetComponent(ComponentType) == null))
+            {
+                continue;
+            }
+            Vector3 directionToTarget = c.transform.position - searchPosition;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                closest = c;
+            }
+        }
+        if (closest != null)
+        {
+            return closest.GetComponent<RTSGameObject>();
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Same as GetNearestComponentInRange except this cant filter for the source unit, so make sure you're not searching for a type the unit contains.
+    /// </summary>
+    public RTSGameObject GetNearestComponentInRangeOfType(Vector3 searchPosition, Type ComponentType, float range, LayerMask mask)
+    {
+        Collider closest = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        Collider[] objectsInRange = Physics.OverlapSphere(searchPosition, range, mask);
+
+        foreach (Collider c in objectsInRange)
+        {
+            if ((ComponentType != null && c.GetComponent(ComponentType) == null))
             {
                 continue;
             }

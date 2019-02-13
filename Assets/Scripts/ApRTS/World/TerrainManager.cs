@@ -86,17 +86,6 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
             terrainTrees[i] = BlueprintToTreePrototype(trees[i]);
         }
     }
-    
-    public override void MyStart() {
-
-        /* this should be removed once world generation is in place
-        //This is a little bit of duplicated code from OnCameraMove for setup (which we dont run if we haven't moved).
-        Vector2 newCameraPosition = Camera.main.transform.position;
-        oldCenterChunkGlobalIndex = GetChunkIndexFromCameraPos(newCameraPosition);
-        Vector2 cameraChunkMoveVector = GetCameraChunkMoveVector(newCameraPosition);
-        Vector2 newCenterChunkGlobalIndex = GetNewCenterChunkGlobalIndex(cameraChunkMoveVector);
-        GenerateNewTerrain(oldCenterChunkGlobalIndex, newCenterChunkGlobalIndex);*/
-    }
 
     #region ModifyTerrain
 
@@ -175,6 +164,11 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
         return oldCenterChunkGlobalIndex + cameraChunkMoveVector;
     }
 
+    public Vector2 GetWorldSize()
+    {
+        return new Vector2(chunkSizeX, chunkSizeZ);
+    }
+
     public void GenerateNewTerrainOnCameraMove(Vector2 cameraChunkMoveVector, Vector2 newCenterChunkGlobalIndex, World world)
     {
         //If we havent teleported but have moved, we only need to check chunks in the direction of movement
@@ -217,17 +211,6 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
     public void OnCameraMove(Vector3 newCameraPosition, World world)
     {
         Vector2 cameraChunkMoveVector = GetCameraChunkMoveVector(newCameraPosition);
-
-        if (cameraChunkMoveVector.x != 0 || cameraChunkMoveVector.y != 0)
-        {
-            Vector2 newCenterChunkGlobalIndex = GetNewCenterChunkGlobalIndex(cameraChunkMoveVector);
-
-            //GenerateNewTerrainOnCameraMove(cameraChunkMoveVector, newCenterChunkGlobalIndex, world);
-
-            //We have generated any missing terrain so now we just have to populate the visible chunks 
-            //and set the graphics objects/fade out the leaving chunks
-            //SetVisibleTerrain(cameraChunkMoveVector, newCenterChunkGlobalIndex);
-        }
         oldCenterChunkGlobalIndex += cameraChunkMoveVector;
     }
     
@@ -790,11 +773,6 @@ public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
             Vector2 chunkIndex = GetChunkIndexFromGlobalCoords(position.x, position.z);
             world.terrainChunks[chunkIndex] = GenerateChunk(chunkIndex, world, world.terrainChunks);
         }
-    }
-    
-    public void RaiseTerrain(MyBitMap terrainToRaiseWorldMap, float percentToRaise, World world)
-    {
-
     }
     
     SplatPrototype BlueprintToSplatPrototype(TerrainTextureBlueprint blueprint)

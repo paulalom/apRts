@@ -2,13 +2,17 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIBarUnitDisplay : UIBarComponent
 {
     RTSGameObjectManager rtsGameObjectManager;
+    public GameObject displayObjectContainer;
+    public Text unitDisplayName;
+    public StatusBarContainer healthStatusBarContainer, energyStatusBarContainer;
+
     RTSGameObject prevSelectedUnit = null;
     GameObject displayObject = null;
-    public StatusBarContainer healthStatusBarContainer, energyStatusBarContainer;
 
     private void Awake()
     {
@@ -33,25 +37,58 @@ public class UIBarUnitDisplay : UIBarComponent
 
     void DisplayNewUnit(RTSGameObject unit)
     {
+        CleanupOldDisplayUnit();
+        DisplayUnitName(unit);
+        DisplayNewUnitModel(unit);
+        DisplayNewUnitStatusBars(unit);
+    }
+
+    void CleanupOldDisplayUnit()
+    {
         if (displayObject != null)
         {
             Destroy(displayObject);
         }
-        displayObject = Instantiate(rtsGameObjectManager.modelPrefabs[unit.GetType().ToString() + "Model"], gameObject.transform);
+    }
+
+    void DisplayUnitName(RTSGameObject unit)
+    {
+        unitDisplayName.text = unit.GetType().ToString();
+    }
+
+    void DisplayNewUnitModel(RTSGameObject unit)
+    {
+        GameObject selectedUnitModelPrefab = rtsGameObjectManager.modelPrefabs[unit.GetType().ToString() + "Model"];
+
+        displayObject = Instantiate(selectedUnitModelPrefab, displayObjectContainer.transform);
         displayObject.transform.localScale = new Vector3(120, 120, 120);
         displayObject.transform.Rotate(new Vector3(0, 180, 0));
-
-        string[] barDefenseTypes = unit.InOrderDefenses.Select(x => x.GetType().ToString()).ToArray();
+        Transform flagRenderer = displayObject.transform.Find(unit.flagRenderer.name);
+        if (flagRenderer != null)
+        {
+            flagRenderer.GetComponent<Renderer>().material.color = unit.flagRenderer.material.color;
+        }
+    }
+    
+    void DisplayNewUnitStatusBars(RTSGameObject unit)
+    {
+        GameObject statusBarPrefab = rtsGameObjectManager.nonUnitPrefabs["StatusBar"];
         float[] maxDefenseBarValues = unit.InOrderDefenses.Select(x => x.maxHitPoints).ToArray();
+        string[] barDefenseTypes = unit.InOrderDefenses.Select(x => x.GetType().ToString()).ToArray();
 
-        StatusBar[] healthArmorShieldBars = healthStatusBarContainer.InstantiateStatusBars(barDefenseTypes, maxDefenseBarValues, rtsGameObjectManager.nonUnitPrefabs["StatusBar"]);
+        healthStatusBarContainer.InstantiateStatusBars(barDefenseTypes, maxDefenseBarValues, statusBarPrefab);
 
         // unit may have no applicable flowsystems (eg. battery, capacitor... not a wire)
         List<FlowSystem> flowSystems = unit.InOrderFlowSystemsWithStorage;
-        if (flowSystems.Count != 0) {
+        if (flowSystems.Count != 0)
+        {
             string[] barEnergyTypes = flowSystems.Select(x => x.GetType().ToString()).ToArray();
             float[] maxEnergyBarValues = flowSystems.Select(x => x.capacity).ToArray();
-            StatusBar[] energyManaBars = energyStatusBarContainer.InstantiateStatusBars(barEnergyTypes, maxEnergyBarValues, rtsGameObjectManager.nonUnitPrefabs["StatusBar"]);
+            energyStatusBarContainer.InstantiateStatusBars(barEnergyTypes, maxEnergyBarValues, statusBarPrefab);
+        }
+        else
+        {
+            energyStatusBarContainer.CleanupStatusBars();
         }
     }
 

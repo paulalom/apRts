@@ -8,7 +8,8 @@ public class World {
     public Dictionary<Vector2, GameObject> terrainChunks = new Dictionary<Vector2, GameObject>();
     public List<RTSGameObject> units = new List<RTSGameObject>();
     public List<Vector2> startLocations;
-    public int worldSizeX, worldSizeY, worldArea, nextAvailableStartLocation = 0;
+    public int worldSizeX, worldSizeY, worldArea, // size of coordinate space for heightMap
+        nextAvailableStartLocation = 0;
     private Vector2 vec2Sentinel = new Vector2(Mathf.NegativeInfinity, Mathf.NegativeInfinity);
 
     public void BuildWorld(TerrainManager terrainManager)

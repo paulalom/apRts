@@ -10,6 +10,11 @@ public class ConstructionOrder : Order {
     Structure newStructure;
     ConstructionInfo conInfo; // convenience reference
 
+    public override bool GetInRange(RTSGameObject performingUnit, int dt)
+    {
+        return base.GetInRange(performingUnit, dt);
+    }
+
     public override void Initilize(RTSGameObject performingUnit)
     {
         base.Initilize(performingUnit);
@@ -78,9 +83,10 @@ public class ConstructionOrder : Order {
         Producer producer = performingUnit.GetComponent<Producer>();
         Type newStructureType = orderData.items[0].Key;
         Structure newStructurePrefab = rtsGameObjectManager.unitPrefabs[newStructureType.ToString()].GetComponent<Structure>();
+        Vector3 orderTargetPosition = orderData.targetPosition == Vector3.zero ? performingUnit.transform.position : orderData.targetPosition;
 
         if (producer.ValidateNewProductionRequest(newStructureType, 1)
-            && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, performingUnit.transform.position))
+            && newStructurePrefab.ValidatePlacement(rtsGameObjectManager, orderTargetPosition))
         {
             return OrderValidationResult.Success;
         }

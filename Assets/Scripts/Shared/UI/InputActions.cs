@@ -22,10 +22,10 @@ namespace Assets.Scripts.Shared.UI
         public static void IssueCommand(int orderTypeId, bool overrideDefaultOrderData = false)
         {
             Command command = new Command() { getOrder = (OrderBuilderFunction)orderTypeId, overrideDefaultOrderData = overrideDefaultOrderData };
-            
+
             command.queueOrderInsteadOfClearing = Input.GetKey(Setting.queueOrderInsteadOfClearing);
             command.queueOrderAtFront = Input.GetKey(Setting.addOrderToFrontOfQueue);
-            
+
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             bool rayCast = Physics.Raycast(ray, out hit);
@@ -101,7 +101,7 @@ namespace Assets.Scripts.Shared.UI
         internal static void NumericMenuButton(int keyNum)
         {
             Type[] menuTypes = menuManager.GetNumericMenuTypes();
-            List<MyPair<Type, int>> items = new List<MyPair<Type, int>>();;
+            List<MyPair<Type, int>> items = new List<MyPair<Type, int>>(); ;
 
             if (keyNum == 0)
             {
@@ -151,9 +151,13 @@ namespace Assets.Scripts.Shared.UI
             uiManager.DecrementSelectionSubgroup();
         }
 
-        internal static void OpenCommandMenuForType(CommandMenuType menuType, Type unitType)
+        internal static void OpenCommandMenu(CommandMenuType menuType, Type unitType)
         {
             uiManager.SetCommandGrid(unitType.ToString() + menuType.ToString());
+        }
+        internal static void CloseCommandMenu(Type unitType)
+        {
+            uiManager.SetCommandGrid(unitType.ToString());
         }
     }
 }

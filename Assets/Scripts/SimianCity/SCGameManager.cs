@@ -9,7 +9,7 @@ namespace SimianCity
 {
     class SCGameManager : GameManager
     {
-        public new SCTerrainManager terrainManager;
+        public SCTerrainManager terrainManager;
 
         protected override IEnumerator StartGame()
         {
@@ -22,7 +22,7 @@ namespace SimianCity
 
         protected override IEnumerator MainGameLoop()
         {
-            throw new NotImplementedException();
+            yield return null;
         }
 
         public override void SetUpPlayer(int playerId, World world)

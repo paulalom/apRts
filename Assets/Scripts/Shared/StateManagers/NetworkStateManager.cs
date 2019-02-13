@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Collections;
 using System;
+using Assets.Scripts.Shared;
 
 public enum MessageIds
 {
@@ -22,7 +23,6 @@ public class NetworkStateManager : IStateManager{
     public bool isServer = false;
     public long serverStep;
     public long clientStep { get { return StepManager.CurrentStep; } }
-    public long nextRtsGoUid = 0;
     bool isLocalInitilized = false, hasInitPlayerCount = false;
     const char messageSeparatorChar = '-';
     const char messageVariableSeparatorChar = '!';
@@ -30,7 +30,7 @@ public class NetworkStateManager : IStateManager{
 
     void Start()
     {
-        DontDestroyOnLoad(this);
+        isServer = GlobalState.isServer;
         transportManager.OnMessageReceived.AddListener(OnMessageReceived);
     }
 
@@ -248,12 +248,7 @@ public class NetworkStateManager : IStateManager{
         playerManager.InitAllPlayers(transportManager.connectedClients.ToArray(), transportManager.connectedClients.Count);
         isLocalInitilized = true;
     }
-
-    public long GetNextUID()
-    {
-        return nextRtsGoUid++;
-    }
-    
+        
     void StoreReceivedCommand(int clientId, string command)
     {
         if (recievedMessages.ContainsKey(clientId))

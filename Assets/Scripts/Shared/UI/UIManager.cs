@@ -59,7 +59,7 @@ public class UIManager : MyMonoBehaviour {
     public override void MyStart()
     {
         base.MyStart();
-        RTSGameObjectManager rtsGameObjectManager = GameObject.FindGameObjectWithTag("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+        RTSGameObjectManager rtsGameObjectManager = GameObject.Find("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
         floatingTextPrefab = rtsGameObjectManager.nonUnitPrefabs["FloatingText"];
     }
 

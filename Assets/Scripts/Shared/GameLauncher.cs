@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assets.Scripts.Shared;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,21 +14,26 @@ public class GameLauncher : MonoBehaviour {
 
     public void LaunchMainServer()
     {
-        new SceneLoader().LoadSceneNum(3);
+        GlobalState.currentGameSceneNum = 2;
+        GlobalState.isServer = true;
+        new SceneLoader().LoadSceneNum(2);
     }
 
     public void LaunchMainClient()
     {
+        GlobalState.currentGameSceneNum = 2;
         new SceneLoader().LoadSceneNum(2);
     }
 
     public void LaunchCTF()
     {
-        new SceneLoader().LoadSceneNum(5);
+        GlobalState.currentGameSceneNum = 3;
+        new SceneLoader().LoadSceneNum(3);
     }
 
     public void LaunchSimCity()
     {
-        new SceneLoader().LoadSceneNum(6);
+        GlobalState.currentGameSceneNum = 4;
+        new SceneLoader().LoadSceneNum(4);
     }
 }

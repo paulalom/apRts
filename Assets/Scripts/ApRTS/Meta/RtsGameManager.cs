@@ -19,7 +19,7 @@ namespace Assets.Scripts.ApRTS.Meta
         public SettingsManager settingsManager;
         public SelectionManager selectionManager;
         public WorldManager worldManager;
-        public NetworkStateManager netStateManager;
+        public NetworkStateManager stateManager;
         public NetworkedCommandManager commandManager;
 
         public override void Awake()
@@ -44,8 +44,8 @@ namespace Assets.Scripts.ApRTS.Meta
 
             WorldSettings worldSettings = worldManager.GetWorldSettings(worldManager.numWorlds);
             playerManager.numAIPlayers = worldSettings.aiPresenceRating;
-            netStateManager = GameObject.Find("NetworkStateManager").GetComponent<NetworkStateManager>();
-            commandManager.netStateManager = netStateManager;
+            stateManager = GameObject.Find("StateManager").GetComponent<NetworkStateManager>();
+            commandManager.netStateManager = stateManager;
             commandManager.playerManager = playerManager;
 
             LoadingScreenManager.SetLoadingProgress(0.05f);
@@ -56,7 +56,7 @@ namespace Assets.Scripts.ApRTS.Meta
         protected void Update()
         {
             // too far behind, disable input.
-            if (StepManager.CurrentStep < netStateManager.serverStep - 7)
+            if (StepManager.CurrentStep < stateManager.serverStep - 7)
             {
                 return;
             }
@@ -66,7 +66,7 @@ namespace Assets.Scripts.ApRTS.Meta
 
         protected override IEnumerator StartGame()
         {
-            yield return netStateManager.InitilizeLocalGame(this, playerManager);
+            yield return stateManager.InitilizeLocalGame(this, playerManager);
             yield return worldManager.SetUpWorld(terrainManager, mainCamera);
             yield return MainGameLoop();
         }
@@ -81,11 +81,11 @@ namespace Assets.Scripts.ApRTS.Meta
                 stepTimer.Start();
 
                 int stepDt = StepManager.fixedStepTimeSize;
-                while (stepDt < realTimeSinceLastStep || (StepManager.CurrentStep < netStateManager.serverStep && !netStateManager.isServer))
+                while (stepDt < realTimeSinceLastStep || (StepManager.CurrentStep < stateManager.serverStep && !stateManager.isServer))
                 {
                     StepGame(stepDt);
                     realTimeSinceLastStep -= stepDt;
-                    netStateManager.Step();
+                    stateManager.Step();
                     StepManager.Step();
                 }
                 /*

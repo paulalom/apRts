@@ -8,7 +8,7 @@ public class PowerPlant : Structure
     {
         storage = GetComponent<Storage>();
         storage.canContain.Add(typeof(Coal));
-        storage.canContain.Add(typeof(Power));
+        //storage.canContain.Add(typeof(Power));
     }
 
 }

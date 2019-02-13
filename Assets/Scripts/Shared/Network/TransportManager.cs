@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Threading;
 using System.Runtime.Serialization;
+using Assets.Scripts.Shared;
 
 public class TransportManager : MonoBehaviour
 {
@@ -79,6 +80,14 @@ public class TransportManager : MonoBehaviour
 	void Start()
     {
         NetworkTransport.Init();
+        if (GlobalState.isServer)
+        {
+            StartServer();
+        }
+        else
+        {
+            StartClient();
+        }
         DontDestroyOnLoad(this);
     }
     

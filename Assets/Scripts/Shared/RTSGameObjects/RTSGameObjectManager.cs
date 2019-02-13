@@ -21,7 +21,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     SelectionManager selectionManager;
     OrderManager orderManager;
     UIManager uiManager;
-    NetworkStateManager netStateManager;
+    IStateManager stateManager;
 
     public static Dictionary<long, RTSGameObject> allUnits = new Dictionary<long, RTSGameObject>();
     // lazy method to prevent spawning from breaking foreach loops
@@ -40,7 +40,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
-        netStateManager = GameObject.Find("NetworkStateManager").GetComponent<NetworkStateManager>();
+        stateManager = GameObject.Find("StateManager").GetComponent<IStateManager>();
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         unitPrefabs = new Dictionary<string, GameObject>();
         nonUnitPrefabs = new Dictionary<string, GameObject>();
@@ -285,7 +285,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
-        rtsGo.unitId = netStateManager.GetNextUID();
+        rtsGo.unitId = stateManager.GetNextUID();
 
         if (storage != null)
         {

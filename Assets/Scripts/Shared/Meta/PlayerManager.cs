@@ -11,7 +11,11 @@ public class PlayerManager : MyMonoBehaviour {
     public class OnWorldChange : UnityEvent<World> { };
     public OnWorldChange onWorldChangeEvent = new OnWorldChange();
     public List<Player> players = new List<Player>();
-    public GameManager gameManager;
+    GameManager gameManager;
+    ICommandManager commandManager;
+    SelectionManager selectionManager;
+    RTSGameObjectManager rtsGameObjectManager;
+
     public World ActiveWorld { get { return _activeWorld; }
                                set { _activeWorld = value;
                                      onWorldChangeEvent.Invoke(value); } }     
@@ -29,13 +33,22 @@ public class PlayerManager : MyMonoBehaviour {
     {
         get { return _activePlayerId; }
     }
-    
+
+    public override void MyStart()
+    {
+        base.MyStart();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        commandManager = GameObject.Find("CommandManager").GetComponent<ICommandManager>();
+        selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
+        rtsGameObjectManager = GameObject.Find("RTSGameObjectManager").GetComponent<RTSGameObjectManager>();
+    }
+
     // Temp UI display of resource totals
     public Text statusBarText;
 
     public void InitNeutralPlayer()
     {
-        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.selectionManager, gameManager.commandManager);
+        AIManager aiManager = new AIManager(rtsGameObjectManager, this, selectionManager, commandManager);
         Player player = new Player(this, aiManager, true);
         player.name = "Neutral";
         players.Add(player);
@@ -51,7 +64,7 @@ public class PlayerManager : MyMonoBehaviour {
 
     public void InitPlayer(int networkClientId, bool isHuman)
     {
-        AIManager aiManager = new AIManager(gameManager.rtsGameObjectManager, this, gameManager.selectionManager, gameManager.commandManager);
+        AIManager aiManager = new AIManager(rtsGameObjectManager, this, selectionManager, commandManager);
         Player player = new Player(this, aiManager, true);
         player.name = player + players.Count.ToString();
         player.isHuman = isHuman;

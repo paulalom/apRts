@@ -226,7 +226,7 @@ public class NetworkStateManager : IStateManager{
         string commandString = commandComponents[1];
         string step = commandComponents[2];
         List<long> unitIds = new List<long>();
-        Command command = Command.FromNetString(commandString, gameManager.rtsGameObjectManager);
+        Command command = Command.FromNetString(commandString);
         if (unitIdsString != "")
         {
             foreach (string unitId in unitIdsString.Split(messageSeparatorChar))

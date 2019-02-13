@@ -3,7 +3,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class OrderData {
-    
+    public static RTSGameObjectManager rtsGameObjectManager;
+
     public Vector3 targetPosition;
     public Vector3 orderIssuedPosition;
     public float orderRange = 1f;
@@ -35,7 +36,7 @@ public class OrderData {
         return orderDataString;
     }
 
-    public static OrderData FromString(string orderData, RTSGameObjectManager rtsGameObjectManager)
+    public static OrderData FromString(string orderData)
     {
         OrderData outOData = new OrderData();
         string[] orderDataComponents = orderData.Split('~');

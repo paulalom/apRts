@@ -18,6 +18,8 @@ namespace Assets.Scripts.Shared.UI
         public static MenuManager menuManager;
         public static SelectionManager selectionManager;
         public static UIManager uiManager;
+        public static RTSCamera mainCamera;
+        public static ICommandManager commandManager;
 
         public static void IssueCommand(int orderTypeId, bool overrideDefaultOrderData = false)
         {
@@ -37,7 +39,7 @@ namespace Assets.Scripts.Shared.UI
             }
 
             List<long> unitIds = selectionManager.GetOrderableSelectedUnits().Select(x => x.unitId).ToList();
-            gameManager.commandManager.AddCommand(command, unitIds);
+            commandManager.AddCommand(command, unitIds);
         }
 
         internal static void OnActionButtonPress()
@@ -90,12 +92,12 @@ namespace Assets.Scripts.Shared.UI
 
         internal static void RaiseCamera()
         {
-            gameManager.mainCamera.RaiseCamera();
+            mainCamera.RaiseCamera();
         }
 
         internal static void LowerCamera()
         {
-            gameManager.mainCamera.LowerCamera();
+            mainCamera.LowerCamera();
         }
 
         internal static void NumericMenuButton(int keyNum)

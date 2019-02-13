@@ -25,4 +25,9 @@ public class GameLauncher : MonoBehaviour {
     {
         new SceneLoader().LoadSceneNum(5);
     }
+
+    public void LaunchSimCity()
+    {
+        new SceneLoader().LoadSceneNum(6);
+    }
 }

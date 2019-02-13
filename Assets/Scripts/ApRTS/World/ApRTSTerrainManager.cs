@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.Shared.World;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ using UnityEngine;
 // In the future, I will likely rewrite all of this code, but as this is my first Unity project,
 // his series has been helpful in overcoming the barrier to entry. Thanks Nick!
 // https://www.youtube.com/channel/UC9UZBI9EuXu9o4xMM3CAg2w
-public class TerrainManager : MyMonoBehaviour, ICameraObserver  {
+public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
     [System.Serializable]
     public struct TreeBlueprint

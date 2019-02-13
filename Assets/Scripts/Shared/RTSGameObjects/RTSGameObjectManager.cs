@@ -16,10 +16,12 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public Dictionary<string, GameObject> modelPrefabs;
     public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     GameManager gameManager;
-    TerrainManager terrainManager;
+    ApRTSTerrainManager terrainManager;
     PlayerManager playerManager;
     SelectionManager selectionManager;
     OrderManager orderManager;
+    UIManager uiManager;
+    NetworkStateManager netStateManager;
 
     public static Dictionary<long, RTSGameObject> allUnits = new Dictionary<long, RTSGameObject>();
     // lazy method to prevent spawning from breaking foreach loops
@@ -34,10 +36,12 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public override void MyAwake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
+        terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<ApRTSTerrainManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
+        netStateManager = GameObject.Find("NetworkStateManager").GetComponent<NetworkStateManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         unitPrefabs = new Dictionary<string, GameObject>();
         nonUnitPrefabs = new Dictionary<string, GameObject>();
         modelPrefabs = new Dictionary<string, GameObject>();
@@ -281,7 +285,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         
         rtsGo.ownerId = ownerId;
         rtsGo.world = world;
-        rtsGo.unitId = gameManager.netStateManager.GetNextUID();
+        rtsGo.unitId = netStateManager.GetNextUID();
 
         if (storage != null)
         {
@@ -686,5 +690,10 @@ public class RTSGameObjectManager : MyMonoBehaviour {
         {
             return new RTSGameObject() { ownerId = -1 };
         }
+    }
+
+    public void CreateText(string text, Vector3 position)
+    {
+        uiManager.CreateText(text, position);
     }
 }

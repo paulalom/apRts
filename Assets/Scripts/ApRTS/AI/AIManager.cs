@@ -9,7 +9,7 @@ public class AIManager
     RTSGameObjectManager rtsGameObjectManager;
     PlayerManager playerManager;
     SelectionManager selectionManager;
-    NetworkedCommandManager commandManager;
+    ICommandManager commandManager;
 
     // Internal managers
     AITacticsManager tacticsManager;
@@ -18,7 +18,7 @@ public class AIManager
     AIMilitaryManager militaryManager;
 
     // Use this for initialization
-    public AIManager(RTSGameObjectManager rtsGameObjectManager, PlayerManager playerManager, SelectionManager selectionManager, NetworkedCommandManager commandManager)
+    public AIManager(RTSGameObjectManager rtsGameObjectManager, PlayerManager playerManager, SelectionManager selectionManager, ICommandManager commandManager)
     {
         this.rtsGameObjectManager = rtsGameObjectManager;
         this.playerManager = playerManager;

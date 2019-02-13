@@ -7,6 +7,7 @@ public class MenuManager : MyMonoBehaviour {
 
     public GameManager gameManager;
     public PlayerManager playerManager;
+    public ICommandManager commandManager;
     public SelectionManager selectionManager;
     public Texture2D menuGraphic;
     float menuWidth = 400, menuHeight = 50;
@@ -20,6 +21,7 @@ public class MenuManager : MyMonoBehaviour {
         selectionManager = GameObject.FindGameObjectWithTag("SelectionManager").GetComponent<SelectionManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        commandManager = GameObject.Find("CommandManager").GetComponent<ICommandManager>();
 
         constructionMenuRect = new Rect(Screen.width / 2 - menuWidth / 2, Screen.height - menuHeight, menuWidth, menuHeight);
         inventoryMenuRects = new Dictionary<RTSGameObject, Rect>();
@@ -113,7 +115,7 @@ public class MenuManager : MyMonoBehaviour {
                         Command command = new Command() { orderData = order.orderData };
                         command.getOrder = OrderBuilderFunction.NewGiveOrder;
                         command.overrideDefaultOrderData = true;
-                        gameManager.commandManager.AddCommand(command, new List<long>() { sourceUnit.unitId });
+                        commandManager.AddCommand(command, new List<long>() { sourceUnit.unitId });
                     }
                     // Destination is a transporter
                     else if (unit.GetComponent<Transporter>() != null && unit.GetComponent<Mover>() != null)
@@ -123,7 +125,7 @@ public class MenuManager : MyMonoBehaviour {
                         Command command = new Command() { orderData = order.orderData };
                         command.getOrder = OrderBuilderFunction.NewTakeOrder;
                         command.overrideDefaultOrderData = true;
-                        gameManager.commandManager.AddCommand(command, new List<long>() { unit.unitId });
+                        commandManager.AddCommand(command, new List<long>() { unit.unitId });
                     }
                     else
                     {

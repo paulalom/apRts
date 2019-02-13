@@ -7,7 +7,7 @@ public class Structure : RTSGameObject {
 
     public void DemolishStructure(string reason, GameManager gameManager, RTSGameObjectManager rtsGameObjectManager)
     {
-        gameManager.CreateText(reason, transform.position);
+        rtsGameObjectManager.CreateText(reason, transform.position);
         rtsGameObjectManager.DestroyUnit(this);
     }
 

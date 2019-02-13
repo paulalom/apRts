@@ -20,6 +20,7 @@ public class UIManager : MyMonoBehaviour {
     public RTSCamera mainCamera;
     public GameManager gameManager;
     public UIBarManager uiBarManager;
+    public SettingsManager settingsManager;
 
     public List<FloatingText> floatingText;
 
@@ -30,9 +31,11 @@ public class UIManager : MyMonoBehaviour {
         menuManager = GameObject.Find("MenuManager").GetComponent<MenuManager>();
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         uiBarManager = GameObject.Find("UIBarManager").GetComponent<UIBarManager>();
+        settingsManager = GameObject.Find("SettingsManager").GetComponent<SettingsManager>();
         InputActions.gameManager = gameManager;
         InputActions.menuManager = menuManager;
         InputActions.selectionManager = selectionManager;
+        InputActions.commandManager = GameObject.Find("CommandManager").GetComponent<ICommandManager>();
         InputActions.uiManager = this;
 
         floatingText = new List<FloatingText>();
@@ -95,7 +98,7 @@ public class UIManager : MyMonoBehaviour {
 
     internal void HandleInput()
     {
-        foreach (Setting setting in gameManager.settingsManager.inputSettings)
+        foreach (Setting setting in settingsManager.inputSettings)
         {
             if (setting.checkActivationFunction(setting.key) && AreKeyModifiersActive(setting))
             {

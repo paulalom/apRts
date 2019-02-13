@@ -16,7 +16,7 @@ public class AITacticsManager {
         this.militaryManager = militaryManager;
     }
 
-    public void IssueTacticalCommands(NetworkedCommandManager commandManager)
+    public void IssueTacticalCommands(ICommandManager commandManager)
     {
         commandManager.AddCommands(economyManager.GetConstructionCommands());
     }

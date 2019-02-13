@@ -10,6 +10,7 @@ public class ButtonManager : MyMonoBehaviour {
     public UIManager uiManager;
     public Texture2D progressBarBackTex, progressBarFrontTex;
     public OrderManager orderManager;
+    public ICommandManager commandManager;
     
     public override void MyAwake()
     {
@@ -96,7 +97,7 @@ public class ButtonManager : MyMonoBehaviour {
                     {
                         Command command = new Command();
                         command.getOrder = OrderBuilderFunction.NewCancelOrder;
-                        gameManager.commandManager.AddCommand(command, new List<long>() { unit.unitId });
+                        commandManager.AddCommand(command, new List<long>() { unit.unitId });
                     }
                 }
             }

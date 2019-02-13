@@ -13,7 +13,7 @@ public class WorldManager : MyMonoBehaviour {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
-    public IEnumerator SetUpWorld(TerrainManager terrainManager, RTSCamera mainCamera)
+    public IEnumerator SetUpWorld(ApRTSTerrainManager terrainManager, RTSCamera mainCamera)
     {
         LoadingScreenManager.SetLoadingProgress(0.10f);
         WorldSettings worldSettings = GetWorldSettings(numWorlds);
@@ -53,7 +53,7 @@ public class WorldManager : MyMonoBehaviour {
         };
     }
 
-    World GenerateWorld(WorldSettings worldSettings, TerrainManager terrainManager)
+    World GenerateWorld(WorldSettings worldSettings, ApRTSTerrainManager terrainManager)
     {
         World world = new World() { worldSettings = worldSettings };
 

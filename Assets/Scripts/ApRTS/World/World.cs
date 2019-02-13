@@ -12,7 +12,7 @@ public class World {
         nextAvailableStartLocation = 0;
     private Vector2 vec2Sentinel = new Vector2(Mathf.NegativeInfinity, Mathf.NegativeInfinity);
 
-    public void BuildWorld(TerrainManager terrainManager)
+    public void BuildWorld(ApRTSTerrainManager terrainManager)
     {
         if (worldSettings == null)
         {
@@ -30,8 +30,8 @@ public class World {
         int chunkRadiusInWorld = worldSettings.sizeRating;
         
         terrainChunks = terrainManager.GetNewTerrainChunks(chunkRadiusInWorld, this);
-        worldSizeX = (int)(worldSettings.sizeRating * TerrainManager.chunkSizeX * TerrainManager.resolutionRatio);
-        worldSizeY = (int)(worldSettings.sizeRating * TerrainManager.chunkSizeZ * TerrainManager.resolutionRatio);
+        worldSizeX = (int)(worldSettings.sizeRating * ApRTSTerrainManager.chunkSizeX * ApRTSTerrainManager.resolutionRatio);
+        worldSizeY = (int)(worldSettings.sizeRating * ApRTSTerrainManager.chunkSizeZ * ApRTSTerrainManager.resolutionRatio);
         
         worldArea = worldSizeX * worldSizeY;
         float playerStartSafeZoneArea = worldArea / Mathf.Max(1, worldSettings.numStartLocations) * (Mathf.Min(10, worldSettings.startLocationSizeRating) / 10);

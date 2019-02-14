@@ -6,7 +6,7 @@ using System;
 
 namespace SimianCity
 {
-    public struct Point : IEquatable<Point> // equatable is supposed to be ridiculously fast
+    public struct Point : IEquatable<Point> // equatable is supposed to be ridiculously fast (unfortunately it doesnt matter for dictionary checks)
     {
         public int x, y;
         public Point(int x, int y)
@@ -18,6 +18,13 @@ namespace SimianCity
         public bool Equals(Point other)
         {
             return x == other.x && y == other.y;
+        }
+
+        public override int GetHashCode() // supposed to implement this because struct reasons (boxing? slow? i forget)
+        {
+            return x + y; // + not * since we dont want integer overflow, 
+            // collisions arent tooo likely to be an issue, and equals should be fast so they wont matter too much
+            // if they become an issue we can tweak this
         }
     }
 
@@ -89,7 +96,6 @@ namespace SimianCity
 
                 mapPolies[i] = new MapPoly();
             }
-
 
             // GraphEdges returned have p1, p2 forming edge, as well as site1 and site2 int ids of bordering polygons.
             // The site id is the index of the xy point provided (so poly with site id 0 was generated from randomPointsX[0], randomPointsY[0])

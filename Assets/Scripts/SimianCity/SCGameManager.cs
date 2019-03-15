@@ -16,7 +16,9 @@ namespace SimianCity
             terrainManager = GameObject.Find("TerrainManager").GetComponent<SCTerrainManager>();
 
             LoadingScreenManager.SetLoadingProgress(0.05f);
-            //yield return terrainManager.GenerateWorld(); worldmanager.setupworld
+            terrainManager.GenerateTerrain(13);
+            LoadingScreenManager.SetLoadingProgress(1f);
+            //worldmanager.setupworld
             yield return MainGameLoop();
         }
 

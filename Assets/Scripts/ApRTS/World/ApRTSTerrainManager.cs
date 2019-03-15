@@ -9,7 +9,8 @@ using UnityEngine;
 // In the future, I will likely rewrite all of this code, but as this is my first Unity project,
 // his series has been helpful in overcoming the barrier to entry. Thanks Nick!
 // https://www.youtube.com/channel/UC9UZBI9EuXu9o4xMM3CAg2w
-public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
+public class ApRTSTerrainManager : TerrainManager, ICameraObserver
+{
 
     [System.Serializable]
     public struct TreeBlueprint
@@ -17,7 +18,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
         public GameObject prefab;
         public float bendFactor;
     }
-    
+
     [System.Serializable]
     public struct Biome
     {
@@ -49,7 +50,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
     public const int resolution = chunkSizeX / 2; // MUST BE POWER OF 2 + 1
     public const float resolutionRatio = resolution / (float)chunkSizeX;
     const int chunkGraphics1dArrayLength = 3; // THIS MUST ALWAYS BE ODD BECAUSE IM LAZY
-    
+
     Vector2 oldCenterChunkGlobalIndex;
 
     public static float TERRAIN_HEIGHT_WILDCARD = -1;
@@ -152,7 +153,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
     {
         return f1 - f2 * (int)(f1 / f2);
     }
-    
+
     #endregion
 
     public Vector2 GetCameraChunkMoveVector(Vector3 newCameraPosition)
@@ -174,14 +175,14 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
     {
         //If we havent teleported but have moved, we only need to check chunks in the direction of movement
         //For simplicty, we wont bother with the case where we have a diagonal moveVector (since its very unlikely)
-        if ((cameraChunkMoveVector.x == 0 
+        if ((cameraChunkMoveVector.x == 0
             || cameraChunkMoveVector.y == 0)
-                && (System.Math.Abs(cameraChunkMoveVector.x) >= 1 
+                && (System.Math.Abs(cameraChunkMoveVector.x) >= 1
                     || System.Math.Abs(cameraChunkMoveVector.y) >= 1))
         {
             Debug.Log("yep " + -chunkGraphics1dArrayLength / 2 + ", " + chunkGraphics1dArrayLength / 2 + " ..." + newCenterChunkGlobalIndex);
             Debug.Log("OldCenterChunkGlobalIndex: " + oldCenterChunkGlobalIndex + "newCenterChunkGlobalIndex " + newCenterChunkGlobalIndex + ", cameraChunkMoveVector " + cameraChunkMoveVector);
-            for (int i = -chunkGraphics1dArrayLength/2; i <= chunkGraphics1dArrayLength/2; i++)
+            for (int i = -chunkGraphics1dArrayLength / 2; i <= chunkGraphics1dArrayLength / 2; i++)
             {
                 //i is perpendicular to the direction of movement to draw our front line
                 Vector2 chunkIndex = new Vector2(
@@ -194,10 +195,10 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             }
         }
         else // We check every tile in the new ChunkGraphics area
-        { 
-            for (int y = -chunkGraphics1dArrayLength/2; y <= chunkGraphics1dArrayLength/2; y++)
+        {
+            for (int y = -chunkGraphics1dArrayLength / 2; y <= chunkGraphics1dArrayLength / 2; y++)
             {
-                for (int x = -chunkGraphics1dArrayLength/2; x <= chunkGraphics1dArrayLength/2; x++)
+                for (int x = -chunkGraphics1dArrayLength / 2; x <= chunkGraphics1dArrayLength / 2; x++)
                 {
                     Vector2 chunkIndex = new Vector2(newCenterChunkGlobalIndex.x + x, newCenterChunkGlobalIndex.y + y);
                     if (!world.terrainChunks.ContainsKey(chunkIndex))
@@ -214,11 +215,11 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
         Vector2 cameraChunkMoveVector = GetCameraChunkMoveVector(newCameraPosition);
         oldCenterChunkGlobalIndex += cameraChunkMoveVector;
     }
-    
+
     public Dictionary<Vector2, GameObject> GetNewTerrainChunks(int terrainRadiusInChunks, World world)
     {
         UnityEngine.Random.InitState(world.worldSettings.randomSeed);
-        
+
         Dictionary<Vector2, GameObject> chunks = new Dictionary<Vector2, GameObject>();
         for (int y = 0; y < terrainRadiusInChunks; y++)
         {
@@ -272,18 +273,18 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
         for (int x = 0; x < heights.GetLength(1); x++)
         {
-            for (int y = 0; y< heights.GetLength(0); y++)
+            for (int y = 0; y < heights.GetLength(0); y++)
             {
                 heights[y, x] = TERRAIN_HEIGHT_WILDCARD;
             }
         }
-        
+
         //left of new terrain = right of old terrain
         float[,] hm = GetTerrainHeightMap(new Vector2(worldSpaceChunkIndex.x - 1, worldSpaceChunkIndex.y), terrainChunks);
         if (hm != null)
         {
             left = true;
-            for(int i = 0; i < hm.GetLength(0); i++)
+            for (int i = 0; i < hm.GetLength(0); i++)
             {
                 heights[i, 0] = hm[i, hm.GetLength(1) - 1];
             }
@@ -340,24 +341,24 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
         }
 
         heights = DiamondSquare(heights, 0, 0, terrain.terrainData.heightmapWidth - 1, 0);
-        terrain.terrainData.SetHeights(0,0,heights);
+        terrain.terrainData.SetHeights(0, 0, heights);
     }
 
     void SetTerrainTrees(Terrain terrain)
     {
         terrain.terrainData.treeInstances = new TreeInstance[0];
-        for (int x = 0; x < resolution; x+= UnityEngine.Random.Range(5, 30))
+        for (int x = 0; x < resolution; x += UnityEngine.Random.Range(5, 30))
         {
-            for (int y = 0; y < resolution; y+= UnityEngine.Random.Range(5,30))
+            for (int y = 0; y < resolution; y += UnityEngine.Random.Range(5, 30))
             {
-                float height = terrain.terrainData.GetHeight(x,y);
-                float steepness = terrain.terrainData.GetSteepness(x/(float)resolution, y/(float)resolution);
+                float height = terrain.terrainData.GetHeight(x, y);
+                float steepness = terrain.terrainData.GetSteepness(x / (float)resolution, y / (float)resolution);
 
-                if (UnityEngine.Random.value > 0.3 + (steepness/30) && height >= waterThreshold - 10)
+                if (UnityEngine.Random.value > 0.3 + (steepness / 30) && height >= waterThreshold - 10)
                 {
                     TreeInstance instance = new TreeInstance();
                     instance.prototypeIndex = 0;
-                    instance.position = new Vector3(x /(float)resolution, 0, y/ (float)resolution);
+                    instance.position = new Vector3(x / (float)resolution, 0, y / (float)resolution);
                     instance.widthScale = 1f;
                     instance.heightScale = 1f;
                     instance.color = Color.white;
@@ -375,7 +376,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
         //consider merging tree generation, as trees should be a resource
         //consider a less naive approach for which resource we want to generate (do we already have a million of these?)
         //consider using fewer magic numbers
-        
+
         // if x or y is 0 we may be placing objects at the very edge of a terrain, which can cause out of bounds exceptions
         for (int x = UnityEngine.Random.Range(1, 60); x < resolution; x += UnityEngine.Random.Range(0, 60))
         {
@@ -395,14 +396,14 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
                     {
                         items.Add(typeof(Wood), 20000);
                         rtsGameObjectManager.NewDeposit(DepositType.Forest,
-                                                        items, 
-                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / resolution), 
-                                                                    height, 
+                                                        items,
+                                                        new Vector3(terrain.transform.position.x + x * (chunkSizeX / resolution),
+                                                                    height,
                                                                     terrain.transform.position.z + y * (chunkSizeZ / resolution)),
                                                         world
                                                         );
                     }
-                    else if(resourceRandom > 0.4)
+                    else if (resourceRandom > 0.4)
                     {
                         items.Add(typeof(Iron), 8000);
                         items.Add(typeof(Stone), 16000);
@@ -460,7 +461,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
                 alphaMap[y, x, currentBiome + 1] = isRocky - isCliff;
                 alphaMap[y, x, currentBiome + 2] = isCliff;
                 alphaMap[y, x, currentBiome + 3] = isRiverbank - isCliff - isRocky;
-                alphaMap[y, x, currentBiome + 4] = isSnow - isRocky - isCliff - isRiverbank;                
+                alphaMap[y, x, currentBiome + 4] = isSnow - isRocky - isCliff - isRiverbank;
             }
         }
 
@@ -502,16 +503,16 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             heights[offsetY + (squareSize / 2), offsetX + (squareSize / 2)] = GetRandHeight(depth) + AveragePoints(topLeft, topRight, bottomLeft, bottomRight);
         }
         float centerPoint = heights[offsetY + (squareSize / 2), offsetX + (squareSize / 2)];
-        
+
         //left diamond
         float runningAverage = AveragePoints(topLeft, centerPoint, bottomLeft);
 
-        if(offsetX-squareSize/2 > 0 && heights[offsetY+squareSize/2, offsetX - squareSize/2] != TERRAIN_HEIGHT_WILDCARD)
+        if (offsetX - squareSize / 2 > 0 && heights[offsetY + squareSize / 2, offsetX - squareSize / 2] != TERRAIN_HEIGHT_WILDCARD)
         {
             runningAverage = AveragePoints(topLeft, centerPoint, bottomLeft, heights[offsetY + squareSize / 2, offsetX - squareSize / 2]);
         }
 
-        if (heights[offsetY + squareSize/2, offsetX] == TERRAIN_HEIGHT_WILDCARD)
+        if (heights[offsetY + squareSize / 2, offsetX] == TERRAIN_HEIGHT_WILDCARD)
         {
             heights[offsetY + squareSize / 2, offsetX] = runningAverage + GetRandHeight(depth);
         }
@@ -550,15 +551,15 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             runningAverage = AveragePoints(bottomRight, centerPoint, topRight, heights[offsetY + (int)(squareSize * 1.5f), offsetX + squareSize / 2]);
         }
 
-        if (heights[offsetY + squareSize, offsetX + squareSize/2] == TERRAIN_HEIGHT_WILDCARD)
+        if (heights[offsetY + squareSize, offsetX + squareSize / 2] == TERRAIN_HEIGHT_WILDCARD)
         {
             heights[offsetY + squareSize, offsetX + squareSize / 2] = runningAverage + GetRandHeight(depth);
         }
 
         heights = DiamondSquare(heights, offsetX, offsetY, squareSize / 2, depth + 1);
-        heights = DiamondSquare(heights, offsetX + squareSize/2, offsetY, squareSize / 2, depth + 1);
-        heights = DiamondSquare(heights, offsetX, offsetY + squareSize/2, squareSize / 2, depth + 1);
-        heights = DiamondSquare(heights, offsetX + squareSize/2, offsetY + squareSize/2, squareSize / 2, depth + 1);
+        heights = DiamondSquare(heights, offsetX + squareSize / 2, offsetY, squareSize / 2, depth + 1);
+        heights = DiamondSquare(heights, offsetX, offsetY + squareSize / 2, squareSize / 2, depth + 1);
+        heights = DiamondSquare(heights, offsetX + squareSize / 2, offsetY + squareSize / 2, squareSize / 2, depth + 1);
 
         return heights;
     }
@@ -574,7 +575,8 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
     public float GetHeightFromGlobalCoords(float xPos, float zPos, World world)
     {
-        try {
+        try
+        {
             xPos = (int)xPos;
             zPos = (int)zPos;
             Vector2 chunkCoords = GetChunkIndexFromGlobalCoords(xPos, zPos);
@@ -582,7 +584,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             Vector2 terrainRelativePosition = GetTerrainRelativePosition(xPos, zPos);
             return terrain.terrainData.GetHeight((int)(terrainRelativePosition.x * resolutionRatio), (int)(terrainRelativePosition.y * resolutionRatio));
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Debug.Log("Exception: Unit likely outside of world. Coords: " + xPos + ", " + zPos);
             return 0;
@@ -607,7 +609,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
         }
         return new Vector2(xPos, zPos);
     }
-    
+
     public static Vector2 GetChunkIndexFromCameraPos(Vector3 cameraPosition)
     {
         return GetChunkIndexFromGlobalCoords(cameraPosition.x, cameraPosition.z);
@@ -620,12 +622,12 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
     static float AveragePoints(float p1, float p2, float p3, float p4)
     {
-        return (p1 + p2 + p3 + p4)/4;
+        return (p1 + p2 + p3 + p4) / 4;
     }
 
     static float AveragePoints(float p1, float p2, float p3)
     {
-        return (p1 + p2 + p3)/3;
+        return (p1 + p2 + p3) / 3;
     }
 
     static float GetRandHeight(int depth)
@@ -671,7 +673,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
                 if (x == 0 && y == 0)
                 {
-                    localTerrainStartPos[x,y] = minLocalTerrainStartPos;
+                    localTerrainStartPos[x, y] = minLocalTerrainStartPos;
                 }
                 else if (x == 0)
                 {
@@ -683,7 +685,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
                 }
                 else
                 {
-                    localTerrainStartPos[x,y] = new Vector2(0, 0);
+                    localTerrainStartPos[x, y] = new Vector2(0, 0);
                 }
 
                 if (x == numTerrainsX - 1 && y == numTerrainsY - 1)
@@ -720,7 +722,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
 
     public void SetTerrainHeights(MyBitMap terrainToSetWorldMap, float percentToRaise, World world)
     {
-        MultiTerrain terrains = GetTerrainsInArea(new Vector3(world.worldSizeX, 0, world.worldSizeY), new Vector3(world.worldSizeX*2, 0, world.worldSizeY*2));
+        MultiTerrain terrains = GetTerrainsInArea(new Vector3(world.worldSizeX, 0, world.worldSizeY), new Vector3(world.worldSizeX * 2, 0, world.worldSizeY * 2));
         SetTerrainHeights(terrains, percentToRaise, world, terrainToSetWorldMap);
     }
 
@@ -744,7 +746,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
                 int dx = (int)(terrains.localTerrainEndPos[i, j].x - terrains.localTerrainStartPos[i, j].x);
                 int dy = (int)(terrains.localTerrainEndPos[i, j].y - terrains.localTerrainStartPos[i, j].y);
                 float[,] newHeights = new float[dy, dx];
-                float[,] oldHeights = data.GetHeights(0,0, resolution, resolution);
+                float[,] oldHeights = data.GetHeights(0, 0, resolution, resolution);
                 for (int y = 0; y < dy; y++)
                 {
                     for (int x = 0; x < dx; x++)
@@ -766,7 +768,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             }
         }
     }
-    
+
     public void GenerateChunkAtPositionIfMissing(Vector3 position, World world)
     {
         if (!DoesTerrainExistForPoint(position, world))
@@ -775,7 +777,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver  {
             world.terrainChunks[chunkIndex] = GenerateChunk(chunkIndex, world, world.terrainChunks);
         }
     }
-    
+
     SplatPrototype BlueprintToSplatPrototype(TerrainTextureBlueprint blueprint)
     {
         SplatPrototype prototype = new SplatPrototype();

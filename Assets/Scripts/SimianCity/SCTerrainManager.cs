@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Shared.World;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Voronoi2;
 using System;
@@ -558,7 +557,27 @@ namespace SimianCity
             }
             return header + body + footer;
         }
-        
+
+        public override float GetHeightFromGlobalCoords(float xPos, float zPos, World world)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool DoesTerrainExistForPoint(Vector3 point, World world)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ModifyTerrain(Vector3 position, float deltaH, int diameter, World world)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void GenerateChunkAtPositionIfMissing(Vector3 position, World world)
+        {
+            throw new NotImplementedException();
+        }
+
         /*
         void TestVoronoi() {
             System.Random r = new System.Random(1);

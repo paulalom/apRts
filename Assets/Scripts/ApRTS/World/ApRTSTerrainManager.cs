@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Shared.World;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -93,7 +92,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver
 
 
     // meh buggy/fails around chunk edges.. whatever its not needed right now
-    public void ModifyTerrain(Vector3 position, float amount, int diameter, World world)
+    public override void ModifyTerrain(Vector3 position, float amount, int diameter, World world)
     {
         Debug.Log("yep");
         Vector2 terrainIndex = GetChunkIndexFromGlobalCoords(position.x, position.z);
@@ -573,7 +572,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver
         return chunkIndex;
     }
 
-    public float GetHeightFromGlobalCoords(float xPos, float zPos, World world)
+    public override float GetHeightFromGlobalCoords(float xPos, float zPos, World world)
     {
         try
         {
@@ -615,7 +614,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver
         return GetChunkIndexFromGlobalCoords(cameraPosition.x, cameraPosition.z);
     }
 
-    public bool DoesTerrainExistForPoint(Vector3 point, World world)
+    public override bool DoesTerrainExistForPoint(Vector3 point, World world)
     {
         return world.terrainChunks.ContainsKey(GetChunkIndexFromGlobalCoords(point.x, point.z));
     }
@@ -769,7 +768,7 @@ public class ApRTSTerrainManager : TerrainManager, ICameraObserver
         }
     }
 
-    public void GenerateChunkAtPositionIfMissing(Vector3 position, World world)
+    public override void GenerateChunkAtPositionIfMissing(Vector3 position, World world)
     {
         if (!DoesTerrainExistForPoint(position, world))
         {

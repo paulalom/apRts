@@ -16,7 +16,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public Dictionary<string, GameObject> modelPrefabs;
     public CollisionAvoidanceManager collisionAvoidanceManager = new CollisionAvoidanceManager();
     GameManager gameManager;
-    ApRTSTerrainManager terrainManager;
+    TerrainManager terrainManager;
     PlayerManager playerManager;
     SelectionManager selectionManager;
     OrderManager orderManager;
@@ -36,7 +36,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     public override void MyAwake()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<ApRTSTerrainManager>();
+        terrainManager = GameObject.FindGameObjectWithTag("TerrainManager").GetComponent<TerrainManager>();
         playerManager = GameObject.FindGameObjectWithTag("PlayerManager").GetComponent<PlayerManager>();
         orderManager = GameObject.FindGameObjectWithTag("OrderManager").GetComponent<OrderManager>();
         selectionManager = GameObject.Find("SelectionManager").GetComponent<SelectionManager>();
@@ -356,7 +356,7 @@ public class RTSGameObjectManager : MyMonoBehaviour {
     {
         if (unit.GetType().IsSubclassOf(typeof(Structure)))
         {
-            terrainManager.FlattenTerrainUnderObject(unit, unit.world);
+            ((ApRTSTerrainManager)terrainManager).FlattenTerrainUnderObject(unit, unit.world);
         }
         onUnitCreated.Invoke(unit);
         unit.IsIdle = true;

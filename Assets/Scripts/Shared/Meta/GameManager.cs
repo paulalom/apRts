@@ -4,7 +4,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
-using Assets.Scripts.Shared.World;
 
 public abstract class GameManager : MonoBehaviour {
 

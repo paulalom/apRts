@@ -36,4 +36,10 @@ public class GameLauncher : MonoBehaviour {
         GlobalState.currentGameSceneNum = 4;
         new SceneLoader().LoadSceneNum(4);
     }
+            
+    public void LaunchBattleMages()
+    {
+        GlobalState.currentGameSceneNum = 5;
+        new SceneLoader().LoadSceneNum(5);
+    }
 }
